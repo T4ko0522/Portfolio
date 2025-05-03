@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     siteName: "Tako's Portfolio",
     images: [
       {
-        url: "/og.png",
+        url: "images/icon.png",
         width: 1200,
         height: 630,
       },
