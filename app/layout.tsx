@@ -10,12 +10,12 @@ export const metadata: Metadata = {
   title: "Tako's Portfolio",
   description:
     "Portfolio of Tako, a Japanese student and junior full stack engineer passionate about coding and gaming.",
-  metadataBase: new URL("https://T4ko.vercel.app"),
+  metadataBase: new URL("https://tako0522.vercel.app/"),
   openGraph: {
     title: "Tako's Portfolio",
     description:
       "Portfolio of Tako, a Japanese student and junior full stack engineer passionate about coding and gaming.",
-    url: "https://T4ko.vercel.app",
+    url: "https://tako0522.vercel.app/",
     siteName: "Tako's Portfolio",
     images: [
       {

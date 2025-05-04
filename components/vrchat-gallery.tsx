@@ -267,10 +267,14 @@ export default function VRChatGallery() {
           />
         </div>
         <div className="md:w-2/3">
-          <p className="text-gray-300 text-sm">
+            <p className="text-gray-300 text-sm">
             ぼくの推しのちーぬちゃん！！！<br />
-            声も性格も全部かわいいし、人生の癒し ; - ;
-          </p>
+            声も性格も全部かわいいし、人生の癒し ; - ; <br />
+            <br />
+            もしよかったら見てみて！！！！ <br />
+            Twitter : <a href="https://twitter.com/dahukokko_H" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:underline">@dahukokko_H</a><br />
+            YouTube : <a href="https://www.youtube.com/@chinu_ch" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:underline">ちーぬちゃんねる</a><br />
+            </p>
         </div>
       </div>
     </>
