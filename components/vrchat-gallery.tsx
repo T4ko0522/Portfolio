@@ -164,7 +164,7 @@ const portraitPhotos = [
   {
     id: 20,
     title: "別げーの友達とのつーしょ！",
-    description: "2024-11-18",
+    description: "2024-09-02",
     imageUrl: "/images/portrait/VRChat_2024-09-02_21-04-22.513_2160x3840.png",
     orientation: "portrait" as const,
   },
@@ -269,9 +269,9 @@ export default function VRChatGallery() {
         <div className="md:w-2/3">
             <p className="text-gray-300 text-sm">
             ぼくの推しのちーぬちゃん！！！<br />
-            声も性格も全部かわいいし、人生の癒し ; - ; <br />
+            声も性格も全部かわいい！！ 人生の癒し！だいすき！ ; - ; <br />
             <br />
-            もしよかったら見てみて！！！！ <br />
+            もしよかったら！いや、絶対！見てみて！！！！ <br />
             Twitter : <a href="https://twitter.com/dahukokko_H" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:underline">@dahukokko_H</a><br />
             YouTube : <a href="https://www.youtube.com/@chinu_ch" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:underline">ちーぬちゃんねる</a><br />
             </p>

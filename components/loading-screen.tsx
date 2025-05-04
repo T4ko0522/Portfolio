@@ -96,7 +96,7 @@ export default function LoadingScreen({ onLoadingComplete }: LoadingScreenProps)
         className="mb-8"
       >
         <div className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
-          T4ko
+          Welcome to My Portfolio...
         </div>
       </motion.div>
 
