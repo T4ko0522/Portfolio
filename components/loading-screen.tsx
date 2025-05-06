@@ -93,9 +93,9 @@ export default function LoadingScreen({ onLoadingComplete }: LoadingScreenProps)
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="mb-8"
+        className="mb-8 px-4 text-center w-full"
       >
-        <div className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
+        <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
           Welcome to My Portfolio...
         </div>
       </motion.div>
