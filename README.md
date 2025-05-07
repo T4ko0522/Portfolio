@@ -1,36 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Portfolio
 
-## Getting Started
+[サイトはこちらから](https://t4ko.vercel.app)  
+個人開発のポートフォリオです。  
 
-First, run the development server:
+## 🛠 技術スタック
 
+| 分類              | 使用技術                              |
+| ----------------- | ------------------------------------- |
+| フレームワーク    | Next.js 15 (React 18)                 |
+| 言語              | TypeScript                            |
+| UI／スタイリング  | Tailwind CSS, shadcn/ui, Radix UI     |
+| Lint／Format      | ESLint, Prettier                      |
+| ホスティング      | Vercel                                |
+| パッケージ管理    | pnpm                                  |
+
+# 🚀 クイックスタート
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+git clone clone https://github.com/T4ko0522/Portfolio.git
+cd portfolio
+
+pnpm install
+
 pnpm dev
-# or
-bun dev
 ```
+  
+[localhost:3000](http://localhost:3000)を開いて結果を確認。  
+app/page.tsx`を修正することでページの編集を開始できます。ファイルを編集すると、ページは自動的に更新されます。  
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🤝 Contributions
+バグ報告や機能提案は[Issues](https://github.com/T4ko0522/Portfolio/issues)へお気軽にどうぞ。  
+プルリクも歓迎です。  
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📄 LICENSE
+Apache License 2.0  
+詳細は[LICENSE](https://github.com/T4ko0522/Portfolio/blob/master/LICENSE)を参照してください。 
+```
+Copyright 2025 T4ko0522
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Licensed under the Apache License, Version 2.0 (the “License”);
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+http://www.apache.org/licenses/LICENSE-2.0
 
-## Learn More
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an “AS IS” BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
