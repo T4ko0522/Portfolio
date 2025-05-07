@@ -21,7 +21,7 @@ cd portfolio
 
 npm install
 
-npm dev
+npm run dev
 ```
   
 [localhost:3000](http://localhost:3000)を開いて結果を確認。  
