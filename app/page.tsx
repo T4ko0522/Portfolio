@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Head from "next/head"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   Github,
@@ -23,6 +24,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "src/components/ui/tabs"
 import LoadingScreen from "../components/loading-screen"
 import VRChatGallery from "../components/vrchat-gallery"
+import { landscapePhotos, portraitPhotos } from "../components/vrchat-gallery"
 import TypewriterComponent from "typewriter-effect"
 import Image from "next/image"
 
@@ -181,6 +183,20 @@ export default function Home() {
 
   return (
     <>
+      <Head>
+        <link
+          rel="preload"
+          as="image"
+          href="/images/icon.png"
+        />
+        {([...landscapePhotos, ...portraitPhotos]).map((photo) => (
+          <link
+            key={photo.imageUrl}
+            rel="prefetch"
+            as="image"
+          />
+        ))}
+      </Head>
       <AnimatePresence mode="wait">
         {isLoading ? (
           <LoadingScreen key="loading" onLoadingComplete={handleLoadingComplete} />

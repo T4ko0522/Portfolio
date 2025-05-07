@@ -9,7 +9,7 @@ import Image from "next/image"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "src/components/ui/tabs"
 
 // VRChat写真のデータ - 横向き写真
-const landscapePhotos: Photo[] = [
+export const landscapePhotos: Photo[] = [
   {
     id: 1,
     title: "昔からの友達との写真！",
@@ -97,7 +97,7 @@ const landscapePhotos: Photo[] = [
 ]
 
 // VRChat写真のデータ - 縦向き写真
-const portraitPhotos = [
+export const portraitPhotos = [
   {
     id: 11,
     title: "ちーぬちゃんとのつーしょ！",
