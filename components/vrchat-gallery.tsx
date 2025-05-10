@@ -40,7 +40,7 @@ export const landscapePhotos: Photo[] = [
   },
   {
     id: 5,
-    title: "ちーぬちゃんとちるちーぬ！",
+    title: "ちーぬちゃん達とちるちーぬ！",
     description: "2024-11-21",
     imageUrl: "/images/landscape/VRChat_2024-11-21_05-09-53.919_1920x1080.png",
     orientation: "landscape" as const,
