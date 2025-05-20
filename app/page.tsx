@@ -490,7 +490,7 @@ export default function Home() {
                           <div className="mb-6 bg-gradient-to-r from-purple-900/30 to-green-900/30 p-3 rounded-lg border border-green-500/30">
                             <p className="text-green-400 font-medium flex items-center">
                               <CheckCircle2 className="w-5 h-5 mr-2" />
-                              Currently learning Kubernetes!
+                              Currently developing a successor site to Connectix!
                             </p>
                           </div>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
