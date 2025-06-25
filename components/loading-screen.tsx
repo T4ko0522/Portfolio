@@ -1,13 +1,18 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { motion } from "framer-motion"
+import Particles from "react-tsparticles"
+import { loadFull } from "tsparticles"
 
 interface LoadingScreenProps {
   onLoadingComplete: () => void
 }
 
 export default function LoadingScreen({ onLoadingComplete }: LoadingScreenProps) {
+  const particlesInit = useCallback(async (engine: any) => {
+    await loadFull(engine)
+  }, [])
   const [progress, setProgress] = useState(10) // 初期値を10%に設定
   const [loadingText, setLoadingText] = useState("Initializing...")
   const [startTime, setStartTime] = useState(0)
@@ -83,11 +88,37 @@ export default function LoadingScreen({ onLoadingComplete }: LoadingScreenProps)
       exit={{ opacity: 0, transition: { duration: 0.3 } }}
       onAnimationComplete={(definition) => {
         if (definition === "exit" && isExiting) {
-          // exit アニメーションが完了したら確実にコールバックを呼び出す
           onLoadingComplete()
         }
       }}
     >
+      {/* パーティクル背景 */}
+      <Particles
+        id="tsparticles"
+        init={particlesInit}
+        options={{
+          fullScreen: { enable: false },
+          background: { color: "black" },
+          particles: {
+            number: { value: 50, density: { enable: true, value_area: 800 } },
+            color: { value: "#a855f7" },
+            shape: { type: "circle" },
+            opacity: { value: 0.3 },
+            size: { value: 3, random: true },
+            move: {
+              enable: true,
+              speed: 1,
+              direction: "none",
+              out_mode: "out"
+            }
+          },
+          interactivity: {
+            events: { onHover: { enable: true, mode: "repulse" } }
+          }
+        }}
+        className="absolute inset-0 -z-10"
+      />
+
       {/* ロゴ */}
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
@@ -103,25 +134,13 @@ export default function LoadingScreen({ onLoadingComplete }: LoadingScreenProps)
       {/* ローディングアニメーション */}
       <div className="relative mb-8">
         <motion.div
-          animate={{
-            rotate: 360,
-          }}
-          transition={{
-            duration: 2,
-            repeat: Number.POSITIVE_INFINITY,
-            ease: "linear",
-          }}
+          animate={{ rotate: 360 }}
+          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
           className="w-16 h-16 rounded-full border-4 border-transparent border-t-purple-500 border-r-purple-500"
         />
         <motion.div
-          animate={{
-            rotate: -180,
-          }}
-          transition={{
-            duration: 3,
-            repeat: Number.POSITIVE_INFINITY,
-            ease: "linear",
-          }}
+          animate={{ rotate: -180 }}
+          transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
           className="absolute inset-0 w-16 h-16 rounded-full border-4 border-transparent border-b-pink-500 border-l-pink-500 opacity-70"
         />
       </div>
@@ -147,61 +166,36 @@ export default function LoadingScreen({ onLoadingComplete }: LoadingScreenProps)
           transition={{ duration: 0.3 }}
         />
       </div>
-
-      {/* パーセント表示 */}
       <div className="text-gray-400 text-sm">{progress}%</div>
 
       {/* ヒント */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1, duration: 1 }}
-        className="absolute bottom-20 left-0 right-0 text-center text-gray-500 text-xs px-4"
-      >
-        <p className="mb-1">HINT! : This loading screen is for coolness and doesn't mean much (lol).
-          <br />
-          If you want to skip it, just click the button below.
-        </p>
-      </motion.div>
-
-      {/* 背景パーティクル */}
-      <div className="fixed inset-0 -z-10">
-        {Array.from({ length: 20 }).map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1 h-1 rounded-full bg-purple-500 opacity-20"
-            style={{
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              y: [0, Math.random() * 100 - 50],
-              x: [0, Math.random() * 100 - 50],
-              opacity: [0.2, 0.5, 0.2],
-            }}
-            transition={{
-              duration: 5 + Math.random() * 10,
-              repeat: Number.POSITIVE_INFINITY,
-              repeatType: "reverse",
-            }}
-          />
-        ))}
-      </div>
+      {/* <motion.div */}
+      {/* //   initial={{ opacity: 0 }}
+      //   animate={{ opacity: 1 }}
+      //   transition={{ delay: 1, duration: 1 }}
+      //   className="absolute bottom-20 left-0 right-0 text-center text-gray-500 text-xs px-4"
+      // >
+      //   <p className="mb-1">
+      //     HINT! : This loading screen is for coolness and doesn't mean much (lol).
+      //     <br />
+      //     If you want to skip it, just click the button below.
+      //   </p> */}
+      {/* </motion.div> */}
 
       {/* スキップボタン */}
-      <motion.div
+      {/* <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5, duration: 0.5 }}
         className="absolute bottom-8 left-0 right-0 text-center px-4"
-      >
-        <button
+      > */}
+        {/* <button
           onClick={handleSkip}
           className="px-4 py-1 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors text-sm"
         >
           Skip Loading
-        </button>
-      </motion.div>
+        </button> */}
+      {/* </motion.div> */}
     </motion.div>
   )
 }
