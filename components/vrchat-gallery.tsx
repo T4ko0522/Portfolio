@@ -249,7 +249,6 @@ export default function VRChatGallery() {
                 />
               </div>
               <div className="mt-4">
-                <h3 className="text-xl font-bold text-white">{selectedPhoto.title}</h3>
                 <p className="text-gray-400 mt-1">{selectedPhoto.description}</p>
               </div>
             </div>
@@ -272,7 +271,7 @@ export default function VRChatGallery() {
             声も性格も全部かわいい！！ 人生の癒し！だいすき！ ; - ; <br />
             <br />
             もしよかったら！いや、絶対！見てみて！！！！ <br />
-            Twitter : <a href="https://twitter.com/dahukokko_H" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:underline">@dahukokko_H</a><br />
+            Twitter : <a href="https://x.com/dahukokko_H" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:underline">@dahukokko_H</a><br />
             YouTube : <a href="https://www.youtube.com/@chinu_ch" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:underline">ちーぬちゃんねる</a><br />
             </p>
         </div>
