@@ -93,3 +93,42 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+
+/* 波紋エフェクト */
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(20);
+    opacity: 0;
+  }
+}
+
+/* 光るエフェクト */
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 5px rgba(168, 85, 247, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.8), 0 0 30px rgba(168, 85, 247, 0.6);
+  }
+  100% {
+    box-shadow: 0 0 5px rgba(168, 85, 247, 0.5);
+  }
+}
+
+.glow-effect {
+  animation: glow 2s ease-in-out infinite;
+}
+
+/* SNSアイコンの光るエフェクト */
+.icon-glow {
+  filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.6));
+  transition: filter 0.3s ease;
+}
+
+.icon-glow:hover {
+  filter: drop-shadow(0 0 15px rgba(168, 85, 247, 0.8)) drop-shadow(0 0 25px rgba(168, 85, 247, 0.4));
+}
