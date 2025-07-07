@@ -593,7 +593,7 @@ export default function Home() {
                             <span className="font-bold">🎓CS Japanese Student | Junior Infra & Full Stack Web Engineer</span>
                           </p>
                           <p className="mb-4 text-gray-300">
-                            2008年大阪生まれ。現在はWeb開発を中心に学習しており、バックエンドとフロントエンドの両方を扱えるFull Stack Web Engineerです！将来的には、KubernetesやAzure、AWSなどの技術の習得を目指しています！
+                            2008年大阪生まれ。現在はWeb開発を中心に学習しており、バックエンドとフロントエンドの両方を扱えるフルスタックウェブエンジニアです！将来的には、KubernetesやAzure、AWSなどの技術の習得を目指しています！
                           <br />
                           <span className="block text-sm italic text-gray-400 translate-x-1 mt-1">
                             Born in Osaka in 2008. Currently studying web development, he is a full-stack web engineer in charge of both back-end and front-end. In the future, he aims to master technologies such as Kubernetes, Azure, and AWS.
