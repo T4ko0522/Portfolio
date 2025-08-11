@@ -6,11 +6,8 @@ import { motion, AnimatePresence } from "framer-motion"
 import {
   ExternalLink,
   Code,
-  Trophy,
   User,
-  ImageIcon,
   BookOpen,
-  CheckCircle2,
   Clock,
   Calendar,
   Gift,
@@ -20,8 +17,6 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "src/components/ui/tabs"
 import LoadingScreen from "../components/loading-screen"
-import VRChatGallery from "../components/vrchat-gallery"
-import { landscapePhotos, portraitPhotos } from "../components/vrchat-gallery"
 import TypewriterComponent from "typewriter-effect"
 import Image from "next/image"
 
@@ -67,7 +62,7 @@ export default function Home() {
   const birthMonth = 5
   const birthDay = 22
 
-  // クライアントサイドレンダリングのためのマウント確認と年齢・カウントダウン計算
+  // クライアント イドレンダリングのためのマウント確認と年齢・カウントダウン計算
   useEffect(() => {
     setMounted(true)
     setAge(calculateAge(birthMonth, birthDay))
@@ -221,8 +216,7 @@ export default function Home() {
   ]
 
   const introTexts = [
-    "VRChatter!",
-    "FPS Gamer!",
+    "FPS Gamer.",
     "Full Stack Web Engineer.",
     "Junior Infra Engineer.",
   ]
@@ -251,25 +245,87 @@ export default function Home() {
           as="image"
           href="/images/icon.png"
         />
-        {([...landscapePhotos, ...portraitPhotos]).map((photo) => (
-          <link
-            key={photo.imageUrl}
-            rel="prefetch"
-            as="image"
-          />
-        ))}
       </Head>
       <AnimatePresence mode="wait">
         {isLoading ? (
-          <LoadingScreen key="loading" onLoadingComplete={handleLoadingComplete} />
+          <>
+            {/* 背景 */}
+            <div
+              className="fixed inset-0 bg-cover bg-center"
+              style={{
+                backgroundImage: "url('/images/background.png')",
+                transform: "scale(1.05)",
+                zIndex: -2,
+              }}
+            />
+
+            {/* サイバーパンク・ノイズ＆スキャンライン */}
+            <div
+              className="fixed inset-0 pointer-events-none z-[9998]"
+              style={{
+                backgroundImage:
+                  "repeating-linear-gradient(135deg, rgba(0,255,255,0.08) 0 2px, transparent 2px 8px), repeating-linear-gradient(45deg, rgba(255,0,255,0.08) 0 1px, transparent 1px 6px), url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.22'/></svg>\")",
+                backgroundBlendMode: 'screen',
+                mixBlendMode: 'screen',
+                opacity: 0.75,
+                animation: "noiseShift 6s linear infinite",
+              }}
+            />
+            <video
+              className="fixed inset-0 w-full h-full object-cover pointer-events-none"
+              style={{
+                zIndex: -1,
+                mixBlendMode: "screen", // "lighten" や "overlay" も試せます
+                opacity: 0.4,
+              }}
+              src="/videos/noise.mp4" // public/videos/noise.mp4 に置く
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="metadata"
+            />
+            {/* ローディングUI */}
+            <div className="fixed inset-0 flex items-center justify-center z-[9999] bg-transparent">
+              <LoadingScreen key="loading" onLoadingComplete={handleLoadingComplete} />
+            </div>
+
+            {/* アニメーション（グローバルでOK） */}
+            <style jsx global>{`
+              @keyframes noiseShift {
+                0%   { filter: hue-rotate(0deg) }
+                50%  { filter: hue-rotate(20deg) }
+                100% { filter: hue-rotate(0deg) }
+              }
+            `}</style>
+          </>
         ) : (
           <motion.div
             key="content"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="min-h-screen bg-gradient-to-br from-gray-900 to-black text-white"
+            className="relative min-h-screen text-white overflow-hidden"
           >
+            <div
+              className="fixed inset-0 bg-cover bg-center"
+              style={{
+                backgroundImage: "url('/images/background.png')",
+                // filter: "blur(8px) brightness(0.5)",
+                transform: "scale(1.05)",
+                zIndex: -2,
+            }}
+            />
+            {/* 画面幅1500px以下で全画面ブラー、それ以外は中央だけブラー */}
+            <div
+              className="fixed inset-0 flex items-center justify-center pointer-events-none"
+              style={{ zIndex: -1 }}
+            >
+              <div
+                className="backdrop-blur-md bg-black/20 w-full h-full rounded-none xl2:w-[60%] xl2:rounded-xl"
+                style={{ height: "100%" }}
+              />
+            </div>
             <div className="container mx-auto px-4 py-16 max-w-4xl">
               {/* ヘッダー */}
               <motion.div
@@ -279,86 +335,35 @@ export default function Home() {
                 className="text-center mb-16"
               >
                 {/* アイコンにホバーエフェクトを追加 */}
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.2, type: "spring", stiffness: 100 }}
-                  className="w-32 h-32 mx-auto mb-6 relative group cursor-pointer"
-                >
-                  {/* 背景の光るエフェクト */}
-                  <motion.div
-                    className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 blur-md z-0"
-                    initial={{ scale: 0.8 }}
-                    whileHover={{
-                      scale: 1.2,
-                      rotate: 10,
-                      transition: { duration: 0.3 },
-                    }}
+                <div className="relative w-[200px] h-[160px] mx-auto mb-6 flex items-center justify-center">
+                  {/* 装飾画像（Discordデコレーション）だけを表示 */}
+                  <img
+                    src="https://cdn.discordapp.com/avatar-decoration-presets/a_8552f9857793aed0cf816f370e2df3be.png?size=96&passthrough=true"
+                    alt="Decoration"
+                    className="absolute left-1/2 top-1/2 w-[150px] h-[150px] -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50"
+                    draggable="false"
                   />
-
-                  {/* 回転する枠線 */}
-                  <motion.div
-                    className="absolute inset-0 rounded-full border-4 border-transparent border-t-purple-500 border-r-pink-500 border-b-purple-300 border-l-pink-300 z-10"
-                    initial={{ rotate: 0 }}
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 10, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-                    style={{ opacity: 0.6 }}
-                  />
-
                   {/* アイコン本体 */}
                   <motion.div
-                    className="w-32 h-32 rounded-full overflow-hidden border-4 border-purple-500 shadow-lg shadow-purple-500/20 relative z-20"
-                    whileHover={{
-                      scale: 1.1,
-                      transition: {
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 10,
-                      },
-                    }}
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.2, type: "spring", stiffness: 100 }}
+                    className="w-32 h-32 rounded-full overflow-hidden relative z-40"
                   >
                     <div className="relative w-full h-full">
                       <Image src="/images/icon.png" alt="Tako" fill sizes="128px" className="object-cover" priority />
                     </div>
-
-                    {/* ホバー時のオーバーレイ */}
-                    <motion.div className="absolute inset-0 bg-gradient-to-t from-purple-900/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
-                      <span className="text-white text-xs font-medium">Tako</span>
-                    </motion.div>
                   </motion.div>
-
-                  {/* ピクセルエフェクト（ドット） */}
-                  <div className="absolute -inset-4 z-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    {Array.from({ length: 8 }).map((_, i) => (
-                      <motion.div
-                        key={i}
-                        className="absolute w-1.5 h-1.5 rounded-full bg-purple-400"
-                        style={{
-                          top: `${Math.random() * 100}%`,
-                          left: `${Math.random() * 100}%`,
-                        }}
-                        animate={{
-                          y: [0, -10, 0],
-                          opacity: [0, 1, 0],
-                        }}
-                        transition={{
-                          duration: 1.5,
-                          repeat: Number.POSITIVE_INFINITY,
-                          delay: i * 0.2,
-                          ease: "easeInOut",
-                        }}
-                      />
-                    ))}
-                  </div>
-                </motion.div>
+                </div>
 
                 <motion.h1
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.4 }}
-                  className="text-4xl md:text-5xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600"
+                  className="text-4xl md:text-5xl font-bold mb-2"
                 >
-                  👋 Hi! I&apos;m Tako
+                  <span>👋 </span>
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-200 to-blue-500">Hi! I&apos;m Tako</span>
                 </motion.h1>
 
                 {/* タイピングアニメーション */}
@@ -366,18 +371,20 @@ export default function Home() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.5 }}
-                  className="text-xl md:text-2xl text-purple-300 mb-4 h-8 flex justify-center items-center"
+                  className="text-xl md:text-2xl mb-4 h-8 flex justify-center items-center"
                 >
-                  <span className="mr-2">I am</span>
-                  <TypewriterComponent
-                    options={{
-                      strings: introTexts,
-                      autoStart: true,
-                      loop: true,
-                      deleteSpeed: 50,
-                      delay: 80,
-                    }}
-                  />
+                  <span className="mr-2 text-white">I am a</span>
+                  <span className="text-white">
+                    <TypewriterComponent
+                      options={{
+                        strings: introTexts,
+                        autoStart: true,
+                        loop: true,
+                        deleteSpeed: 50,
+                        delay: 80,
+                      }}
+                    />
+                  </span>
                 </motion.div>
 
                 <motion.div
@@ -390,16 +397,16 @@ export default function Home() {
                     href="https://github.com/T4ko0522"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="relative p-3 rounded-full bg-gray-800 transition-all duration-300 group"
+                    className="relative p-3 rounded-full bg-transparent transition-all duration-300 group"
                     aria-label="GitHub"
                     whileHover={{ scale: 1.1 }}
                   >
                     {/* 光るエフェクト背景 */}
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-400 to-blue-400 opacity-0 group-hover:opacity-20 blur-md transition-opacity duration-300" />
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#181717] to-[#333] opacity-0 group-hover:opacity-20 blur-md transition-opacity duration-300" />
                     
                     {/* GitHub SVG */}
                     <svg 
-                      className="w-6 h-6 text-white group-hover:text-purple-300 transition-colors duration-300 relative z-10" 
+                      className="w-6 h-6 text-white group-hover:text-[#181717] transition-colors duration-300 relative z-10" 
                       fill="currentColor" 
                       viewBox="0 0 24 24"
                     >
@@ -407,47 +414,23 @@ export default function Home() {
                     </svg>
                     
                     {/* 光る枠線 */}
-                    <div className="absolute inset-0 rounded-full border-2 border-transparent group-hover:border-purple-400/50 transition-colors duration-300" />
-                  </motion.a>
-                  
-                  <motion.a
-                    href="https://x.com/Tako_0522"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="relative p-3 rounded-full bg-gray-800 transition-all duration-300 group"
-                    aria-label="Twitter"
-                    whileHover={{ scale: 1.1 }}
-                  >
-                    {/* 光るエフェクト背景 */}
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-400 to-cyan-400 opacity-0 group-hover:opacity-20 blur-md transition-opacity duration-300" />
-                    
-                    {/* Twitter/X SVG */}
-                    <svg 
-                      className="w-6 h-6 text-white group-hover:text-blue-300 transition-colors duration-300 relative z-10" 
-                      fill="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                    </svg>
-                    
-                    {/* 光る枠線 */}
-                    <div className="absolute inset-0 rounded-full border-2 border-transparent group-hover:border-blue-400/50 transition-colors duration-300" />
+                    <div className="absolute inset-0 rounded-full border-2 border-transparent group-hover:border-[#181717]/70 transition-colors duration-300" />
                   </motion.a>
                   
                   <motion.a
                     href="https://www.youtube.com/@%E3%82%BF%E3%82%B3%E3%81%95%E3%82%93%E3%81%A7%E3%81%99"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="relative p-3 rounded-full bg-gray-800 transition-all duration-300 group"
+                    className="relative p-3 rounded-full bg-transparent transition-all duration-300 group"
                     aria-label="YouTube"
                     whileHover={{ scale: 1.1 }}
                   >
                     {/* 光るエフェクト背景 */}
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-r from-red-400 to-pink-400 opacity-0 group-hover:opacity-20 blur-md transition-opacity duration-300" />
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#FF0000] to-[#CC0000] opacity-0 group-hover:opacity-20 blur-md transition-opacity duration-300" />
                     
                     {/* YouTube SVG */}
                     <svg 
-                      className="w-6 h-6 text-white group-hover:text-red-300 transition-colors duration-300 relative z-10" 
+                      className="w-6 h-6 text-white group-hover:text-[#FF0000] transition-colors duration-300 relative z-10" 
                       fill="currentColor" 
                       viewBox="0 0 24 24"
                     >
@@ -455,17 +438,40 @@ export default function Home() {
                     </svg>
                     
                     {/* 光る枠線 */}
-                    <div className="absolute inset-0 rounded-full border-2 border-transparent group-hover:border-red-400/50 transition-colors duration-300" />
+                    <div className="absolute inset-0 rounded-full border-2 border-transparent group-hover:border-[#FF0000]/70 transition-colors duration-300" />
+                  </motion.a>
+                  
+                  <motion.a
+                    href="https://x.com/Tako_0522"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="relative p-3 rounded-full bg-transparent transition-all duration-300 group"
+                    aria-label="Twitter"
+                    whileHover={{ scale: 1.1 }}
+                  >
+                    {/* ホバー時枠線のみ黒色 */}
+                    
+                    {/* Twitter/X SVG */}
+                    <svg 
+                      className="w-6 h-6 text-white group-hover:text-black transition-colors duration-300 relative z-10" 
+                      fill="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                    </svg>
+                    
+                    {/* ホバー時黒枠線 */}
+                    <div className="absolute inset-0 rounded-full border-2 border-transparent group-hover:border-black/50 transition-colors duration-300" />
                   </motion.a>
                 </motion.div>
               </motion.div>
 
               {/* タブコンテンツ */}
               <Tabs defaultValue="about" className="w-full">
-                <TabsList className="grid grid-cols-3 mb-8">
+                <TabsList className="grid grid-cols-2 mb-8">
                   <TabsTrigger
                     value="about"
-                    className="data-[state=active]:bg-purple-600 hover:bg-purple-500/20 transition-colors duration-200 relative overflow-hidden group"
+                    className="text-white data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=active]:bg-gradient-to-r data-[state=active]:from-white/80 data-[state=active]:to-white/40 hover:bg-blue-500/10 transition-colors duration-200 relative overflow-hidden group"
                     onClick={(e) => {
                       const rect = e.currentTarget.getBoundingClientRect()
                       const x = e.clientX - rect.left
@@ -477,7 +483,7 @@ export default function Home() {
                       ripple.style.width = "5px"
                       ripple.style.height = "5px"
                       ripple.style.borderRadius = "50%"
-                      ripple.style.backgroundColor = "rgba(168, 85, 247, 0.4)"
+                      ripple.style.backgroundColor = "rgba(59, 130, 246, 0.4)"
                       ripple.style.transform = "scale(0)"
                       ripple.style.left = `${x}px`
                       ripple.style.top = `${y}px`
@@ -495,7 +501,7 @@ export default function Home() {
                   </TabsTrigger>
                   <TabsTrigger
                     value="skills"
-                    className="data-[state=active]:bg-purple-600 hover:bg-purple-500/20 transition-colors duration-200 relative overflow-hidden group"
+                    className="text-white data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=active]:bg-gradient-to-r data-[state=active]:from-white/80 data-[state=active]:to-white/40 hover:bg-blue-500/10 transition-colors duration-200 relative overflow-hidden group"
                     onClick={(e) => {
                       const rect = e.currentTarget.getBoundingClientRect()
                       const x = e.clientX - rect.left
@@ -506,7 +512,7 @@ export default function Home() {
                       ripple.style.width = "5px"
                       ripple.style.height = "5px"
                       ripple.style.borderRadius = "50%"
-                      ripple.style.backgroundColor = "rgba(168, 85, 247, 0.4)"
+                      ripple.style.backgroundColor = "rgba(59, 130, 246, 0.4)"
                       ripple.style.transform = "scale(0)"
                       ripple.style.left = `${x}px`
                       ripple.style.top = `${y}px`
@@ -551,48 +557,19 @@ export default function Home() {
                     <Trophy className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
                     <span className="group-hover:translate-x-0.5 transition-transform duration-200">Achieve</span>
                   </TabsTrigger> */}
-                  <TabsTrigger
-                    value="vrchat"
-                    className="data-[state=active]:bg-purple-600 hover:bg-purple-500/20 transition-colors duration-200 relative overflow-hidden group"
-                    onClick={(e) => {
-                      const rect = e.currentTarget.getBoundingClientRect()
-                      const x = e.clientX - rect.left
-                      const y = e.clientY - rect.top
-
-                      const ripple = document.createElement("span")
-                      ripple.style.position = "absolute"
-                      ripple.style.width = "5px"
-                      ripple.style.height = "5px"
-                      ripple.style.borderRadius = "50%"
-                      ripple.style.backgroundColor = "rgba(168, 85, 247, 0.4)"
-                      ripple.style.transform = "scale(0)"
-                      ripple.style.left = `${x}px`
-                      ripple.style.top = `${y}px`
-                      ripple.style.animation = "ripple 0.6s linear"
-
-                      e.currentTarget.appendChild(ripple)
-
-                      setTimeout(() => {
-                        ripple.remove()
-                      }, 600)
-                    }}
-                  >
-                    <ImageIcon className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
-                    <span className="group-hover:translate-x-0.5 transition-transform duration-200">VRChat</span>
-                  </TabsTrigger>
                 </TabsList>
 
                 {/* About Me */}
                 <TabsContent value="about">
                   <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
                     <motion.div variants={item}>
-                      <Card className="bg-gray-800 border-gray-700">
+                      <Card className="bg-transparent border-transparent">
                         <CardContent className="p-6">
-                          <h3 className="text-xl font-bold mb-4 text-purple-400">💻 About Me</h3>
-                          <p className="mb-4 text-gray-300">
+                          <h3 className="text-xl font-bold mb-4 text-blue-400">💻 About Me</h3>
+                          <p className="mb-4 text-white">
                             <span className="font-bold">🎓CS Japanese Student | Junior Infra & Full Stack Web Engineer</span>
                           </p>
-                          <p className="mb-4 text-gray-300">
+                          <p className="mb-4 text-white">
                             2008年大阪生まれ。現在はWeb開発を中心に学習しており、バックエンドとフロントエンドの両方を扱えるフルスタックウェブエンジニアです！将来的には、KubernetesやAzure、AWSなどの技術の習得を目指しています！
                           <br />
                           <span className="block text-sm italic text-gray-400 translate-x-1 mt-1">
@@ -603,7 +580,7 @@ export default function Home() {
                             {/* 年齢 */}
                             <motion.div
                               whileHover={{ scale: 1.03 }}
-                              className="bg-gradient-to-br from-purple-900/40 to-pink-900/40 p-4 rounded-lg border border-purple-500/30 backdrop-blur-sm"
+                              className="bg-transparent border-transparent p-4 rounded-lg text-white"
                             >
                               <div className="flex items-center mb-2">
                                 <Cake className="w-5 h-5 text-purple-400 mr-2" />
@@ -619,7 +596,7 @@ export default function Home() {
                             {/* 誕生日 */}
                             <motion.div
                               whileHover={{ scale: 1.03 }}
-                              className="bg-gradient-to-br from-purple-900/40 to-pink-900/40 p-4 rounded-lg border border-purple-500/30 backdrop-blur-sm"
+                              className="bg-transparent border-transparent p-4 rounded-lg text-white"
                             >
                               <div className="flex items-center mb-2">
                                 <Gift className="w-5 h-5 text-purple-400 mr-2" />
@@ -709,9 +686,11 @@ export default function Home() {
                 <TabsContent value="skills">
                   <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
                     <motion.div variants={item}>
-                      <Card className="bg-gray-800 border-gray-700">
+                      <Card className="bg-transparent border-transparent">
                         <CardContent className="p-6">
-                          <h3 className="text-xl font-bold mb-4 text-purple-400">🛠 Tech Stack</h3>
+                          <h3 className="text-xl font-bold mb-4">
+                            <span>🛠️</span> <span className="text-blue-400">Tech Stack</span>
+                          </h3>
                           <div className="flex flex-wrap gap-2">
                             {techStack.map((tech, index) => (
                               <motion.div
@@ -733,13 +712,13 @@ export default function Home() {
                       </Card>
                     </motion.div>
                     <motion.div variants={item}>
-                      <Card className="bg-gray-800 border-gray-700">
+                      <Card className="bg-transparent border-transparent">
                         <CardContent className="p-6">
-                          <h3 className="text-xl font-bold mb-4 text-purple-400">🌱 Learning & Planned Skills</h3>
+                          <h3 className="text-xl font-bold mb-4 text-blue-400">🌱 Learning & Planned Skills</h3>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {/* 学習中のスキル */}
                             <div>
-                              <h4 className="text-lg font-medium text-purple-300 mb-3 flex items-center">
+                              <h4 className="text-lg font-medium text-white mb-3 flex items-center">
                                 <BookOpen className="w-4 h-4 mr-2" /> Currently Learning
                               </h4>
                               <ul className="space-y-2">
@@ -759,7 +738,7 @@ export default function Home() {
                             </div>
                             {/* 学習予定のスキル */}
                             <div>
-                              <h4 className="text-lg font-medium text-purple-300 mb-3 flex items-center">
+                              <h4 className="text-lg font-medium text-white mb-3 flex items-center">
                                 <Clock className="w-4 h-4 mr-2" /> Planning to Learn
                               </h4>
                               <ul className="space-y-2">
@@ -844,23 +823,6 @@ export default function Home() {
                     </motion.div>
                   </motion.div>
                 </TabsContent> */}
-                {/* VRChat Photos */}
-                <TabsContent value="vrchat">
-                  <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
-                    <motion.div variants={item}>
-                      <Card className="bg-gray-800 border-gray-700">
-                        <CardContent className="p-6">
-                          <h3 className="text-xl font-bold mb-4 text-purple-400">📸 VRChat Photos</h3>
-                          <p className="text-gray-300 mb-6">
-                            ぼくのお気に入りのぶいちゃの写真たち！！ <br />
-                            ※ここは趣味のことなので日本語で書いてます！
-                          </p>
-                          <VRChatGallery />
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  </motion.div>
-                </TabsContent>
               </Tabs>
               {/* フッター */}
               <motion.footer
@@ -875,7 +837,7 @@ export default function Home() {
                     href="https://x.com/Tako_0522"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center text-purple-400 hover:text-purple-300 transition-colors"
+                    className="inline-flex items-center text-[#99C3FF] hover:underline hover:decoration-[#99C3FF] hover:decoration-2 transition-colors"
                   >
                     <svg 
                       className="w-4 h-4 mr-1" 

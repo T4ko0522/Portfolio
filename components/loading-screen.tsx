@@ -1,201 +1,115 @@
-"use client"
+import React, { useEffect, useState } from "react";
+import styled from "styled-components";
 
-import { useState, useEffect, useCallback } from "react"
-import { motion } from "framer-motion"
-import Particles from "react-tsparticles"
-import { loadFull } from "tsparticles"
+type LoaderProps = {
+  onLoadingComplete?: () => void;
+};
 
-interface LoadingScreenProps {
-  onLoadingComplete: () => void
-}
+const Loader: React.FC<LoaderProps> = ({ onLoadingComplete }) => {
+  const [text, setText] = useState("");
 
-export default function LoadingScreen({ onLoadingComplete }: LoadingScreenProps) {
-  const particlesInit = useCallback(async (engine: any) => {
-    await loadFull(engine)
-  }, [])
-  const [progress, setProgress] = useState(10) // 初期値を10%に設定
-  const [loadingText, setLoadingText] = useState("Initializing...")
-  const [startTime, setStartTime] = useState(0)
-  const [isExiting, setIsExiting] = useState(false)
-
-  // ロード画面の開始時間を記録
   useEffect(() => {
-    setStartTime(Date.now())
-  }, [])
+    let cancelled = false;
+    const timers: ReturnType<typeof setTimeout>[] = [];
 
-  // プログレスバーのアニメーション - 4秒かけて進行
-  useEffect(() => {
-    if (isExiting) return // 終了中は進行を停止
+    const delay = (ms: number) =>
+      new Promise<void>((resolve) => {
+        const t = setTimeout(() => !cancelled && resolve(), ms);
+        timers.push(t);
+      });
 
-    const interval = setInterval(() => {
-      const elapsedTime = Date.now() - startTime
-
-      // 4000ms（4秒）で100%になるように調整
-      if (elapsedTime < 4000) {
-        // 経過時間に基づいて進行状況を計算（10%から始めて100%まで）
-        const newProgress = 10 + Math.min(90, (elapsedTime / 4000) * 90)
-        setProgress(Math.round(newProgress))
-      } else {
-        // 4秒経過したら100%にして完了
-        setProgress(100)
-        clearInterval(interval)
-        handleComplete()
+    // 1文字ずつタイプ
+    const typeText = async (target: string, speed = 90) => {
+      setText("");
+      for (let i = 0; i < target.length && !cancelled; i++) {
+        setText((prev) => prev + target[i]);
+        await delay(speed);
       }
-    }, 50) // 更新頻度は50msごと
+    };
 
-    // クリーンアップ関数でインターバルをクリア
-    return () => clearInterval(interval)
-  }, [startTime, isExiting])
+    const run = async () => {
+      // 1回目 Loading...
+      await typeText("Loading...", 500);
+      await delay(300);
 
-  // ローディングテキストのアニメーション - テキスト変更の間隔を長く
-  useEffect(() => {
-    if (isExiting) return // 終了中はテキスト変更を停止
+      // Complete をタイプ表示
+      await typeText("Complete!", 100);
 
-    const texts = ["Initializing...", "Loading assets...", "Almost there..."]
+      // 1秒表示して終了
+      await delay(1000);
+      if (!cancelled) onLoadingComplete?.();
+    };
 
-    let currentIndex = 0
-    const interval = setInterval(() => {
-      currentIndex = (currentIndex + 1) % texts.length
-      setLoadingText(texts[currentIndex])
-    }, 1000) // テキスト変更を1秒ごとに
+    run();
 
-    return () => clearInterval(interval)
-  }, [isExiting])
-
-  // 完了処理を一元化
-  const handleComplete = () => {
-    if (isExiting) return // 既に終了処理中なら何もしない
-
-    setIsExiting(true)
-
-    // 少し遅延を入れて、アニメーションが完了するのを待つ
-    setTimeout(() => {
-      onLoadingComplete()
-    }, 300)
-  }
-
-  // スキップボタンを追加
-  const handleSkip = () => {
-    setProgress(100)
-    handleComplete()
-  }
+    return () => {
+      cancelled = true;
+      timers.forEach(clearTimeout);
+    };
+  }, [onLoadingComplete]);
 
   return (
-    <motion.div
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0, transition: { duration: 0.3 } }}
-      onAnimationComplete={(definition) => {
-        if (definition === "exit" && isExiting) {
-          onLoadingComplete()
-        }
-      }}
-    >
-      {/* パーティクル背景 */}
-      <Particles
-        id="tsparticles"
-        init={particlesInit}
-        options={{
-          fullScreen: { enable: false },
-          background: { color: "black" },
-          particles: {
-            number: { value: 50, density: { enable: true, value_area: 800 } },
-            color: { value: "#a855f7" },
-            shape: { type: "circle" },
-            opacity: { value: 0.3 },
-            size: { value: 3, random: true },
-            move: {
-              enable: true,
-              speed: 1,
-              direction: "none",
-              out_mode: "out"
-            }
-          },
-          interactivity: {
-            events: { onHover: { enable: true, mode: "repulse" } }
-          }
-        }}
-        className="absolute inset-0 -z-10"
-      />
-
-      {/* ロゴ */}
-      <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="mb-8 px-4 text-center w-full"
-      >
-        <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
-          Welcome to My Portfolio...
+    <StyledWrapper>
+      <div className="terminal-loader">
+        <div className="terminal-header">
+          <div className="terminal-title">Ubuntu 24.04.2 LTS</div>
+          <div className="terminal-controls">
+            <div className="control close" />
+            <div className="control minimize" />
+            <div className="control maximize" />
+          </div>
         </div>
-      </motion.div>
-
-      {/* ローディングアニメーション */}
-      <div className="relative mb-8">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-          className="w-16 h-16 rounded-full border-4 border-transparent border-t-purple-500 border-r-purple-500"
-        />
-        <motion.div
-          animate={{ rotate: -180 }}
-          transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-          className="absolute inset-0 w-16 h-16 rounded-full border-4 border-transparent border-b-pink-500 border-l-pink-500 opacity-70"
-        />
+        <div className="text">{text}</div>
       </div>
+    </StyledWrapper>
+  );
+};
 
-      {/* ローディングテキスト */}
-      <motion.div
-        key={loadingText}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -10 }}
-        transition={{ duration: 0.3 }}
-        className="text-purple-300 mb-6 h-6 text-center"
-      >
-        {loadingText}
-      </motion.div>
+const StyledWrapper = styled.div`
+  @keyframes blinkCursor {
+    50% { border-right-color: transparent; }
+  }
 
-      {/* プログレスバー */}
-      <div className="w-64 md:w-80 bg-gray-800 rounded-full h-2.5 mb-2 overflow-hidden">
-        <motion.div
-          className="h-full bg-gradient-to-r from-purple-500 to-pink-500"
-          initial={{ width: "10%" }}
-          animate={{ width: `${progress}%` }}
-          transition={{ duration: 0.3 }}
-        />
-      </div>
-      <div className="text-gray-400 text-sm">{progress}%</div>
+  .terminal-loader {
+    border: 0.1em solid #333;
+    background-color: #1a1a1a;
+    color: #0f0;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 1.6em;
+    padding: 2.5em 2em;
+    width: 22em;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
 
-      {/* ヒント */}
-      {/* <motion.div */}
-      {/* //   initial={{ opacity: 0 }}
-      //   animate={{ opacity: 1 }}
-      //   transition={{ delay: 1, duration: 1 }}
-      //   className="absolute bottom-20 left-0 right-0 text-center text-gray-500 text-xs px-4"
-      // >
-      //   <p className="mb-1">
-      //     HINT! : This loading screen is for coolness and doesn't mean much (lol).
-      //     <br />
-      //     If you want to skip it, just click the button below.
-      //   </p> */}
-      {/* </motion.div> */}
+  .terminal-header {
+    position: absolute; top: 0; left: 0; right: 0; height: 1.5em;
+    background-color: #333;
+    border-top-left-radius: 4px; border-top-right-radius: 4px;
+    padding: 0 0.4em; box-sizing: border-box;
+  }
 
-      {/* スキップボタン */}
-      {/* <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5, duration: 0.5 }}
-        className="absolute bottom-8 left-0 right-0 text-center px-4"
-      > */}
-        {/* <button
-          onClick={handleSkip}
-          className="px-4 py-1 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors text-sm"
-        >
-          Skip Loading
-        </button> */}
-      {/* </motion.div> */}
-    </motion.div>
-  )
-}
+  .terminal-controls { float: right; }
+  .control {
+    display: inline-block; width: 0.6em; height: 0.6em;
+    margin-left: 0.4em; border-radius: 50%; background-color: #777;
+  }
+  .control.close { background-color: #e33; }
+  .control.minimize { background-color: #ee0; }
+  .control.maximize { background-color: #0b0; }
+  .terminal-title { float: left; line-height: 1.5em; color: #eee; }
+
+  .text {
+    display: inline-block;
+    white-space: nowrap;
+    overflow: hidden;
+    border-right: 0.2em solid green; /* カーソル */
+    animation: blinkCursor 0.5s step-end infinite alternate;
+    margin-top: 1.5em;
+  }
+`;
+
+export default Loader;
