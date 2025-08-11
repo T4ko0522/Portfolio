@@ -74,16 +74,16 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #1a1a1a;
+  background: #fff;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #9333ea;
+  background: #ccc;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a855f7;
+  background: #bbb;
 }
 
 /* グラデーションテキスト */

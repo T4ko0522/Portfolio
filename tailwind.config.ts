@@ -18,7 +18,10 @@ const config = {
   			'2xl': '1400px'
   		}
   	},
-  	extend: {
+		 screens: {
+			 'xl2': '1500px',
+		 },
+		 extend: {
   		colors: {
   			border: 'hsl(var(--border))',
   			input: 'hsl(var(--input))',
