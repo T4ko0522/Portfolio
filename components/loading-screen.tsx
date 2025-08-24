@@ -78,11 +78,27 @@ const StyledWrapper = styled.div`
     font-size: 1.6em;
     padding: 2.5em 2em;
     width: 22em;
+    max-width: 90vw;
     box-shadow: 0 4px 16px rgba(0,0,0,0.25);
     border-radius: 8px;
     position: relative;
     overflow: hidden;
     box-sizing: border-box;
+    transition: width 0.2s, font-size 0.2s, padding 0.2s;
+  }
+
+  @media (max-width: 600px) {
+    .terminal-loader {
+      font-size: 1em;
+      padding: 1.2em 0.5em;
+      width: 95vw;
+    }
+    .terminal-header {
+      font-size: 0.9em;
+    }
+    .text {
+      font-size: 1em;
+    }
   }
 
   .terminal-header {
