@@ -222,20 +222,20 @@ export default function Home() {
   ]
 
   // 配列をシャッフルする関数
-  const shuffleArray = (array: string[]) => {
-    // 最初の要素を保持し、残りをシャッフル
-    const firstElement = array[0]
-    const restElements = array.slice(1)
+  // const shuffleArray = (array: string[]) => {
+  //   // 最初の要素を保持し、残りをシャッフル
+  //   const firstElement = array[0]
+  //   const restElements = array.slice(1)
 
-    // Fisher-Yates
-    for (let i = restElements.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1))
-      ;[restElements[i], restElements[j]] = [restElements[j], restElements[i]]
-    }
+  //   // Fisher-Yates
+  //   for (let i = restElements.length - 1; i > 0; i--) {
+  //     const j = Math.floor(Math.random() * (i + 1))
+  //     ;[restElements[i], restElements[j]] = [restElements[j], restElements[i]]
+  //   }
 
-    // 最初の要素を先頭に戻し、シャッフルされた残りの要素と結合
-    return [firstElement, ...restElements]
-  }
+  //   // 最初の要素を先頭に戻し、シャッフルされた残りの要素と結合
+  //   return [firstElement, ...restElements]
+  // }
 
   return (
     <>
@@ -245,52 +245,37 @@ export default function Home() {
           as="image"
           href="/images/icon.png"
         />
+        <link
+          rel="preload"
+          as="image"
+          href="/images/background.png"
+        />
       </Head>
       <AnimatePresence mode="wait">
         {isLoading ? (
           <>
             {/* 背景 */}
-            <div
-              className="fixed inset-0 bg-cover bg-center"
-              style={{
-                backgroundImage: "url('/images/background.png')",
-                transform: "scale(1.05)",
-                zIndex: -2,
-              }}
-            />
-
-            {/* サイバーパンク・ノイズ＆スキャンライン */}
-            <div
-              className="fixed inset-0 pointer-events-none z-[9998]"
-              style={{
-                backgroundImage:
-                  "repeating-linear-gradient(135deg, rgba(0,255,255,0.08) 0 2px, transparent 2px 8px), repeating-linear-gradient(45deg, rgba(255,0,255,0.08) 0 1px, transparent 1px 6px), url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.22'/></svg>\")",
-                backgroundBlendMode: 'screen',
-                mixBlendMode: 'screen',
-                opacity: 0.75,
-                animation: "noiseShift 6s linear infinite",
-              }}
-            />
             <video
-              className="fixed inset-0 w-full h-full object-cover pointer-events-none"
+              className="fixed inset-0 w-full h-full pointer-events-none"
               style={{
                 zIndex: -1,
-                mixBlendMode: "screen", // "lighten" や "overlay" も試せます
+                mixBlendMode: "screen",
                 opacity: 0.4,
+                objectFit: "cover",
               }}
-              src="/videos/noise.mp4" // public/videos/noise.mp4 に置く
+              src="/videos/noise.mp4"
               autoPlay
               loop
               muted
               playsInline
-              preload="metadata"
+              preload="auto"
             />
             {/* ローディングUI */}
             <div className="fixed inset-0 flex items-center justify-center z-[9999] bg-transparent">
               <LoadingScreen key="loading" onLoadingComplete={handleLoadingComplete} />
             </div>
 
-            {/* アニメーション（グローバルでOK） */}
+            {/* アニメーション */}
             <style jsx global>{`
               @keyframes noiseShift {
                 0%   { filter: hue-rotate(0deg) }
@@ -311,7 +296,6 @@ export default function Home() {
               className="fixed inset-0 bg-cover bg-center"
               style={{
                 backgroundImage: "url('/images/background.png')",
-                // filter: "blur(8px) brightness(0.5)",
                 transform: "scale(1.05)",
                 zIndex: -2,
             }}
@@ -351,7 +335,16 @@ export default function Home() {
                     className="w-32 h-32 rounded-full overflow-hidden relative z-40"
                   >
                     <div className="relative w-full h-full">
-                      <Image src="/images/icon.png" alt="Tako" fill sizes="128px" className="object-cover" priority />
+                      <Image
+                        src="/images/icon.png"
+                        alt="Tako"
+                        fill
+                        sizes="(max-width: 600px) 64px, 128px"
+                        className="object-cover"
+                        priority
+                        placeholder="blur"
+                        blurDataURL="/images/icon.png"
+                      />
                     </div>
                   </motion.div>
                 </div>
