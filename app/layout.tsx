@@ -7,7 +7,7 @@ import { ThemeProvider } from "../components/theme-provider"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Tako's Portfolio",
+  title: "T4ko0522 | Portfolio",
   description:
     "Portfolio of Tako, a Japanese student and junior full stack engineer passionate about coding and gaming.",
   metadataBase: new URL("https://t4ko.vercel.app"),
