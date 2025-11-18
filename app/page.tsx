@@ -435,7 +435,7 @@ export default function Home() {
                   </motion.a>
                   
                   <motion.a
-                    href="https://x.com/Tako_0522"
+                    href="https://x.com/T4ko0522"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="relative p-3 rounded-full bg-transparent transition-all duration-300 group"
@@ -827,7 +827,7 @@ export default function Home() {
                 <p>© {new Date().getFullYear()} Tako. All rights reserved.</p>
                 <p className="mt-2">
                   <a
-                    href="https://x.com/Tako_0522"
+                    href="https://x.com/T4ko0522"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center text-[#99C3FF] hover:underline hover:decoration-[#99C3FF] hover:decoration-2 transition-colors"
@@ -839,7 +839,7 @@ export default function Home() {
                     >
                       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                     </svg>
-                    @Tako_0522
+                    @T4ko0522
                     <ExternalLink className="w-3 h-3 ml-1" />
                   </a>
                 </p>
