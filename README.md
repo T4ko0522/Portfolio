@@ -12,16 +12,16 @@
 | UI／スタイリング  | Tailwind CSS, shadcn/ui, Radix UI     |
 | Lint／Format      | ESLint, Prettier                      |
 | ホスティング      | Vercel                                |
-| パッケージ管理    | npm                                  |
+| パッケージ管理    | pnpm                                  |
 
 # 🚀 クイックスタート
 ```bash
 git clone clone https://github.com/T4ko0522/Portfolio.git
 cd portfolio
 
-npm install
+pnpm install
 
-npm run dev
+pnpm run dev
 ```
   
 [localhost:3000](http://localhost:3000)を開いて結果を確認。  
