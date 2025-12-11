@@ -12,6 +12,7 @@ import {
   Calendar,
   Gift,
   Cake,
+  Briefcase,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
@@ -115,78 +116,36 @@ export default function Home() {
   }
 
   const techStack = [
-    {
-      name: "JavaScript",
-      color: "bg-yellow-500",
-      textColor: "text-black",
-      icon: <svg xmlns="http://www.w3.org/2000/svg" role="img" className="w-4 h-4 mr-2 text-cyan-400" viewBox="0 0 24 24"><title>JavaScript</title><path d="M0 0h24v24H0V0zm22.034 18.276c-.175-1.095-.888-2.015-3.003-2.873-.736-.345-1.554-.585-1.797-1.14-.091-.33-.105-.51-.046-.705.15-.646.915-.84 1.515-.66.39.12.75.42.976.9 1.034-.676 1.034-.676 1.755-1.125-.27-.42-.404-.601-.586-.78-.63-.705-1.469-1.065-2.834-1.034l-.705.089c-.676.165-1.32.525-1.71 1.005-1.14 1.291-.811 3.541.569 4.471 1.365 1.02 3.361 1.244 3.616 2.205.24 1.17-.87 1.545-1.966 1.41-.811-.18-1.26-.586-1.755-1.336l-1.83 1.051c.21.48.45.689.81 1.109 1.74 1.756 6.09 1.666 6.871-1.004.029-.09.24-.705.074-1.65l.046.067zm-8.983-7.245h-2.248c0 1.938-.009 3.864-.009 5.805 0 1.232.063 2.363-.138 2.711-.33.689-1.18.601-1.566.48-.396-.196-.597-.466-.83-.855-.063-.105-.11-.196-.127-.196l-1.825 1.125c.305.63.75 1.172 1.324 1.517.855.51 2.004.675 3.207.405.783-.226 1.458-.691 1.811-1.411.51-.93.402-2.07.397-3.346.012-2.054 0-4.109 0-6.179l.004-.056z"/></svg>
-    },
-    {
-      name: "TypeScript",
-      color: "bg-blue-600",
-      textColor: "text-white",
-      icon: <svg xmlns="http://www.w3.org/2000/svg" role="img" className="w-4 h-4 mr-2 text-cyan-400" fill="#FFFFFF" viewBox="0 0 24 24"><title>TypeScript</title><path d="M1.125 0C.502 0 0 .502 0 1.125v21.75C0 23.498.502 24 1.125 24h21.75c.623 0 1.125-.502 1.125-1.125V1.125C24 .502 23.498 0 22.875 0zm17.363 9.75c.612 0 1.154.037 1.627.111a6.38 6.38 0 0 1 1.306.34v2.458a3.95 3.95 0 0 0-.643-.361 5.093 5.093 0 0 0-.717-.26 5.453 5.453 0 0 0-1.426-.2c-.3 0-.573.028-.819.086a2.1 2.1 0 0 0-.623.242c-.17.104-.3.229-.393.374a.888.888 0 0 0-.14.49c0 .196.053.373.156.529.104.156.252.304.443.444s.423.276.696.41c.273.135.582.274.926.416.47.197.892.407 1.266.628.374.222.695.473.963.753.268.279.472.598.614.957.142.359.214.776.214 1.253 0 .657-.125 1.21-.373 1.656a3.033 3.033 0 0 1-1.012 1.085 4.38 4.38 0 0 1-1.487.596c-.566.12-1.163.18-1.79.18a9.916 9.916 0 0 1-1.84-.164 5.544 5.544 0 0 1-1.512-.493v-2.63a5.033 5.033 0 0 0 3.237 1.2c.333 0 .624-.03.872-.09.249-.06.456-.144.623-.25.166-.108.29-.234.373-.38a1.023 1.023 0 0 0-.074-1.089 2.12 2.12 0 0 0-.537-.5 5.597 5.597 0 0 0-.807-.444 27.72 27.72 0 0 0-1.007-.436c-.918-.383-1.602-.852-2.053-1.405-.45-.553-.676-1.222-.676-2.005 0-.614.123-1.141.369-1.582.246-.441.58-.804 1.004-1.089a4.494 4.494 0 0 1 1.47-.629 7.536 7.536 0 0 1 1.77-.201zm-15.113.188h9.563v2.166H9.506v9.646H6.789v-9.646H3.375z"/></svg>
-    },
-    {
-      name: "Python",
-      color: "bg-yellow-400",
-      textColor: "text-black",
-      icon: <svg xmlns="http://www.w3.org/2000/svg" role="img" className="w-4 h-4 mr-2 text-cyan-400" viewBox="0 0 24 24"><title>Python</title><path d="M14.25.18l.9.2.73.26.59.3.45.32.34.34.25.34.16.33.1.3.04.26.02.2-.01.13V8.5l-.05.63-.13.55-.21.46-.26.38-.3.31-.33.25-.35.19-.35.14-.33.1-.3.07-.26.04-.21.02H8.77l-.69.05-.59.14-.5.22-.41.27-.33.32-.27.35-.2.36-.15.37-.1.35-.07.32-.04.27-.02.21v3.06H3.17l-.21-.03-.28-.07-.32-.12-.35-.18-.36-.26-.36-.36-.35-.46-.32-.59-.28-.73-.21-.88-.14-1.05-.05-1.23.06-1.22.16-1.04.24-.87.32-.71.36-.57.4-.44.42-.33.42-.24.4-.16.36-.1.32-.05.24-.01h.16l.06.01h8.16v-.83H6.18l-.01-2.75-.02-.37.05-.34.11-.31.17-.28.25-.26.31-.23.38-.2.44-.18.51-.15.58-.12.64-.1.71-.06.77-.04.84-.02 1.27.05zm-6.3 1.98l-.23.33-.08.41.08.41.23.34.33.22.41.09.41-.09.33-.22.23-.34.08-.41-.08-.41-.23-.33-.33-.22-.41-.09-.41.09zm13.09 3.95l.28.06.32.12.35.18.36.27.36.35.35.47.32.59.28.73.21.88.14 1.04.05 1.23-.06 1.23-.16 1.04-.24.86-.32.71-.36.57-.4.45-.42.33-.42.24-.4.16-.36.09-.32.05-.24.02-.16-.01h-8.22v.82h5.84l.01 2.76.02.36-.05.34-.11.31-.17.29-.25.25-.31.24-.38.2-.44.17-.51.15-.58.13-.64.09-.71.07-.77.04-.84.01-1.27-.04-1.07-.14-.9-.2-.73-.25-.59-.3-.45-.33-.34-.34-.25-.34-.16-.33-.1-.3-.04-.25-.02-.2.01-.13v-5.34l.05-.64.13-.54.21-.46.26-.38.3-.32.33-.24.35-.2.35-.14.33-.1.3-.06.26-.04.21-.02.13-.01h5.84l.69-.05.59-.14.5-.21.41-.28.33-.32.27-.35.2-.36.15-.36.1-.35.07-.32.04-.28.02-.21V6.07h2.09l.14.01zm-6.47 14.25l-.23.33-.08.41.08.41.23.33.33.23.41.08.41-.08.33-.23.23-.33.08-.41-.08-.41-.23-.33-.33-.23-.41-.08-.41.08z"/></svg>
-    },
-    {
-      name: "React",
-      color: "bg-cyan-400",
-      textColor: "text-black",
-      icon: <svg xmlns="http://www.w3.org/2000/svg" role="img" className="w-4 h-4 mr-2 text-cyan-400" viewBox="0 0 24 24"><title>React</title><path d="M14.23 12.004a2.236 2.236 0 0 1-2.235 2.236 2.236 2.236 0 0 1-2.236-2.236 2.236 2.236 0 0 1 2.235-2.236 2.236 2.236 0 0 1 2.236 2.236zm2.648-10.69c-1.346 0-3.107.96-4.888 2.622-1.78-1.653-3.542-2.602-4.887-2.602-.41 0-.783.093-1.106.278-1.375.793-1.683 3.264-.973 6.365C1.98 8.917 0 10.42 0 12.004c0 1.59 1.99 3.097 5.043 4.03-.704 3.113-.39 5.588.988 6.38.32.187.69.275 1.102.275 1.345 0 3.107-.96 4.888-2.624 1.78 1.654 3.542 2.603 4.887 2.603.41 0 .783-.09 1.106-.275 1.374-.792 1.683-3.263.973-6.365C22.02 15.096 24 13.59 24 12.004c0-1.59-1.99-3.097-5.043-4.032.704-3.11.39-5.587-.988-6.38-.318-.184-.688-.277-1.092-.278zm-.005 1.09v.006c.225 0 .406.044.558.127.666.382.955 1.835.73 3.704-.054.46-.142.945-.25 1.44-.96-.236-2.006-.417-3.107-.534-.66-.905-1.345-1.727-2.035-2.447 1.592-1.48 3.087-2.292 4.105-2.295zm-9.77.02c1.012 0 2.514.808 4.11 2.28-.686.72-1.37 1.537-2.02 2.442-1.107.117-2.154.298-3.113.538-.112-.49-.195-.964-.254-1.42-.23-1.868.054-3.32.714-3.707.19-.09.4-.127.563-.132zm4.882 3.05c.455.468.91.992 1.36 1.564-.44-.02-.89-.034-1.345-.034-.46 0-.915.01-1.36.034.44-.572.895-1.096 1.345-1.565zM12 8.1c.74 0 1.477.034 2.202.093.406.582.802 1.203 1.183 1.86.372.64.71 1.29 1.018 1.946-.308.655-.646 1.31-1.013 1.95-.38.66-.773 1.288-1.18 1.87-.728.063-1.466.098-2.21.098-.74 0-1.477-.035-2.202-.093-.406-.582-.802-1.204-1.183-1.86-.372-.64-.71-1.29-1.018-1.946.303-.657.646-1.313 1.013-1.954.38-.66.773-1.286 1.18-1.868.728-.064 1.466-.098 2.21-.098zm-3.635.254c-.24.377-.48.763-.704 1.16-.225.39-.435.782-.635 1.174-.265-.656-.49-1.31-.676-1.947.64-.15 1.315-.283 2.015-.386zm7.26 0c.695.103 1.365.23 2.006.387-.18.632-.405 1.282-.66 1.933-.2-.39-.41-.783-.64-1.174-.225-.392-.465-.774-.705-1.146zm3.063.675c.484.15.944.317 1.375.498 1.732.74 2.852 1.708 2.852 2.476-.005.768-1.125 1.74-2.857 2.475-.42.18-.88.342-1.355.493-.28-.958-.646-1.956-1.1-2.98.45-1.017.81-2.01 1.085-2.964zm-13.395.004c.278.96.645 1.957 1.1 2.98-.45 1.017-.812 2.01-1.086 2.964-.484-.15-.944-.318-1.37-.5-1.732-.737-2.852-1.706-2.852-2.474 0-.768 1.12-1.742 2.852-2.476.42-.18.88-.342 1.356-.494zm11.678 4.28c.265.657.49 1.312.676 1.948-.64.157-1.316.29-2.016.39.24-.375.48-.762.705-1.158.225-.39.435-.788.636-1.18zm-9.945.02c.2.392.41.783.64 1.175.23.39.465.772.705 1.143-.695-.102-1.365-.23-2.006-.386.18-.63.406-1.282.66-1.933zM17.92 16.32c.112.493.2.968.254 1.423.23 1.868-.054 3.32-.714 3.708-.147.09-.338.128-.563.128-1.012 0-2.514-.807-4.11-2.28.686-.72 1.37-1.536 2.02-2.44 1.107-.118 2.154-.3 3.113-.54zm-11.83.01c.96.234 2.006.415 3.107.532.66.905 1.345 1.727 2.035 2.446-1.595 1.483-3.092 2.295-4.11 2.295-.22-.005-.406-.05-.553-.132-.666-.38-.955-1.834-.73-3.703.054-.46.142-.944.25-1.438zm4.56.64c.44.02.89.034 1.345.034.46 0 .915-.01 1.36-.034-.44.572-.895 1.095-1.345 1.565-.455-.47-.91-.993-1.36-1.565z"/></svg>
-    },
-    {
-      name: "Next.js",
-      color: "bg-black",
-      textColor: "text-white",
-      icon: <svg xmlns="http://www.w3.org/2000/svg" role="img" className="w-4 h-4 mr-2 text-cyan-400" fill="#FFFFFF" viewBox="0 0 24 24"><title>Next.js</title><path d="M18.665 21.978C16.758 23.255 14.465 24 12 24 5.377 24 0 18.623 0 12S5.377 0 12 0s12 5.377 12 12c0 3.583-1.574 6.801-4.067 9.001L9.219 7.2H7.2v9.596h1.615V9.251l9.85 12.727Zm-3.332-8.533 1.6 2.061V7.2h-1.6v6.245Z"/></svg>
-    },
-    {
-      name: "Node.js",
-      color: "bg-green-600",
-      textColor: "text-white",
-      icon: <svg xmlns="http://www.w3.org/2000/svg" role="img" className="w-4 h-4 mr-2 text-cyan-400" fill="#FFFFFF"viewBox="0 0 24 24"><title>Node.js</title><path d="M11.998,24c-0.321,0-0.641-0.084-0.922-0.247l-2.936-1.737c-0.438-0.245-0.224-0.332-0.08-0.383 c0.585-0.203,0.703-0.25,1.328-0.604c0.065-0.037,0.151-0.023,0.218,0.017l2.256,1.339c0.082,0.045,0.197,0.045,0.272,0l8.795-5.076 c0.082-0.047,0.134-0.141,0.134-0.238V6.921c0-0.099-0.053-0.192-0.137-0.242l-8.791-5.072c-0.081-0.047-0.189-0.047-0.271,0 L3.075,6.68C2.99,6.729,2.936,6.825,2.936,6.921v10.15c0,0.097,0.054,0.189,0.139,0.235l2.409,1.392 c1.307,0.654,2.108-0.116,2.108-0.89V7.787c0-0.142,0.114-0.253,0.256-0.253h1.115c0.139,0,0.255,0.112,0.255,0.253v10.021 c0,1.745-0.95,2.745-2.604,2.745c-0.508,0-0.909,0-2.026-0.551L2.28,18.675c-0.57-0.329-0.922-0.945-0.922-1.604V6.921 c0-0.659,0.353-1.275,0.922-1.603l8.795-5.082c0.557-0.315,1.296-0.315,1.848,0l8.794,5.082c0.57,0.329,0.924,0.944,0.924,1.603 v10.15c0,0.659-0.354,1.273-0.924,1.604l-8.794,5.078C12.643,23.916,12.324,24,11.998,24z M19.099,13.993 c0-1.9-1.284-2.406-3.987-2.763c-2.731-0.361-3.009-0.548-3.009-1.187c0-0.528,0.235-1.233,2.258-1.233 c1.807,0,2.473,0.389,2.747,1.607c0.024,0.115,0.129,0.199,0.247,0.199h1.141c0.071,0,0.138-0.031,0.186-0.081 c0.048-0.054,0.074-0.123,0.067-0.196c-0.177-2.098-1.571-3.076-4.388-3.076c-2.508,0-4.004,1.058-4.004,2.833 c0,1.925,1.488,2.457,3.895,2.695c2.88,0.282,3.103,0.703,3.103,1.269c0,0.983-0.789,1.402-2.642,1.402 c-2.327,0-2.839-0.584-3.011-1.742c-0.02-0.124-0.126-0.215-0.253-0.215h-1.137c-0.141,0-0.254,0.112-0.254,0.253 c0,1.482,0.806,3.248,4.655,3.248C17.501,17.007,19.099,15.91,19.099,13.993z"/></svg>
-    },
-    {
-      name: "Google Cloud",
-      color: "bg-blue-500",
-      textColor: "text-white",
-      icon: <svg xmlns="http://www.w3.org/2000/svg" role="img" className="w-4 h-4 mr-2 text-cyan-400" fill="#FFFFFF" viewBox="0 0 24 24"><title>GoogleCloud</title><path d="M12.19 2.38a9.344 9.344 0 0 0-9.234 6.893c.053-.02-.055.013 0 0-3.875 2.551-3.922 8.11-.247 10.941l.006-.007-.007.03a6.717 6.717 0 0 0 4.077 1.356h5.173l.03.03h5.192c6.687.053 9.376-8.605 3.835-12.35a9.365 9.365 0 0 0-2.821-4.552l-.043.043.006-.05A9.344 9.344 0 0 0 12.19 2.38zm-.358 4.146c1.244-.04 2.518.368 3.486 1.15a5.186 5.186 0 0 1 1.862 4.078v.518c3.53-.07 3.53 5.262 0 5.193h-5.193l-.008.009v-.04H6.785a2.59 2.59 0 0 1-1.067-.23h.001a2.597 2.597 0 1 1 3.437-3.437l3.013-3.012A6.747 6.747 0 0 0 8.11 8.24c.018-.01.04-.026.054-.023a5.186 5.186 0 0 1 3.67-1.69z"/></svg>
-    },
-    {
-      name: "Docker",
-      color: "bg-blue-600",
-      textColor: "text-white",
-      icon: <svg xmlns="http://www.w3.org/2000/svg" role="img" className="w-4 h-4 mr-2 text-cyan-400" fill="#FFFFFF" viewBox="0 0 24 24"><title>Docker</title><path d="M13.983 11.078h2.119a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.119a.185.185 0 00-.185.185v1.888c0 .102.083.185.185.185m-2.954-5.43h2.118a.186.186 0 00.186-.186V3.574a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.185m0 2.716h2.118a.187.187 0 00.186-.186V6.29a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.887c0 .102.082.185.185.186m-2.93 0h2.12a.186.186 0 00.184-.186V6.29a.185.185 0 00-.185-.185H8.1a.185.185 0 00-.185.185v1.887c0 .102.083.185.185.186m-2.964 0h2.119a.186.186 0 00.185-.186V6.29a.185.185 0 00-.185-.185H5.136a.186.186 0 00-.186.185v1.887c0 .102.084.185.186.186m5.893 2.715h2.118a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.118a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.185m-2.93 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186h-2.12a.185.185 0 00-.184.185v1.888c0 .102.083.185.185.185m-2.964 0h2.119a.185.185 0 00.185-.185V9.006a.185.185 0 00-.184-.186h-2.12a.186.186 0 00-.186.186v1.887c0 .102.084.185.186.185m-2.92 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186h-2.12a.185.185 0 00-.184.185v1.888c0 .102.082.185.185.185M23.763 9.89c-.065-.051-.672-.51-1.954-.51-.338.001-.676.03-1.01.087-.248-1.7-1.653-2.53-1.716-2.566l-.344-.199-.226.327c-.284.438-.49.922-.612 1.43-.23.97-.09 1.882.403 2.661-.595.332-1.55.413-1.744.42H.751a.751.751 0 00-.75.748 11.376 11.376 0 00.692 4.062c.545 1.428 1.355 2.48 2.41 3.124 1.18.723 3.1 1.137 5.275 1.137.983.003 1.963-.086 2.93-.266a12.248 12.248 0 003.823-1.389c.98-.567 1.86-1.288 2.61-2.136 1.252-1.418 1.998-2.997 2.553-4.4h.221c1.372 0 2.215-.549 2.68-1.009.309-.293.55-.65.707-1.046l.098-.288Z"/></svg>
-    },
-    {
-      name: "Git",
-      color: "bg-orange-600",
-      textColor: "text-white",
-      icon: <svg xmlns="http://www.w3.org/2000/svg" role="img" className="w-4 h-4 mr-2 text-cyan-400" fill="#FFFFFF" viewBox="0 0 24 24"><title>Git</title><path d="M23.546 10.93L13.067.452c-.604-.603-1.582-.603-2.188 0L8.708 2.627l2.76 2.76c.645-.215 1.379-.07 1.889.441.516.515.658 1.258.438 1.9l2.658 2.66c.645-.223 1.387-.078 1.9.435.721.72.721 1.884 0 2.604-.719.719-1.881.719-2.6 0-.539-.541-.674-1.337-.404-1.996L12.86 8.955v6.525c.176.086.342.203.488.348.713.721.713 1.883 0 2.6-.719.721-1.889.721-2.609 0-.719-.719-.719-1.879 0-2.598.182-.18.387-.316.605-.406V8.835c-.217-.091-.424-.222-.6-.401-.545-.545-.676-1.342-.396-2.009L7.636 3.7.45 10.881c-.6.605-.6 1.584 0 2.189l10.48 10.477c.604.604 1.582.604 2.186 0l10.43-10.43c.605-.603.605-1.582 0-2.187"/></svg>
-    },
-    {
-      name: "Vercel",
-      color: "bg-black",
-      textColor: "text-white",
-      icon: <svg xmlns="http://www.w3.org/2000/svg" role="img" className="w-4 h-4 mr-2 text-cyan-400" fill="#FFFFFF"viewBox="0 0 24 24"><title>Vercel</title><path d="m12 1.608 12 20.784H0Z"/></svg>
-    },
-    {
-      name: "PostgreSQL",
-      color: "bg-blue-700",
-      textColor: "text-white",
-      icon: <svg xmlns="http://www.w3.org/2000/svg" role="img" className="w-4 h-4 mr-2 text-cyan-400" fill="#FFFFFF" viewBox="0 0 24 24"><title>PostgreSQL</title><path d="M23.5594 14.7228a.5269.5269 0 0 0-.0563-.1191c-.139-.2632-.4768-.3418-1.0074-.2321-1.6533.3411-2.2935.1312-2.5256-.0191 1.342-2.0482 2.445-4.522 3.0411-6.8297.2714-1.0507.7982-3.5237.1222-4.7316a1.5641 1.5641 0 0 0-.1509-.235C21.6931.9086 19.8007.0248 17.5099.0005c-1.4947-.0158-2.7705.3461-3.1161.4794a9.449 9.449 0 0 0-.5159-.0816 8.044 8.044 0 0 0-1.3114-.1278c-1.1822-.0184-2.2038.2642-3.0498.8406-.8573-.3211-4.7888-1.645-7.2219.0788C.9359 2.1526.3086 3.8733.4302 6.3043c.0409.818.5069 3.334 1.2423 5.7436.4598 1.5065.9387 2.7019 1.4334 3.582.553.9942 1.1259 1.5933 1.7143 1.7895.4474.1491 1.1327.1441 1.8581-.7279.8012-.9635 1.5903-1.8258 1.9446-2.2069.4351.2355.9064.3625 1.39.3772a.0569.0569 0 0 0 .0004.0041 11.0312 11.0312 0 0 0-.2472.3054c-.3389.4302-.4094.5197-1.5002.7443-.3102.064-1.1344.2339-1.1464.8115-.0025.1224.0329.2309.0919.3268.2269.4231.9216.6097 1.015.6331 1.3345.3335 2.5044.092 3.3714-.6787-.017 2.231.0775 4.4174.3454 5.0874.2212.5529.7618 1.9045 2.4692 1.9043.2505 0 .5263-.0291.8296-.0941 1.7819-.3821 2.5557-1.1696 2.855-2.9059.1503-.8707.4016-2.8753.5388-4.1012.0169-.0703.0357-.1207.057-.1362.0007-.0005.0697-.0471.4272.0307a.3673.3673 0 0 0 .0443.0068l.2539.0223.0149.001c.8468.0384 1.9114-.1426 2.5312-.4308.6438-.2988 1.8057-1.0323 1.5951-1.6698zM2.371 11.8765c-.7435-2.4358-1.1779-4.8851-1.2123-5.5719-.1086-2.1714.4171-3.6829 1.5623-4.4927 1.8367-1.2986 4.8398-.5408 6.108-.13-.0032.0032-.0066.0061-.0098.0094-2.0238 2.044-1.9758 5.536-1.9708 5.7495-.0002.0823.0066.1989.0162.3593.0348.5873.0996 1.6804-.0735 2.9184-.1609 1.1504.1937 2.2764.9728 3.0892.0806.0841.1648.1631.2518.2374-.3468.3714-1.1004 1.1926-1.9025 2.1576-.5677.6825-.9597.5517-1.0886.5087-.3919-.1307-.813-.5871-1.2381-1.3223-.4796-.839-.9635-2.0317-1.4155-3.5126zm6.0072 5.0871c-.1711-.0428-.3271-.1132-.4322-.1772.0889-.0394.2374-.0902.4833-.1409 1.2833-.2641 1.4815-.4506 1.9143-1.0002.0992-.126.2116-.2687.3673-.4426a.3549.3549 0 0 0 .0737-.1298c.1708-.1513.2724-.1099.4369-.0417.156.0646.3078.26.3695.4752.0291.1016.0619.2945-.0452.4444-.9043 1.2658-2.2216 1.2494-3.1676 1.0128zm2.094-3.988-.0525.141c-.133.3566-.2567.6881-.3334 1.003-.6674-.0021-1.3168-.2872-1.8105-.8024-.6279-.6551-.9131-1.5664-.7825-2.5004.1828-1.3079.1153-2.4468.079-3.0586-.005-.0857-.0095-.1607-.0122-.2199.2957-.2621 1.6659-.9962 2.6429-.7724.4459.1022.7176.4057.8305.928.5846 2.7038.0774 3.8307-.3302 4.7363-.084.1866-.1633.3629-.2311.5454zm7.3637 4.5725c-.0169.1768-.0358.376-.0618.5959l-.146.4383a.3547.3547 0 0 0-.0182.1077c-.0059.4747-.054.6489-.115.8693-.0634.2292-.1353.4891-.1794 1.0575-.11 1.4143-.8782 2.2267-2.4172 2.5565-1.5155.3251-1.7843-.4968-2.0212-1.2217a6.5824 6.5824 0 0 0-.0769-.2266c-.2154-.5858-.1911-1.4119-.1574-2.5551.0165-.5612-.0249-1.9013-.3302-2.6462.0044-.2932.0106-.5909.019-.8918a.3529.3529 0 0 0-.0153-.1126 1.4927 1.4927 0 0 0-.0439-.208c-.1226-.4283-.4213-.7866-.7797-.9351-.1424-.059-.4038-.1672-.7178-.0869.067-.276.1831-.5875.309-.9249l.0529-.142c.0595-.16.134-.3257.213-.5012.4265-.9476 1.0106-2.2453.3766-5.1772-.2374-1.0981-1.0304-1.6343-2.2324-1.5098-.7207.0746-1.3799.3654-1.7088.5321a5.6716 5.6716 0 0 0-.1958.1041c.0918-1.1064.4386-3.1741 1.7357-4.4823a4.0306 4.0306 0 0 1 .3033-.276.3532.3532 0 0 0 .1447-.0644c.7524-.5706 1.6945-.8506 2.802-.8325.4091.0067.8017.0339 1.1742.081 1.939.3544 3.2439 1.4468 4.0359 2.3827.8143.9623 1.2552 1.9315 1.4312 2.4543-1.3232-.1346-2.2234.1268-2.6797.779-.9926 1.4189.543 4.1729 1.2811 5.4964.1353.2426.2522.4522.2889.5413.2403.5825.5515.9713.7787 1.2552.0696.087.1372.1714.1885.245-.4008.1155-1.1208.3825-1.0552 1.717-.0123.1563-.0423.4469-.0834.8148-.0461.2077-.0702.4603-.0994.7662zm.8905-1.6211c-.0405-.8316.2691-.9185.5967-1.0105a2.8566 2.8566 0 0 0 .135-.0406 1.202 1.202 0 0 0 .1342.103c.5703.3765 1.5823.4213 3.0068.1344-.2016.1769-.5189.3994-.9533.6011-.4098.1903-1.0957.333-1.7473.3636-.7197.0336-1.0859-.0807-1.1721-.151zm.5695-9.2712c-.0059.3508-.0542.6692-.1054 1.0017-.055.3576-.112.7274-.1264 1.1762-.0142.4368.0404.8909.0932 1.3301.1066.887.216 1.8003-.2075 2.7014a3.5272 3.5272 0 0 1-.1876-.3856c-.0527-.1276-.1669-.3326-.3251-.6162-.6156-1.1041-2.0574-3.6896-1.3193-4.7446.3795-.5427 1.3408-.5661 2.1781-.463zm.2284 7.0137a12.3762 12.3762 0 0 0-.0853-.1074l-.0355-.0444c.7262-1.1995.5842-2.3862.4578-3.4385-.0519-.4318-.1009-.8396-.0885-1.2226.0129-.4061.0666-.7543.1185-1.0911.0639-.415.1288-.8443.1109-1.3505.0134-.0531.0188-.1158.0118-.1902-.0457-.4855-.5999-1.938-1.7294-3.253-.6076-.7073-1.4896-1.4972-2.6889-2.0395.5251-.1066 1.2328-.2035 2.0244-.1859 2.0515.0456 3.6746.8135 4.8242 2.2824a.908.908 0 0 1 .0667.1002c.7231 1.3556-.2762 6.2751-2.9867 10.5405zm-8.8166-6.1162c-.025.1794-.3089.4225-.6211.4225a.5821.5821 0 0 1-.0809-.0056c-.1873-.026-.3765-.144-.5059-.3156-.0458-.0605-.1203-.178-.1055-.2844.0055-.0401.0261-.0985.0925-.1488.1182-.0894.3518-.1226.6096-.0867.3163.0441.6426.1938.6113.4186zm7.9305-.4114c.0111.0792-.049.201-.1531.3102-.0683.0717-.212.1961-.4079.2232a.5456.5456 0 0 1-.075.0052c-.2935 0-.5414-.2344-.5607-.3717-.024-.1765.2641-.3106.5611-.352.297-.0414.6111.0088.6356.1851z"/></svg>
-    },
-    {
-      name: "Prettier",
-      color: "bg-pink-500",
-      textColor: "text-white",
-      icon: <svg xmlns="http://www.w3.org/2000/svg" role="img" className="w-4 h-4 mr-2 text-cyan-400" fill="#FFFFFF" viewBox="0 0 24 24"><title>prittier</title><path d="M8.571 23.429A.571.571 0 0 1 8 24H2.286a.571.571 0 0 1 0-1.143H8c.316 0 .571.256.571.572zM8 20.57H6.857a.571.571 0 0 0 0 1.143H8a.571.571 0 0 0 0-1.143zm-5.714 1.143H4.57a.571.571 0 0 0 0-1.143H2.286a.571.571 0 0 0 0 1.143zM8 18.286H2.286a.571.571 0 0 0 0 1.143H8a.571.571 0 0 0 0-1.143zM16 16H5.714a.571.571 0 0 0 0 1.143H16A.571.571 0 0 0 16 16zM2.286 17.143h1.143a.571.571 0 0 0 0-1.143H2.286a.571.571 0 0 0 0 1.143zm17.143-3.429H16a.571.571 0 0 0 0 1.143h3.429a.571.571 0 0 0 0-1.143zM9.143 14.857h4.571a.571.571 0 0 0 0-1.143H9.143a.571.571 0 0 0 0 1.143zm-6.857 0h4.571a.571.571 0 0 0 0-1.143H2.286a.571.571 0 0 0 0 1.143zM20.57 11.43H11.43a.571.571 0 0 0 0 1.142h9.142a.571.571 0 0 0 0-1.142zM9.714 12a.571.571 0 0 0-.571-.571H5.714a.571.571 0 0 0 0 1.142h3.429A.571.571 0 0 0 9.714 12zm-7.428.571h1.143a.571.571 0 0 0 0-1.142H2.286a.571.571 0 0 0 0 1.142zm19.428-3.428H16a.571.571 0 0 0 0 1.143h5.714a.571.571 0 0 0 0-1.143zM2.286 10.286H8a.571.571 0 0 0 0-1.143H2.286a.571.571 0 0 0 0 1.143zm13.143-2.857c0 .315.255.571.571.571h5.714a.571.571 0 0 0 0-1.143H16a.571.571 0 0 0-.571.572zm-8.572-.572a.571.571 0 0 0 0 1.143H8a.571.571 0 0 0 0-1.143H6.857zM2.286 8H4.57a.571.571 0 0 0 0-1.143H2.286a.571.571 0 0 0 0 1.143zm16.571-2.857c0 .315.256.571.572.571h1.142a.571.571 0 0 0 0-1.143H19.43a.571.571 0 0 0-.572.572zm-1.143 0a.571.571 0 0 0-.571-.572H12.57a.571.571 0 0 0 0 1.143h4.572a.571.571 0 0 0 .571-.571zm-15.428.571h8a.571.571 0 0 0 0-1.143h-8a.571.571 0 0 0 0 1.143zm5.143-2.857c0 .316.255.572.571.572h11.429a.571.571 0 0 0 0-1.143H8a.571.571 0 0 0-.571.571zm-5.143.572h3.428a.571.571 0 0 0 0-1.143H2.286a.571.571 0 0 0 0 1.143zm0-2.286H16A.571.571 0 0 0 16 0H2.286a.571.571 0 0 0 0 1.143z"/></svg>
-    }
+    { name: "JavaScript", iconKey: "js", color: "bg-yellow-500", textColor: "text-black" },
+    { name: "TypeScript", iconKey: "ts", color: "bg-blue-600", textColor: "text-white" },
+    { name: "Python", iconKey: "python", color: "bg-yellow-400", textColor: "text-black" },
+    { name: "Shell", iconKey: "bash", color: "bg-gray-700", textColor: "text-white" },
+    { name: "PowerShell", iconKey: "powershell", color: "bg-blue-600", textColor: "text-white" },
+    { name: "React", iconKey: "react", color: "bg-cyan-400", textColor: "text-black" },
+    { name: "Next.js", iconKey: "nextjs", color: "bg-black", textColor: "text-white" },
+    { name: "Vue", iconKey: "vue", color: "bg-green-500", textColor: "text-white" },
+    { name: "Astro", iconKey: "astro", color: "bg-orange-500", textColor: "text-white" },
+    { name: "Remix", iconKey: "remix", color: "bg-gray-900", textColor: "text-white" },
+    { name: "Angular", iconKey: "angular", color: "bg-red-600", textColor: "text-white" },
+    { name: "Tailwind CSS", iconKey: "tailwind", color: "bg-cyan-500", textColor: "text-black" },
+    { name: "Material UI", iconKey: "mui", color: "bg-blue-600", textColor: "text-white" },
+    { name: "Node.js", iconKey: "nodejs", color: "bg-green-600", textColor: "text-white" },
+    { name: "Deno", iconKey: "deno", color: "bg-black", textColor: "text-white" },
+    { name: "Express", iconKey: "express", color: "bg-gray-800", textColor: "text-white" },
+    { name: "Electron", iconKey: "electron", color: "bg-blue-500", textColor: "text-white" },
+    { name: "PostgreSQL", iconKey: "postgresql", color: "bg-blue-700", textColor: "text-white" },
+    { name: "MySQL", iconKey: "mysql", color: "bg-gray-800", textColor: "text-white" },
+    { name: "Docker", iconKey: "docker", color: "bg-blue-600", textColor: "text-white" },
+    { name: "Kubernetes", iconKey: "kubernetes", color: "bg-blue-600", textColor: "text-white" },
+    { name: "Google Cloud", iconKey: "gcp", color: "bg-blue-500", textColor: "text-white" },
+    { name: "Vercel", iconKey: "vercel", color: "bg-black", textColor: "text-white" },
+    { name: "Linux", iconKey: "linux", color: "bg-yellow-500", textColor: "text-black" },
+    { name: "Windows", iconKey: "windows", color: "bg-blue-500", textColor: "text-white" },
+    { name: "Git", iconKey: "git", color: "bg-orange-600", textColor: "text-white" },
+    { name: "GitHub", iconKey: "github", color: "bg-gray-800", textColor: "text-white" },
+    { name: "GitLab", iconKey: "gitlab", color: "bg-orange-500", textColor: "text-white" },
+    { name: "Postman", iconKey: "postman", color: "bg-orange-500", textColor: "text-white" },
+    { name: "VS Code", iconKey: "vscode", color: "bg-blue-600", textColor: "text-white" },
   ]
 
   // 学習中、学習予定のスキル
@@ -221,22 +180,6 @@ export default function Home() {
     "Junior Infra Engineer.",
   ]
 
-  // 配列をシャッフルする関数
-  // const shuffleArray = (array: string[]) => {
-  //   // 最初の要素を保持し、残りをシャッフル
-  //   const firstElement = array[0]
-  //   const restElements = array.slice(1)
-
-  //   // Fisher-Yates
-  //   for (let i = restElements.length - 1; i > 0; i--) {
-  //     const j = Math.floor(Math.random() * (i + 1))
-  //     ;[restElements[i], restElements[j]] = [restElements[j], restElements[i]]
-  //   }
-
-  //   // 最初の要素を先頭に戻し、シャッフルされた残りの要素と結合
-  //   return [firstElement, ...restElements]
-  // }
-
   return (
     <>
       <Head>
@@ -253,37 +196,9 @@ export default function Home() {
       </Head>
       <AnimatePresence mode="wait">
         {isLoading ? (
-          <>
-            {/* 背景 */}
-            <video
-              className="fixed inset-0 w-full h-full pointer-events-none"
-              style={{
-                zIndex: -1,
-                mixBlendMode: "screen",
-                opacity: 0.4,
-                objectFit: "cover",
-              }}
-              src="/videos/noise.mp4"
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="auto"
-            />
-            {/* ローディングUI */}
-            <div className="fixed inset-0 flex items-center justify-center z-[9999] bg-transparent">
-              <LoadingScreen key="loading" onLoadingComplete={handleLoadingComplete} />
-            </div>
-
-            {/* アニメーション */}
-            <style jsx global>{`
-              @keyframes noiseShift {
-                0%   { filter: hue-rotate(0deg) }
-                50%  { filter: hue-rotate(20deg) }
-                100% { filter: hue-rotate(0deg) }
-              }
-            `}</style>
-          </>
+          <div className="fixed inset-0 flex items-center justify-center z-[9999] bg-transparent">
+            <LoadingScreen key="loading" onLoadingComplete={handleLoadingComplete} />
+          </div>
         ) : (
           <motion.div
             key="content"
@@ -322,7 +237,7 @@ export default function Home() {
                 <div className="relative w-[200px] h-[160px] mx-auto mb-6 flex items-center justify-center">
                   {/* 装飾画像（Discordデコレーション）だけを表示 */}
                   <img
-                    src="https://cdn.discordapp.com/avatar-decoration-presets/a_8552f9857793aed0cf816f370e2df3be.png?size=96&passthrough=true"
+                    src="https://cdn.discordapp.com/avatar-decoration-presets/a_126219d37fa9422dab6a075064453750.png?size=96&passthrough=true"
                     alt="Decoration"
                     className="absolute left-1/2 top-1/2 w-[150px] h-[150px] -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50"
                     draggable="false"
@@ -336,7 +251,7 @@ export default function Home() {
                   >
                     <div className="relative w-full h-full">
                       <Image
-                        src="/images/icon.png"
+                        src="https://avatars.githubusercontent.com/u/108514947?v="
                         alt="Tako"
                         fill
                         sizes="(max-width: 600px) 64px, 128px"
@@ -461,7 +376,7 @@ export default function Home() {
 
               {/* タブコンテンツ */}
               <Tabs defaultValue="about" className="w-full">
-                <TabsList className="grid grid-cols-2 mb-8">
+                <TabsList className="grid grid-cols-3 mb-8">
                   <TabsTrigger
                     value="about"
                     className="text-white data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=active]:bg-gradient-to-r data-[state=active]:from-white/80 data-[state=active]:to-white/40 hover:bg-blue-500/10 transition-colors duration-200 relative overflow-hidden group"
@@ -521,9 +436,9 @@ export default function Home() {
                     <Code className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
                     <span className="group-hover:translate-x-0.5 transition-transform duration-200">Skills</span>
                   </TabsTrigger>
-                  {/* <TabsTrigger
-                    value="achievements"
-                    className="data-[state=active]:bg-purple-600 hover:bg-purple-500/20 transition-colors duration-200 relative overflow-hidden group"
+                  <TabsTrigger
+                    value="works"
+                    className="text-white data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=active]:bg-gradient-to-r data-[state=active]:from-white/80 data-[state=active]:to-white/40 hover:bg-blue-500/10 transition-colors duration-200 relative overflow-hidden group"
                     onClick={(e) => {
                       const rect = e.currentTarget.getBoundingClientRect()
                       const x = e.clientX - rect.left
@@ -534,7 +449,7 @@ export default function Home() {
                       ripple.style.width = "5px"
                       ripple.style.height = "5px"
                       ripple.style.borderRadius = "50%"
-                      ripple.style.backgroundColor = "rgba(168, 85, 247, 0.4)"
+                      ripple.style.backgroundColor = "rgba(59, 130, 246, 0.4)"
                       ripple.style.transform = "scale(0)"
                       ripple.style.left = `${x}px`
                       ripple.style.top = `${y}px`
@@ -547,9 +462,9 @@ export default function Home() {
                       }, 600)
                     }}
                   >
-                    <Trophy className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
-                    <span className="group-hover:translate-x-0.5 transition-transform duration-200">Achieve</span>
-                  </TabsTrigger> */}
+                    <Briefcase className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
+                    <span className="group-hover:translate-x-0.5 transition-transform duration-200">Works</span>
+                  </TabsTrigger>
                 </TabsList>
 
                 {/* About Me */}
@@ -563,10 +478,10 @@ export default function Home() {
                             <span className="font-bold">🎓CS Japanese Student | Junior Infra & Full Stack Web Engineer</span>
                           </p>
                           <p className="mb-4 text-white">
-                            2008年大阪生まれ。現在はWeb開発を中心に学習しており、バックエンドとフロントエンドの両方を扱えるフルスタックエンジニアです！10月からmuclaseという会社でエンジニアとしてインターンで働いております！
+                            2008年大阪生まれ。現在はWeb開発を中心に学習しており、バックエンドとフロントエンドの両方を扱えるフルスタックエンジニアです！2025年10月からmuclaseという会社でエンジニアとしてインターンで働いております！
                           <br />
                           <span className="block text-sm italic text-gray-400 translate-x-1 mt-1">
-                            Born in Osaka in 2008. Currently studying web development, he is a full-stack web engineer in charge of both back-end and front-end. In the future, he aims to master technologies such as Kubernetes, Azure, and AWS.
+                          Born in Osaka in 2008. Currently studying web development and is a full-stack engineer capable of both back-end and front-end development. Starting in October 2025, I will be working as an intern at a company called muclase!
                           </span>
                           </p>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -695,7 +610,11 @@ export default function Home() {
                                 className="transition-all"
                               >
                                 <Badge className={`${tech.color} ${tech.textColor} hover:${tech.color}`}>
-                                  {tech.icon}
+                                  <img 
+                                    src={`https://skillicons.dev/icons?i=${tech.iconKey}`} 
+                                    alt={tech.name}
+                                    className="w-4 h-4 mr-2"
+                                  />
                                   {tech.name}
                                 </Badge>
                               </motion.div>
@@ -704,118 +623,134 @@ export default function Home() {
                         </CardContent>
                       </Card>
                     </motion.div>
+                  </motion.div>
+                </TabsContent>
+                {/* Works */}
+                <TabsContent value="works">
+                  <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
                     <motion.div variants={item}>
                       <Card className="bg-transparent border-transparent">
                         <CardContent className="p-6">
-                          <h3 className="text-xl font-bold mb-4 text-blue-400">🌱 Learning & Planned Skills</h3>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {/* 学習中のスキル */}
-                            <div>
-                              <h4 className="text-lg font-medium text-white mb-3 flex items-center">
-                                <BookOpen className="w-4 h-4 mr-2" /> Currently Learning
-                              </h4>
-                              <ul className="space-y-2">
-                                {learningSkills
-                                  .filter((skill) => skill.status === "learning")
-                                  .map((skill) => (
-                                    <motion.li
-                                      key={skill.name}
-                                      className="flex items-center bg-gray-700/50 p-3 rounded-md"
-                                      whileHover={{ x: 5, transition: { duration: 0.2 } }}
-                                    >
-                                      {skill.icon}
-                                      <span className="text-gray-200">{skill.name}</span>
-                                    </motion.li>
-                                  ))}
-                              </ul>
-                            </div>
-                            {/* 学習予定のスキル */}
-                            <div>
-                              <h4 className="text-lg font-medium text-white mb-3 flex items-center">
-                                <Clock className="w-4 h-4 mr-2" /> Planning to Learn
-                              </h4>
-                              <ul className="space-y-2">
-                                {learningSkills
-                                  .filter((skill) => skill.status === "planned")
-                                  .map((skill) => (
-                                    <motion.li
-                                      key={skill.name}
-                                      className="flex items-center bg-gray-700/50 p-3 rounded-md"
-                                      whileHover={{ x: 5, transition: { duration: 0.2 } }}
-                                    >
-                                      {skill.icon}
-                                      <span className="text-gray-200">{skill.name}</span>
-                                    </motion.li>
-                                  ))}
-                              </ul>
-                            </div>
+                          <h3 className="text-xl font-bold mb-6 text-blue-400">💼 Works</h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Connectix2 */}
+                            <motion.div
+                              whileHover={{ scale: 1.02 }}
+                              className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-6 hover:border-blue-500/50 transition-all duration-300"
+                            >
+                              <div className="flex items-start justify-between mb-4">
+                                <h4 className="text-xl font-bold text-white">Connectix2</h4>
+                                <div className="flex gap-2">
+                                  <a
+                                    href="https://cntx.in"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-400 hover:text-blue-300 transition-colors"
+                                    aria-label="Visit Connectix2"
+                                  >
+                                    <ExternalLink className="w-5 h-5" />
+                                  </a>
+                                  <a
+                                    href="https://github.com/T4ko0522/Connectix2"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-gray-400 hover:text-gray-300 transition-colors"
+                                    aria-label="View on GitHub"
+                                  >
+                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                      <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                    </svg>
+                                  </a>
+                                </div>
+                              </div>
+                              <p className="text-gray-300 mb-4">
+                                VRChatのステータスをリアルタイムで更新できるSNSプロフィールサービスです。
+                              </p>
+                              <div className="flex flex-wrap gap-2">
+                                <Badge className="bg-blue-600 text-white">Next.js</Badge>
+                                <Badge className="bg-blue-600 text-white">Tailwind CSS</Badge>
+                                <Badge className="bg-blue-600 text-white">VRChat</Badge>
+                                <Badge className="bg-blue-600 text-white">WebSocket</Badge>
+                              </div>
+                            </motion.div>
+
+                            {/* contributions-status */}
+                            <motion.div
+                              whileHover={{ scale: 1.02 }}
+                              className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-6 hover:border-blue-500/50 transition-all duration-300"
+                            >
+                              <div className="flex items-start justify-between mb-4">
+                                <h4 className="text-xl font-bold text-white">contributions-status</h4>
+                                <div className="flex gap-2">
+                                  <a
+                                    href="https://contributions-status.vercel.app"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-400 hover:text-blue-300 transition-colors"
+                                    aria-label="Visit contributions-status"
+                                  >
+                                    <ExternalLink className="w-5 h-5" />
+                                  </a>
+                                  <a
+                                    href="https://github.com/T4ko0522/contributions-status"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-gray-400 hover:text-gray-300 transition-colors"
+                                    aria-label="View on GitHub"
+                                  >
+                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                      <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                    </svg>
+                                  </a>
+                                </div>
+                              </div>
+                              <p className="text-gray-300 mb-4">
+                                GitHubのコントリビューショングラフをカスタマイズできるサービスです。
+                              </p>
+                              <div className="flex flex-wrap gap-2">
+                                <Badge className="bg-blue-600 text-white">Next.js</Badge>
+                                <Badge className="bg-blue-600 text-white">canvas2d</Badge>
+                                <Badge className="bg-blue-600 text-white">Nodejs</Badge>
+                                <Badge className="bg-blue-600 text-white">GitHub API</Badge>
+                              </div>
+                            </motion.div>
+
+                            {/* vscode-to-cursor */}
+                            <motion.div
+                              whileHover={{ scale: 1.02 }}
+                              className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-6 hover:border-blue-500/50 transition-all duration-300"
+                            >
+                              <div className="flex items-start justify-between mb-4">
+                                <h4 className="text-xl font-bold text-white">vscode-to-cursor</h4>
+                                <div className="flex gap-2">
+                                  <a
+                                    href="https://github.com/T4ko0522/vscode-to-cursor"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-gray-400 hover:text-gray-300 transition-colors"
+                                    aria-label="View on GitHub"
+                                  >
+                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                      <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                    </svg>
+                                  </a>
+                                </div>
+                              </div>
+                              <p className="text-gray-300 mb-4">
+                                VS CodeからCursorへの移行を自動化するツールです。拡張機能と設定を簡単に移植できます。
+                              </p>
+                              <div className="flex flex-wrap gap-2">
+                                <Badge className="bg-blue-600 text-white">Nodejs</Badge>
+                                <Badge className="bg-blue-600 text-white">VS Code</Badge>
+                                <Badge className="bg-blue-600 text-white">Cursor</Badge>
+                              </div>
+                            </motion.div>
                           </div>
                         </CardContent>
                       </Card>
                     </motion.div>
                   </motion.div>
                 </TabsContent>
-                {/* Achievements */}
-                {/* <TabsContent value="achievements">
-                  <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
-                    <motion.div variants={item}>
-                      <Card className="bg-gray-800 border-gray-700">
-                        <CardContent className="p-6">
-                          <h3 className="text-xl font-bold mb-4 text-purple-400">🏆 Gaming Achievements</h3>
-                          <div className="grid gap-4 md:grid-cols-3">
-                            {achievements.map((achievement, index) => (
-                              <motion.div
-                                key={achievement.title}
-                                whileHover={{ scale: 1.05 }}
-                                className="bg-gray-900 p-4 rounded-lg border border-gray-700"
-                              >
-                                <h4 className="font-medium text-gray-300 mb-1">{achievement.title}</h4>
-                                <p className="text-xl font-bold text-purple-400">{achievement.rank}</p>
-                              </motion.div>
-                            ))}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                    <motion.div variants={item}>
-                      <Card className="bg-gray-800 border-gray-700">
-                        <CardContent className="p-6">
-                          <h3 className="text-xl font-bold mb-4 text-purple-400">🎮 Gaming Setup</h3>
-                          <div className="space-y-3 text-gray-300">
-                            <p className="flex justify-between">
-                              <span>CPU</span>
-                              <span className="text-purple-300">Intel Core i7 - 14700F</span>
-                            </p>
-                            <p className="flex justify-between">
-                              <span>GPU</span>
-                              <span className="text-purple-300">NVIDIA RTX 4070</span>
-                            </p>
-                            <p className="flex justify-between">
-                              <span>RAM</span>
-                              <span className="text-purple-300">48GB DDR4 3600MHz</span>
-                            </p>
-                            <p className="flex justify-between">
-                              <span>Monitor</span>
-                              <span className="text-purple-300">27" 165Hz IPS</span>
-                            </p>
-                            <p className="flex justify-between">
-                              <span>Mouse</span>
-                              <span className="text-purple-300">Razer Viper V3 Pro</span>
-                            </p>
-                            <p className="flex justify-between">
-                              <span>Sensitivity(VALORANT)</span>
-                              <span className="text-purple-300">400dpi 0.4</span>
-                            </p>
-                            <p className="flex justify-between">
-                              <span>Sensitivity(Overwatch2)</span>
-                              <span className="text-purple-300">1600dpi 2.75</span>
-                            </p>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  </motion.div>
-                </TabsContent> */}
               </Tabs>
               {/* フッター */}
               <motion.footer
@@ -845,40 +780,9 @@ export default function Home() {
                 </p>
               </motion.footer>
             </div>
-            {/* 背景パーティクル */}
-            <div className="fixed inset-0 -z-10 overflow-hidden">
-              <ParticleBackground />
-            </div>
           </motion.div>
         )}
       </AnimatePresence>
     </>
-  )
-}
-
-function ParticleBackground() {
-  return (
-    <div className="relative w-full h-full">
-      {Array.from({ length: 20 }).map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute w-2 h-2 rounded-full bg-purple-500 opacity-20"
-          style={{
-            top: `${Math.random() * 100}%`,
-            left: `${Math.random() * 100}%`,
-          }}
-          animate={{
-            y: [0, Math.random() * 100 - 50],
-            x: [0, Math.random() * 100 - 50],
-            opacity: [0.2, 0.5, 0.2],
-          }}
-          transition={{
-            duration: 10 + Math.random() * 20,
-            repeat: Number.POSITIVE_INFINITY,
-            repeatType: "reverse",
-          }}
-        />
-      ))}
-    </div>
   )
 }
