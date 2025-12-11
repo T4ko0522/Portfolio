@@ -639,7 +639,14 @@ export default function Home() {
                               className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-6 hover:border-blue-500/50 transition-all duration-300"
                             >
                               <div className="flex items-start justify-between mb-4">
-                                <h4 className="text-xl font-bold text-white">Connectix2</h4>
+                                <a
+                                  href="https://cntx.in"
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xl font-bold text-white hover:text-blue-400 transition-colors cursor-pointer"
+                                >
+                                  <h4>Connectix2</h4>
+                                </a>
                                 <div className="flex gap-2">
                                   <a
                                     href="https://cntx.in"
@@ -680,7 +687,14 @@ export default function Home() {
                               className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-6 hover:border-blue-500/50 transition-all duration-300"
                             >
                               <div className="flex items-start justify-between mb-4">
-                                <h4 className="text-xl font-bold text-white">contributions-status</h4>
+                                <a
+                                  href="https://contributions-status.vercel.app"
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xl font-bold text-white hover:text-blue-400 transition-colors cursor-pointer"
+                                >
+                                  <h4>contributions-status</h4>
+                                </a>
                                 <div className="flex gap-2">
                                   <a
                                     href="https://contributions-status.vercel.app"
@@ -721,7 +735,14 @@ export default function Home() {
                               className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-6 hover:border-blue-500/50 transition-all duration-300"
                             >
                               <div className="flex items-start justify-between mb-4">
-                                <h4 className="text-xl font-bold text-white">vscode-to-cursor</h4>
+                                <a
+                                  href="https://github.com/T4ko0522/vscode-to-cursor"
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xl font-bold text-white hover:text-blue-400 transition-colors cursor-pointer"
+                                >
+                                  <h4>vscode-to-cursor</h4>
+                                </a>
                                 <div className="flex gap-2">
                                   <a
                                     href="https://github.com/T4ko0522/vscode-to-cursor"
