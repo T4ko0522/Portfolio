@@ -43,7 +43,7 @@ const Loader: React.FC<LoaderProps> = ({ onLoadingComplete }) => {
 
     const run = async () => {
       // 初期プロンプト
-      addLine('prompt', '~ $');
+      addLine('prompt', '~/Project $');
       
       // cd Portfolio
       await typeText("cd Portfolio", 90);
