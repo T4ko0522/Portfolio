@@ -48,7 +48,7 @@ const Loader: React.FC<LoaderProps> = ({ onLoadingComplete }) => {
       // cd Portfolio
       await typeText("cd Portfolio", 90);
       addLine('command', 'cd Portfolio');
-      await delay(1000);
+      await delay(300);
 
       // 新しいプロンプト行
       addLine('prompt', '~/Project/Portfolio $');
