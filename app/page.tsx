@@ -7,8 +7,6 @@ import {
   ExternalLink,
   Code,
   User,
-  BookOpen,
-  Clock,
   Calendar,
   Gift,
   Cake,
@@ -210,10 +208,12 @@ export default function Home() {
                 {/* アイコンにホバーエフェクトを追加 */}
                 <div className="relative w-[200px] h-[160px] mx-auto mb-6 flex items-center justify-center">
                   {/* 装飾画像（Discordデコレーション）だけを表示 */}
-                  <img
-                    src="https://cdn.discordapp.com/avatar-decoration-presets/a_126219d37fa9422dab6a075064453750.png?size=96&passthrough=true"
+                  <Image
+                    src="https://cdn.discordapp.com/avatar-decoration-presets/a_8552f9857793aed0cf816f370e2df3be.png?size=96&passthrough=true"
                     alt="Decoration"
-                    className="absolute left-1/2 top-1/2 w-[150px] h-[150px] -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50"
+                    width={152}
+                    height={152}
+                    className="absolute left-1/2 top-1/2 w-[152px] h-[152px] -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50"
                     draggable="false"
                   />
                   {/* アイコン本体 */}
@@ -584,9 +584,11 @@ export default function Home() {
                                 className="transition-all"
                               >
                                 <Badge className={`${tech.color} ${tech.textColor} hover:${tech.color}`}>
-                                  <img 
+                                  <Image 
                                     src={`https://skillicons.dev/icons?i=${tech.iconKey}`} 
                                     alt={tech.name}
+                                    width={16}
+                                    height={16}
                                     className="w-4 h-4 mr-2"
                                   />
                                   {tech.name}
