@@ -107,7 +107,7 @@ const Loader: React.FC<LoaderProps> = ({ onLoadingComplete }) => {
     <StyledWrapper>
       <div className="terminal-loader">
         <div className="terminal-header">
-          <div className="terminal-title">Ubuntu 24.04.2 LTS</div>
+          <div className="terminal-title">root@t4ko0522: ~</div>
           <div className="terminal-controls">
             <div className="control close" />
             <div className="control minimize" />
@@ -115,11 +115,27 @@ const Loader: React.FC<LoaderProps> = ({ onLoadingComplete }) => {
           </div>
         </div>
         <div className="terminal-content" ref={contentRef}>
-          {lines.map((line, index) => (
-            <div key={index} className={`line line-${line.type}`}>
-              {line.text}
-            </div>
-          ))}
+          {lines.map((line, index) => {
+            // チェックマークを含む行の場合、チェックマークをspanで囲む
+            if (line.type === 'output' && line.text.includes('✓')) {
+              const parts = line.text.split('✓');
+              return (
+                <div key={index} className={`line line-${line.type}`}>
+                  {parts.map((part, i) => (
+                    <React.Fragment key={i}>
+                      {part}
+                      {i < parts.length - 1 && <span className="checkmark">✓</span>}
+                    </React.Fragment>
+                  ))}
+                </div>
+              );
+            }
+            return (
+              <div key={index} className={`line line-${line.type}`}>
+                {line.text}
+              </div>
+            );
+          })}
           {currentLine && (
             <div className="line line-command">
               {currentLine}
@@ -155,7 +171,7 @@ const StyledWrapper = styled.div`
     border: 0.1em solid #333;
     background-color: #1a1a1a;
     color: #0f0;
-    font-family: "Courier New", Courier, monospace;
+    font-family: "Consolas", "Courier New", Courier, monospace;
     font-size: 1.4em;
     padding: 0;
     width: 35em;
@@ -242,7 +258,7 @@ const StyledWrapper = styled.div`
   }
 
   .line-prompt {
-    color: #4ec9b0; /* シアン色のプロンプト */
+    color: #3b78ff
   }
 
   .line-command {
@@ -250,11 +266,15 @@ const StyledWrapper = styled.div`
   }
 
   .line-output {
-    color: #6a9955; /* 緑色の出力 */
+    color: #ffffff; /* 白色の出力 */
+  }
+
+  .checkmark {
+    color: #4ac66b; /* チェックマークの色 */
   }
 
   .line-special {
-    color: #ff69b4; /* ピンク色の特殊行 */
+    color: #ad7fa8
   }
 
   .cursor {
