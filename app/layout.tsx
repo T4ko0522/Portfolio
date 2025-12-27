@@ -7,16 +7,16 @@ import { ThemeProvider } from "../components/theme-provider"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "T4ko0522 | Portfolio",
+  title: "T4ko0522",
   description:
-    "Portfolio of Tako, a Japanese student and junior full stack engineer passionate about coding and gaming.",
+    "About T4ko0522",
   metadataBase: new URL("https://t4ko.vercel.app"),
   openGraph: {
-    title: "Tako's Portfolio",
+    title: "T4ko0522",
     description:
-      "Portfolio of Tako, a Japanese student and junior full stack engineer passionate about coding and gaming.",
+      "About T4ko0522",
     url: "https://t4ko.vercel.app",
-    siteName: "Tako's Portfolio",
+    siteName: "T4ko0522",
     images: [
       {
         url: "/images/icon.png",
