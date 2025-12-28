@@ -36,15 +36,20 @@ function calculateAge(birthMonth: number, birthDay: number): number {
 function getDaysUntilBirthday(birthMonth: number, birthDay: number): number {
   const today = new Date()
   const currentYear = today.getFullYear()
+  
+  // 今日の日付を時間部分を無視して設定
+  const todayDate = new Date(currentYear, today.getMonth(), today.getDate())
+  
+  // 今年の誕生日を時間部分を無視して設定
   let nextBirthday = new Date(currentYear, birthMonth - 1, birthDay)
 
   // 今年の誕生日が過ぎている場合は来年の誕生日を計算
-  if (today > nextBirthday) {
+  if (todayDate > nextBirthday) {
     nextBirthday = new Date(currentYear + 1, birthMonth - 1, birthDay)
   }
 
   // 日数の差を計算
-  const diffTime = nextBirthday.getTime() - today.getTime()
+  const diffTime = nextBirthday.getTime() - todayDate.getTime()
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 
   return diffDays
@@ -249,9 +254,10 @@ export default function Home() {
             className="relative min-h-screen text-white overflow-hidden"
           >
             <div
-              className="fixed inset-0 bg-cover bg-center"
+              className="fixed inset-0 bg-cover"
               style={{
                 backgroundImage: "url('/images/background.png')",
+                backgroundPosition: "center 95%",
                 transform: "scale(1.05)",
                 zIndex: -2,
             }}
@@ -272,7 +278,7 @@ export default function Home() {
                 initial={{ opacity: 0, y: -50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, type: "spring", bounce: 0.4 }}
-                className="text-center mb-16"
+                className="text-center mb-16 -mt-12"
               >
                 {/* アイコンにホバーエフェクトを追加 */}
                 <div className="relative w-[200px] h-[160px] mx-auto mb-2 flex items-center justify-center">
@@ -311,16 +317,10 @@ export default function Home() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.4 }}
-                  className="text-4xl md:text-5xl font-bold mb-2 -mt-10"
+                  className="text-4xl md:text-5xl font-bold mb-2 flex items-center justify-center gap-2"
                 >
-                  <Image
-                    src="/images/Logo.png"
-                    alt="T4ko Logo"
-                    width={200}
-                    height={80}
-                    className="mx-auto"
-                    priority
-                  />
+                  <span>👋 </span>
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-blue-500">Hi! I&apos;m T4ko!</span>
                 </motion.h1>
 
                 {/* タイピングアニメーション */}
@@ -355,78 +355,61 @@ export default function Home() {
                     href="https://github.com/T4ko0522"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="relative p-3 rounded-full bg-transparent transition-all duration-300 group"
+                    className="relative p-3 rounded-full bg-transparent"
                     aria-label="GitHub"
-                    whileHover={{ scale: 1.1 }}
+                    whileHover={{ scale: 1.3, rotate: 7 }}
                   >
-                    {/* 光るエフェクト背景 */}
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#181717] to-[#333] opacity-0 group-hover:opacity-20 blur-md transition-opacity duration-300" />
-                    
                     {/* GitHub SVG */}
                     <svg 
-                      className="w-6 h-6 text-white group-hover:text-[#181717] transition-colors duration-300 relative z-10" 
+                      className="w-6 h-6 text-white relative z-10" 
                       fill="currentColor" 
                       viewBox="0 0 24 24"
                     >
                       <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
                     </svg>
-                    
-                    {/* 光る枠線 */}
-                    <div className="absolute inset-0 rounded-full border-2 border-transparent group-hover:border-[#181717]/70 transition-colors duration-300" />
                   </motion.a>
                   
                   <motion.a
                     href="https://www.youtube.com/@%E3%82%BF%E3%82%B3%E3%81%95%E3%82%93%E3%81%A7%E3%81%99"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="relative p-3 rounded-full bg-transparent transition-all duration-300 group"
+                    className="relative p-3 rounded-full bg-transparent"
                     aria-label="YouTube"
-                    whileHover={{ scale: 1.1 }}
+                    whileHover={{ scale: 1.3, rotate: 7 }}
                   >
-                    {/* 光るエフェクト背景 */}
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#FF0000] to-[#CC0000] opacity-0 group-hover:opacity-20 blur-md transition-opacity duration-300" />
-                    
                     {/* YouTube SVG */}
                     <svg 
-                      className="w-6 h-6 text-white group-hover:text-[#FF0000] transition-colors duration-300 relative z-10" 
+                      className="w-6 h-6 text-white relative z-10" 
                       fill="currentColor" 
                       viewBox="0 0 24 24"
                     >
                       <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
                     </svg>
-                    
-                    {/* 光る枠線 */}
-                    <div className="absolute inset-0 rounded-full border-2 border-transparent group-hover:border-[#FF0000]/70 transition-colors duration-300" />
                   </motion.a>
                   
                   <motion.a
                     href="https://x.com/T4ko0522"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="relative p-3 rounded-full bg-transparent transition-all duration-300 group"
+                    className="relative p-3 rounded-full bg-transparent"
                     aria-label="Twitter"
-                    whileHover={{ scale: 1.1 }}
+                    whileHover={{ scale: 1.3, rotate: 7 }}
                   >
-                    {/* ホバー時枠線のみ黒色 */}
-                    
                     {/* Twitter/X SVG */}
                     <svg 
-                      className="w-6 h-6 text-white group-hover:text-black transition-colors duration-300 relative z-10" 
+                      className="w-6 h-6 text-white relative z-10" 
                       fill="currentColor" 
                       viewBox="0 0 24 24"
                     >
                       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                     </svg>
-                    
-                    {/* ホバー時黒枠線 */}
-                    <div className="absolute inset-0 rounded-full border-2 border-transparent group-hover:border-black/50 transition-colors duration-300" />
                   </motion.a>
                 </motion.div>
               </motion.div>
 
               {/* タブコンテンツ */}
               <Tabs defaultValue="about" className="w-full">
-                <TabsList className="grid grid-cols-3 mb-8">
+                <TabsList className="grid grid-cols-3 mb-8 -mt-10">
                   <TabsTrigger
                     value="about"
                     className="text-white data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=active]:bg-gradient-to-r data-[state=active]:from-white/80 data-[state=active]:to-white/40 hover:bg-blue-500/10 transition-colors duration-200 relative overflow-hidden group"
@@ -523,14 +506,14 @@ export default function Home() {
                     <motion.div variants={item}>
                       <Card className="bg-transparent border-transparent">
                         <CardContent className="p-6">
-                          <h3 className="text-xl font-bold mb-4 text-blue-400">💻 About Me</h3>
+                          <h3 className="text-xl font-bold mb-4 text-[#7b61ff]">💻 About Me</h3>
                           <p className="mb-4 text-white">
-                            <span className="font-bold">🎓CS Japanese Student | Junior Infra & Full Stack Web Engineer</span>
+                            <span className="font-bold">🎓CS Japanese Student | Full Stack Engineer</span>
                           </p>
                           <p className="mb-4 text-white">
                             2008年大阪生まれ。現在はWeb開発を中心に学習しており、バックエンドとフロントエンドの両方を扱えるフルスタックエンジニアです！2025年10月からmuclaseという会社でエンジニアとしてインターンで働いております！
                           <br />
-                          <span className="block text-sm italic text-gray-400 translate-x-1 mt-1">
+                          <span className="block text-sm italic text-gray-200 translate-x-1 mt-1">
                           Born in Osaka in 2008. Currently studying web development and is a full-stack engineer capable of both back-end and front-end development. Starting in October 2025, I have been working as an intern at a company called muclase!
                           </span>
                           </p>
@@ -541,14 +524,14 @@ export default function Home() {
                               className="bg-transparent border-transparent p-4 rounded-lg text-white"
                             >
                               <div className="flex items-center mb-2">
-                                <Cake className="w-5 h-5 text-purple-400 mr-2" />
-                                <h4 className="text-lg font-medium text-purple-300">Age</h4>
+                                <Cake className="w-5 h-5 text-purple-500 mr-2" />
+                                <h4 className="text-lg font-medium text-purple-500">Age</h4>
                               </div>
                               <div className="flex items-baseline">
                                 <span className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500">
                                   {age}
                                 </span>
-                                <span className="ml-2 text-gray-400">years old</span>
+                                <span className="ml-2 text-gray-200">years old</span>
                               </div>
                             </motion.div>
                             {/* 誕生日 */}
@@ -557,13 +540,13 @@ export default function Home() {
                               className="bg-transparent border-transparent p-4 rounded-lg text-white"
                             >
                               <div className="flex items-center mb-2">
-                                <Gift className="w-5 h-5 text-purple-400 mr-2" />
-                                <h4 className="text-lg font-medium text-purple-300">Birthday</h4>
+                                <Gift className="w-5 h-5 text-purple-500 mr-2" />
+                                <h4 className="text-lg font-medium text-purple-500">Birthday</h4>
                               </div>
                               <div className="flex items-baseline">
                                 <span className="text-xl font-bold text-gray-200">May 22nd</span>
                                 {daysUntilBirthday > 0 && (
-                                  <span className="ml-2 text-sm text-gray-400">({daysUntilBirthday} days left)</span>
+                                  <span className="ml-2 text-sm text-gray-200">({daysUntilBirthday} days left)</span>
                                 )}
                                 {daysUntilBirthday === 0 && (
                                   <span className="ml-2 text-sm text-green-400 font-bold animate-pulse">Today! 🎉</span>
@@ -608,31 +591,6 @@ export default function Home() {
                             >
                               <h4 className="text-xl font-bold text-center mb-2 text-white">🎉 Happy Birthday! 🎂</h4>
                               <p className="text-center text-gray-300 mb-4">May all your wishes come true!</p>
-
-                              {/* 紙吹雪アニメーション */}
-                              {Array.from({ length: 30 }).map((_, i) => (
-                                <motion.div
-                                  key={i}
-                                  className="absolute w-2 h-2 rounded-full"
-                                  style={{
-                                    top: `-10%`,
-                                    left: `${Math.random() * 100}%`,
-                                    background: `rgb(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)})`,
-                                  }}
-                                  animate={{
-                                    y: ["0%", "800%"],
-                                    x: [0, Math.random() * 40 - 20],
-                                    opacity: [1, 0.8, 0],
-                                    rotate: [0, 360],
-                                  }}
-                                  transition={{
-                                    duration: 3 + Math.random() * 2,
-                                    repeat: Number.POSITIVE_INFINITY,
-                                    delay: Math.random() * 5,
-                                    ease: "easeInOut",
-                                  }}
-                                />
-                              ))}
                             </motion.div>
                           )}
                         </CardContent>
@@ -647,7 +605,7 @@ export default function Home() {
                       <Card className="bg-transparent border-transparent">
                         <CardContent className="p-6">
                           <h3 className="text-xl font-bold mb-4">
-                            <span>🛠️</span> <span className="text-blue-400">Tech Stack</span>
+                            <span>🛠️</span> <span className="text-[#7b61ff]">Tech Stack</span>
                           </h3>
                           <div className="flex flex-wrap gap-2">
                             {techStack.map((tech, index) => (
@@ -683,7 +641,7 @@ export default function Home() {
                     <motion.div variants={item}>
                       <Card className="bg-transparent border-transparent">
                         <CardContent className="p-6">
-                          <h3 className="text-xl font-bold mb-6 text-blue-400">💼 Works</h3>
+                          <h3 className="text-xl font-bold mb-6 text-[#7b61ff]">💼 Works</h3>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Connectix2 */}
                             <motion.div
@@ -725,11 +683,14 @@ export default function Home() {
                               <p className="text-gray-300 mb-4">
                                 VRChatのステータスをリアルタイムで更新できるSNSプロフィールサービスです。
                               </p>
-                              <div className="flex flex-wrap gap-2">
-                                <Badge className="bg-blue-600 text-white">Next.js</Badge>
-                                <Badge className="bg-blue-600 text-white">Tailwind CSS</Badge>
-                                <Badge className="bg-blue-600 text-white">VRChat</Badge>
-                                <Badge className="bg-blue-600 text-white">WebSocket</Badge>
+                              <div className="mb-4 rounded-lg overflow-hidden">
+                                <Image
+                                  src="/images/Connectix2.png"
+                                  alt="Connectix2 Screenshot"
+                                  width={600}
+                                  height={400}
+                                  className="w-full h-auto object-cover"
+                                />
                               </div>
                             </motion.div>
 
@@ -773,11 +734,64 @@ export default function Home() {
                               <p className="text-gray-300 mb-4">
                                 GitHubのコントリビューショングラフをカスタマイズできるサービスです。
                               </p>
-                              <div className="flex flex-wrap gap-2">
-                                <Badge className="bg-blue-600 text-white">Next.js</Badge>
-                                <Badge className="bg-blue-600 text-white">canvas2d</Badge>
-                                <Badge className="bg-blue-600 text-white">Nodejs</Badge>
-                                <Badge className="bg-blue-600 text-white">GitHub API</Badge>
+                              <div className="mb-4 rounded-lg overflow-hidden">
+                                <Image
+                                  src="/images/Contribution.png"
+                                  alt="contributions-status Screenshot"
+                                  width={600}
+                                  height={400}
+                                  className="w-full h-auto object-cover"
+                                />
+                              </div>
+                            </motion.div>
+                            {/* better-tab */}
+                            <motion.div
+                              whileHover={{ scale: 1.02 }}
+                              className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-6 hover:border-blue-500/50 transition-all duration-300"
+                            >
+                              <div className="flex items-start justify-between mb-4">
+                                <a
+                                  href="https://better-tab.vercel.app"
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xl font-bold text-white hover:text-blue-400 transition-colors cursor-pointer"
+                                >
+                                  <h4>better-tab</h4>
+                                </a>
+                                <div className="flex gap-2">
+                                  <a
+                                    href="https://better-tab.vercel.app"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-400 hover:text-blue-300 transition-colors"
+                                    aria-label="Visit better-tab"
+                                  >
+                                    <ExternalLink className="w-5 h-5" />
+                                  </a>
+                                  <a
+                                    href="https://github.com/T4ko0522/better-tab"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-gray-400 hover:text-gray-300 transition-colors"
+                                    aria-label="View on GitHub"
+                                  >
+                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                      <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                    </svg>
+                                  </a>
+                                </div>
+                              </div>
+                              <p className="text-gray-300 mb-4">
+                                カスタマイズ可能なブラウザの新規タブページです。
+                              </p>
+                              <div className="mb-4 rounded-lg overflow-hidden">
+                                <Image
+                                  src="/images/Better-Tab.png"
+                                  alt="better-tab Screenshot"
+                                  width={600}
+                                  height={400}
+                                  className="w-full h-auto object-cover"
+                                />
                               </div>
                             </motion.div>
 
@@ -812,11 +826,6 @@ export default function Home() {
                               <p className="text-gray-300 mb-4">
                                 VS CodeからCursorへの移行を自動化するツールです。拡張機能と設定を簡単に移植できます。
                               </p>
-                              <div className="flex flex-wrap gap-2">
-                                <Badge className="bg-blue-600 text-white">Nodejs</Badge>
-                                <Badge className="bg-blue-600 text-white">VS Code</Badge>
-                                <Badge className="bg-blue-600 text-white">Cursor</Badge>
-                              </div>
                             </motion.div>
                           </div>
                         </CardContent>
@@ -830,27 +839,9 @@ export default function Home() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1, duration: 1 }}
-                className="mt-16 text-center text-gray-400 text-sm"
+                className="mt-16 text-center text-gray-200 text-sm"
               >
                 <p>© {new Date().getFullYear()} Tako. All rights reserved.</p>
-                <p className="mt-2">
-                  <a
-                    href="https://x.com/T4ko0522"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center text-[#99C3FF] hover:underline hover:decoration-[#99C3FF] hover:decoration-2 transition-colors"
-                  >
-                    <svg 
-                      className="w-4 h-4 mr-1" 
-                      fill="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                    </svg>
-                    @T4ko0522
-                    <ExternalLink className="w-3 h-3 ml-1" />
-                  </a>
-                </p>
               </motion.footer>
             </div>
           </motion.div>
