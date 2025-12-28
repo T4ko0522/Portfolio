@@ -68,22 +68,14 @@
   }
 }
 
-/* カスタムスクロールバー */
-::-webkit-scrollbar {
-  width: 8px;
+/* スクロールバーを非表示 */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
 }
 
-::-webkit-scrollbar-track {
-  background: #fff;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #ccc;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #bbb;
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
 /* グラデーションテキスト */
