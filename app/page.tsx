@@ -60,7 +60,7 @@ const introTexts = [
   "Gamer geek.",
   "Full Stack Engineer.",
   "CS Japanese Student.",
-  ""
+  "\"Araiguma\" community founder.",
 ]
 
 export default function Home() {
