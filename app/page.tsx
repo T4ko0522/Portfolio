@@ -56,9 +56,11 @@ function getDaysUntilBirthday(birthMonth: number, birthDay: number): number {
 }
 
 const introTexts = [
-  "FPS Gamer.",
+  "VRChatter.",
+  "Gamer geek.",
   "Full Stack Engineer.",
-  "Junior Infra Engineer.",
+  "CS Japanese Student.",
+  ""
 ]
 
 export default function Home() {
