@@ -57,7 +57,7 @@ const Loader: React.FC<LoaderProps> = ({ onLoadingComplete }) => {
       
       // ビルド出力をシミュレート
       await delay(500);
-      addLine('output', '> portfolio@0.1.0 build');
+      addLine('output', '> portfolio@1.1.0 build');
       await delay(300);
       addLine('output', '> next build');
       await delay(400);
@@ -81,7 +81,7 @@ const Loader: React.FC<LoaderProps> = ({ onLoadingComplete }) => {
       
       // 起動出力をシミュレート
       await delay(300);
-      addLine('output', '> portfolio@0.1.0 start');
+      addLine('output', '> portfolio@1.1.0 start');
       await delay(200);
       addLine('output', '> next start');
       await delay(400);
