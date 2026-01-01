@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "src/components/ui/tabs"
 import LoadingScreen from "../components/loading-screen"
+import TypingAnimation from "../components/typing-animation"
 import Image from "next/image"
 
 // 年齢計算関数
@@ -68,9 +69,6 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true)
   const [age, setAge] = useState<number>(0)
   const [daysUntilBirthday, setDaysUntilBirthday] = useState<number>(0)
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [textWidth, setTextWidth] = useState(0)
 
   // 誕生日の設定（5月22日）
   const birthMonth = 5
@@ -109,73 +107,6 @@ export default function Home() {
   const handleLoadingComplete = () => {
     setIsLoading(false)
   }
-
-  // スムーズなタイピングアニメーション
-  useEffect(() => {
-    if (isLoading) return
-
-    const currentText = introTexts[currentIndex]
-    const animationDuration = isDeleting ? 400 : 800 // ミリ秒
-    const pauseTime = 2000
-
-    // テキストの幅を計算（一時的にDOM要素を作成して測定）
-    const measureText = (text: string) => {
-      const canvas = document.createElement('canvas')
-      const context = canvas.getContext('2d')
-      if (!context) return 0
-      context.font = '1.25rem system-ui, -apple-system, sans-serif' // text-xl相当
-      return context.measureText(text).width
-    }
-
-    const fullWidth = measureText(currentText)
-
-    if (!isDeleting) {
-      // 表示アニメーション
-      setTextWidth(0)
-      const startTime = Date.now()
-      
-      const animate = () => {
-        const elapsed = Date.now() - startTime
-        const progress = Math.min(elapsed / animationDuration, 1)
-        
-        // イージング関数（ease-out）
-        const easeOut = 1 - Math.pow(1 - progress, 3)
-        setTextWidth(fullWidth * easeOut)
-
-        if (progress < 1) {
-          requestAnimationFrame(animate)
-        } else {
-          // 表示完了後、少し待ってから削除開始
-          setTimeout(() => setIsDeleting(true), pauseTime)
-        }
-      }
-      
-      requestAnimationFrame(animate)
-    } else {
-      // 削除アニメーション
-      const startTime = Date.now()
-      const startWidth = fullWidth
-      
-      const animate = () => {
-        const elapsed = Date.now() - startTime
-        const progress = Math.min(elapsed / animationDuration, 1)
-        
-        // イージング関数（ease-in）
-        const easeIn = Math.pow(progress, 3)
-        setTextWidth(startWidth * (1 - easeIn))
-
-        if (progress < 1) {
-          requestAnimationFrame(animate)
-        } else {
-          // 削除完了後、次の文字列へ
-          setIsDeleting(false)
-          setCurrentIndex((prev) => (prev + 1) % introTexts.length)
-        }
-      }
-      
-      requestAnimationFrame(animate)
-    }
-  }, [currentIndex, isDeleting, isLoading])
 
   if (!mounted) return null
 
@@ -330,21 +261,12 @@ export default function Home() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.5 }}
-                  className="text-xl md:text-2xl mb-4 h-8 flex justify-center items-center whitespace-nowrap"
+                  className="mb-4 flex justify-center items-center px-4"
                 >
-                  <span className="mr-2 text-white">I am a</span>
-                  <span className="text-white inline-flex items-center relative overflow-hidden whitespace-nowrap">
-                    <span className="inline-block whitespace-nowrap" style={{ width: `${textWidth}px` }}>
-                      {introTexts[currentIndex]}
-                    </span>
-                    <span 
-                      className="inline-block w-0.5 h-4 bg-white ml-5 align-middle"
-                      style={{
-                        animation: 'blink 1s step-end infinite',
-                        verticalAlign: 'middle'
-                      }}
-                    >|</span>
-                  </span>
+                  <TypingAnimation
+                    texts={introTexts}
+                    className="text-base md:text-xl lg:text-2xl"
+                  />
                 </motion.div>
 
                 <motion.div
