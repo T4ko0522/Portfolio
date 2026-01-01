@@ -19,9 +19,9 @@ export const metadata: Metadata = {
     siteName: "T4ko0522",
     images: [
       {
-        url: "/images/icon.png",
-        width: 1200,
-        height: 630,
+        url: "/favicon.ico",
+        width: 512,
+        height: 512,
       },
     ],
     locale: "ja_JP",
