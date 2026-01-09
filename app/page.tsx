@@ -430,7 +430,7 @@ export default function Home() {
                     <motion.div variants={item}>
                       <Card className="bg-transparent border-transparent">
                         <CardContent className="p-6">
-                          <h3 className="text-xl font-bold mb-4 text-[#7b61ff]">💻 About Me</h3>
+                          <h3 className="text-xl font-bold mb-4 text-cyan-300">💻 About Me</h3>
                           <p className="mb-4 text-white">
                             <span className="font-bold">🎓CS Japanese Student | Full Stack Engineer</span>
                           </p>
@@ -529,7 +529,7 @@ export default function Home() {
                       <Card className="bg-transparent border-transparent">
                         <CardContent className="p-6">
                           <h3 className="text-xl font-bold mb-4">
-                            <span>🛠️</span> <span className="text-[#7b61ff]">Tech Stack</span>
+                            <span>🛠️</span> <span className="text-cyan-300">Tech Stack</span>
                           </h3>
                           <div className="flex flex-wrap gap-2">
                             {techStack.map((tech, index) => (
@@ -565,7 +565,7 @@ export default function Home() {
                     <motion.div variants={item}>
                       <Card className="bg-transparent border-transparent">
                         <CardContent className="p-6">
-                          <h3 className="text-xl font-bold mb-6 text-[#7b61ff]">💼 Works</h3>
+                          <h3 className="text-xl font-bold mb-6 text-cyan-300">💼 Works</h3>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Connectix2 */}
                             <motion.div
