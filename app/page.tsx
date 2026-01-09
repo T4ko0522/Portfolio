@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import Head from "next/head"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   ExternalLink,
@@ -277,18 +276,30 @@ export default function Home() {
 
   return (
     <>
-      <Head>
-        <link
-          rel="preload"
-          as="image"
-          href="/images/icon.png"
+      {/* 優先読み込み用の非表示画像 */}
+      <div className="hidden">
+        <Image
+          src="https://avatars.githubusercontent.com/u/108514947?v="
+          alt=""
+          width={128}
+          height={128}
+          priority
         />
-        <link
-          rel="preload"
-          as="image"
-          href="/images/background.png"
+        <Image
+          src="/images/background.png"
+          alt=""
+          width={1920}
+          height={1080}
+          priority
         />
-      </Head>
+        <Image
+          src="https://cdn.discordapp.com/avatar-decoration-presets/a_8552f9857793aed0cf816f370e2df3be.png?size=96&passthrough=true"
+          alt=""
+          width={128}
+          height={128}
+          priority
+        />
+      </div>
       <AnimatePresence mode="wait">
         {isLoading ? (
           <div className="fixed inset-0 flex items-center justify-center z-[9999] bg-transparent">
@@ -339,6 +350,7 @@ export default function Home() {
                     height={152}
                     className="absolute left-1/2 top-1/2 w-[152px] h-[152px] -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50"
                     draggable="false"
+                    priority
                   />
                   {/* アイコン本体 */}
                   <motion.div
@@ -355,8 +367,6 @@ export default function Home() {
                         sizes="(max-width: 600px) 64px, 128px"
                         className="object-cover"
                         priority
-                        placeholder="blur"
-                        blurDataURL="/images/icon.png"
                       />
                     </div>
                   </motion.div>
