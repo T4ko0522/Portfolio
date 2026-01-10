@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Discordフォント */
+@font-face {
+  font-family: 'Discord';
+  src: url('/discord.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

@@ -6,9 +6,8 @@ import {
   ExternalLink,
   Calendar,
   Gift,
-  Cake,
+  Code,
 } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import LoadingScreen from "../components/loading-screen"
 import TypingAnimation from "../components/typing-animation"
@@ -16,6 +15,8 @@ import Image from "next/image"
 import ProjectDetailModal, { ProjectDetail } from "../components/project-detail-modal"
 import StaggeredCurtainReveal from "../components/staggered-curtain-reveal"
 import Header from "../components/header"
+import SpotifyNowPlaying from "../components/spotify-now-playing"
+import { BgShader } from "../components/bg-shader"
 import { Pacifico, Rock_Salt } from "next/font/google"
 
 const pacifico = Pacifico({ 
@@ -29,20 +30,6 @@ const rockSalt = Rock_Salt({
   subsets: ["latin"],
   display: "swap",
 })
-
-// 年齢計算関数
-function calculateAge(birthMonth: number, birthDay: number): number {
-  const today = new Date()
-  const currentYear = today.getFullYear()
-  const birthDate = new Date(currentYear, birthMonth - 1, birthDay)
-
-  // 今年の誕生日がまだ来ていない場合は1歳引く
-  if (today < birthDate) {
-    return currentYear - 2008 - 1
-  }
-
-  return currentYear - 2008
-}
 
 // 次の誕生日までの日数を計算
 function getDaysUntilBirthday(birthMonth: number, birthDay: number): number {
@@ -75,21 +62,67 @@ const introTexts = [
   "\"Araiguma\" community founder.",
 ]
 
+interface SpotifyTrack {
+  name: string
+  artist: string
+  album: string
+  albumArtUrl: string
+  isPlaying: boolean
+  spotifyUrl?: string
+  currentTime?: number // 現在の再生時間（秒）
+  duration?: number // 総再生時間（秒）
+}
+
+interface SpotifyApiResponse {
+  spotify?: {
+    trackName: string
+    artistName: string
+    albumName: string
+    albumArt: string
+    isPlaying: boolean
+    position: number // ミリ秒
+    duration: number // ミリ秒
+  }
+  discord?: {
+    userId: string
+    status: 'online' | 'idle' | 'dnd' | 'offline'
+    activities?: Array<{
+      name: string
+      type: number
+      details?: string
+      state?: string
+      timestamps?: {
+        start?: number
+        end?: number
+      }
+      assets?: {
+        largeImage?: string
+        largeText?: string
+      }
+    }>
+    timestamp: number
+  }
+  error?: string
+}
+
 export default function Home() {
   const [mounted, setMounted] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [age, setAge] = useState<number>(0)
   const [daysUntilBirthday, setDaysUntilBirthday] = useState<number>(0)
   const [selectedProject, setSelectedProject] = useState<ProjectDetail | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [spotifyTrack, setSpotifyTrack] = useState<SpotifyTrack | null>(null)
+  const [isSpotifyLoading, setIsSpotifyLoading] = useState(false)
+  const [discordStatus, setDiscordStatus] = useState<'online' | 'idle' | 'dnd' | 'offline' | null>(null)
   
   // スクロール駆動アニメーション用のref
   const mainSectionRef = useRef<HTMLElement>(null)
   const aboutSectionRef = useRef<HTMLElement>(null)
-  const skillsSectionRef = useRef<HTMLElement>(null)
   const worksSectionRef = useRef<HTMLElement>(null)
+  const contactSectionRef = useRef<HTMLElement>(null)
   const [currentPage, setCurrentPage] = useState(0) // 現在のページインデックス
   const [scrollDirection, setScrollDirection] = useState<1 | -1>(1) // スクロール方向（1: 下スクロール→左から右, -1: 上スクロール→右から左）
+  const [scrollProgress, setScrollProgress] = useState(0) // 現在のページ間のスクロール進行状況（0-1）
 
   // スクロール位置とページ状態を追跡するref
   const lastScrollY = useRef(0) // 前回のスクロール位置
@@ -114,16 +147,16 @@ export default function Home() {
       filter: "blur(2px)",
     },
     {
-      // Skillsセクション
+      // Worksセクション
       type: "image" as const,
-      image: "/images/Background3.png",
+      image: "/images/Background4.png",
       position: "center",
       filter: "blur(2px)",
     },
     {
-      // Worksセクション
+      // Contactセクション
       type: "image" as const,
-      image: "/images/Background4.png",
+      image: "/images/Background3.png",
       position: "center",
       filter: "blur(2px)",
     },
@@ -134,7 +167,7 @@ export default function Home() {
   // スクロール方向に応じてアニメーション方向を変更：
   // - 下スクロール（ページ増）→ 左から右に出現（x: "100%" → 0）
   // - 上スクロール（ページ減）→ 右から左に出現（x: "-100%" → 0）
-  const totalPages = 4 // メイン、About、Skills、Works
+  const totalPages = 4 // メイン、About、Works、Contact
 
   useEffect(() => {
     const handleScroll = () => {
@@ -145,13 +178,19 @@ export default function Home() {
       
       const scrollY = window.scrollY
       const windowHeight = window.innerHeight
-      const scrollPerPage = windowHeight
+      const scrollPerPage = windowHeight * 0.8 // 画面の60%スクロールで次のセクションに移動
       
       // 現在のページを計算
       const calculatedPage = Math.min(
-        Math.round(scrollY / scrollPerPage),
+        Math.floor(scrollY / scrollPerPage),
         totalPages - 1
       )
+      
+      // 現在のページ間のスクロール進行状況を計算（0-1）
+      const currentPageStart = calculatedPage * scrollPerPage
+      const currentPageEnd = Math.min((calculatedPage + 1) * scrollPerPage, totalPages * scrollPerPage)
+      const progressInPage = Math.max(0, Math.min(1, (scrollY - currentPageStart) / (currentPageEnd - currentPageStart)))
+      setScrollProgress(progressInPage)
       
       // ページが変わった場合のみ処理
       if (calculatedPage !== lastPage.current) {
@@ -219,12 +258,10 @@ export default function Home() {
   // クライアント イドレンダリングのためのマウント確認と年齢・カウントダウン計算
   useEffect(() => {
     setMounted(true)
-    setAge(calculateAge(birthMonth, birthDay))
     setDaysUntilBirthday(getDaysUntilBirthday(birthMonth, birthDay))
 
-    // 毎日0時に年齢とカウントダウンを更新
-    const updateAgeAndCountdown = () => {
-      setAge(calculateAge(birthMonth, birthDay))
+    // 毎日0時にカウントダウンを更新
+    const updateCountdown = () => {
       setDaysUntilBirthday(getDaysUntilBirthday(birthMonth, birthDay))
     }
 
@@ -235,13 +272,123 @@ export default function Home() {
 
     // 0時にタイマーをセット
     const midnightTimer = setTimeout(() => {
-      updateAgeAndCountdown()
+      updateCountdown()
       // その後は24時間ごとに更新
-      setInterval(updateAgeAndCountdown, 24 * 60 * 60 * 1000)
+      setInterval(updateCountdown, 24 * 60 * 60 * 1000)
     }, timeUntilMidnight)
 
     return () => {
       clearTimeout(midnightTimer)
+    }
+  }, [])
+
+  // Spotifyデータを取得（SSE使用 - trackNameが変わったときだけ更新）
+  useEffect(() => {
+    let eventSource: EventSource | null = null
+    let reconnectTimeout: NodeJS.Timeout | null = null
+
+    const connectSSE = () => {
+      try {
+        setIsSpotifyLoading(true)
+        eventSource = new EventSource('/api/spotify-status/stream')
+
+        eventSource.onmessage = (event) => {
+          try {
+            const data: SpotifyApiResponse = JSON.parse(event.data)
+            
+            // エラーの場合はスキップ
+            if (data.error) {
+              console.error('SSE error:', data.error)
+              setIsSpotifyLoading(false)
+              return
+            }
+            
+            // DiscordのactivitiesからSpotify情報を取得
+            const spotifyActivity = data.discord?.activities?.find(
+              (activity) => activity.name === 'Spotify'
+            )
+            
+            if (spotifyActivity) {
+              const startTime = spotifyActivity.timestamps?.start || 0
+              const endTime = spotifyActivity.timestamps?.end || 0
+              const now = Date.now()
+              const currentPosition = Math.max(0, now - startTime)
+              const duration = endTime > startTime ? endTime - startTime : 0
+              
+              setSpotifyTrack({
+                name: spotifyActivity.details || '',
+                artist: spotifyActivity.state || '',
+                album: spotifyActivity.assets?.largeText || '',
+                albumArtUrl: spotifyActivity.assets?.largeImage || '',
+                isPlaying: true,
+                currentTime: Math.floor(currentPosition / 1000), // ミリ秒を秒に変換
+                duration: Math.floor(duration / 1000), // ミリ秒を秒に変換
+              })
+            } else {
+              // フォールバック: 従来のspotifyデータがある場合
+              if (data.spotify && data.spotify.isPlaying) {
+                setSpotifyTrack({
+                  name: data.spotify.trackName,
+                  artist: data.spotify.artistName,
+                  album: data.spotify.albumName,
+                  albumArtUrl: data.spotify.albumArt,
+                  isPlaying: data.spotify.isPlaying,
+                  currentTime: Math.floor(data.spotify.position / 1000), // ミリ秒を秒に変換
+                  duration: Math.floor(data.spotify.duration / 1000), // ミリ秒を秒に変換
+                })
+              } else {
+                setSpotifyTrack(null)
+              }
+            }
+            
+            // Discordステータスを更新
+            if (data.discord) {
+              setDiscordStatus(data.discord.status)
+            }
+            
+            setIsSpotifyLoading(false)
+          } catch (error) {
+            console.error('Error parsing SSE data:', error)
+            setIsSpotifyLoading(false)
+          }
+        }
+
+        eventSource.onerror = (error) => {
+          console.error('SSE connection error:', error)
+          setIsSpotifyLoading(false)
+          
+          // 接続を閉じる
+          if (eventSource) {
+            eventSource.close()
+            eventSource = null
+          }
+          
+          // 3秒後に再接続を試みる
+          reconnectTimeout = setTimeout(() => {
+            connectSSE()
+          }, 3000)
+        }
+      } catch (error) {
+        console.error('Error setting up SSE:', error)
+        setIsSpotifyLoading(false)
+        
+        // 3秒後に再接続を試みる
+        reconnectTimeout = setTimeout(() => {
+          connectSSE()
+        }, 3000)
+      }
+    }
+
+    // 初回接続
+    connectSSE()
+
+    return () => {
+      if (eventSource) {
+        eventSource.close()
+      }
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout)
+      }
     }
   }, [])
 
@@ -267,8 +414,8 @@ export default function Home() {
     const sections = [
       { id: "main", index: 0 },
       { id: "about", index: 1 },
-      { id: "skills", index: 2 },
-      { id: "works", index: 3 },
+      { id: "works", index: 2 },
+      { id: "contact", index: 3 },
     ]
 
     const section = sections.find(s => s.id === sectionId)
@@ -306,7 +453,7 @@ export default function Home() {
       x: 0,
     },
     exit: (direction: 1 | -1) => ({
-      opacity: 0,
+      opacity: 0.3, // 完全に非表示にせず、少し見えるようにする
       x: direction === 1 ? "-100%" : "100%", // 下スクロール: 左へ / 上スクロール: 右へ
     }),
   }
@@ -432,8 +579,8 @@ export default function Home() {
       ]
     },
   ]
-
-  const techStack = [
+  //eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const techStacks = [
     { name: "JavaScript", iconKey: "js", color: "bg-yellow-500", textColor: "text-black" },
     { name: "TypeScript", iconKey: "ts", color: "bg-blue-600", textColor: "text-white" },
     { name: "Python", iconKey: "python", color: "bg-yellow-400", textColor: "text-black" },
@@ -517,9 +664,75 @@ export default function Home() {
       {/* 縦スクロール可能な領域を確保（4ページ分のスクロール領域） */}
       <div style={{ height: `${totalPages * 100}vh` }} />
       
+      {/* スクロール進行状況インジケーター（下部） */}
+      {currentPage < totalPages - 1 && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
+          {/* メインセクションのみ「Scroll down to explore」と右矢印を表示 */}
+          {currentPage === 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.7 }}
+              className="flex flex-row items-center gap-2 mb-3 justify-center"
+            >
+              <span className="text-white/80 text-sm font-medium">
+                Scroll down to explore
+              </span>
+              <motion.div
+                animate={{ x: [0, 6, 0] }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+                className="text-white/80"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </motion.div>
+            </motion.div>
+          )}
+          <div className="flex flex-row items-center gap-3 bg-black/30 backdrop-blur-sm px-4 py-2 rounded-full">
+            {/* 現在のセクション名 */}
+            <span className="text-white text-sm font-medium">
+              {currentPage === 0 && "Home"}
+              {currentPage === 1 && "About"}
+              {currentPage === 2 && "Works"}
+              {currentPage === 3 && "Contact"}
+            </span>
+            {/* プログレスバー */}
+            <div className="w-32 h-1.5 bg-white/20 rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-white rounded-full"
+                style={{
+                  width: `${scrollProgress * 100}%`,
+                }}
+                transition={{ duration: 0.1 }}
+              />
+            </div>
+            {/* 次のセクション名 */}
+            <span className="text-white/60 text-sm">
+              {currentPage === 0 && "About"}
+              {currentPage === 1 && "Works"}
+              {currentPage === 2 && "Contact"}
+            </span>
+          </div>
+        </div>
+      )}
+      
       {/* ページコンテナ（固定・ピン留め） */}
-      <div className="fixed inset-0 overflow-hidden">
-        <AnimatePresence mode="wait" custom={scrollDirection}>
+      <div className="fixed inset-0 overflow-hidden bg-black">
+        <AnimatePresence mode="sync" custom={scrollDirection}>
           {/* メインセクション（ページ0） */}
           {currentPage === 0 && (
             <motion.section
@@ -545,8 +758,13 @@ export default function Home() {
                   zIndex: -1,
                 }}
               />
-              <div className="relative z-10 w-full h-full flex flex-col items-center justify-center">
-              {/* タイトル（コンテナ制限なしで中央揃え） */}
+              <motion.div 
+                className="relative z-10 w-full h-full flex flex-col items-center justify-center"
+                style={{
+                  opacity: currentPage === 0 ? 1 - scrollProgress * 0.3 : 1,
+                }}
+              >
+                {/* タイトル（コンテナ制限なしで中央揃え） */}
               <div className="w-full text-center mb-20 px-4">
                 <motion.div
                   initial={{ opacity: 0, y: -50 }}
@@ -652,7 +870,7 @@ export default function Home() {
                   </svg>
                   </motion.a>
                 </motion.div>
-              </div>
+              </motion.div>
             </motion.section>
           )}
 
@@ -670,34 +888,38 @@ export default function Home() {
               exit="exit"
               transition={pageTransition}
             >
-              {/* 背景画像 */}
-              <div
-                className="absolute inset-0 w-full h-full bg-cover bg-center"
-                style={{
-                  backgroundImage: `url('${sectionBackgrounds[1].image}')`,
-                  backgroundPosition: sectionBackgrounds[1].position || "center",
-                  filter: sectionBackgrounds[1].filter || "none",
-                  transform: "scale(1.3) translateZ(0px)",
-                  zIndex: 0,
-                }}
+              {/* BgShader */}
+              <BgShader
+                colors={["#f97316", "#fb923c", "#fdba74", "#fda4af", "#fb7185", "#f472b6"]}
+                distortion={2}
+                swirl={1}
+                speed={0.8}
+                offsetX={0.08}
+                veilOpacity="bg-black/20"
               />
-              <div className="container mx-auto px-4 max-w-4xl w-full relative z-10">
-                <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
-                  {/* アイコン */}
+              <motion.div
+                className="container mx-auto px-4 max-w-6xl w-full h-full relative z-10 flex items-center justify-center"
+                style={{
+                  opacity: currentPage === 1 ? 1 - scrollProgress * 0.3 : 1,
+                }}
+              >
+                <div className="flex flex-row items-center gap-8 lg:gap-12 w-full">
+                  {/* 左側: アイコン */}
                   <motion.div
-                    initial={{ opacity: 0, y: -50 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, x: -50 }}
+                    animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.8, type: "spring", bounce: 0.4, delay: 0.1 }}
-                    className="text-center mb-8"
+                    className="flex-shrink-0 flex flex-col items-center"
                   >
-                    <div className="relative w-[400px] h-[320px] mx-auto mb-4 flex items-center justify-center">
-                      {/* 装飾画像（Discordデコレーション）だけを表示 */}
+                    <div className="relative w-[300px] h-[240px] lg:w-[400px] lg:h-[320px] flex items-center justify-center">
+                      {/* 装飾画像（Discordデコレーション） */}
                       <Image
-                        src="https://cdn.discordapp.com/avatar-decoration-presets/a_8552f9857793aed0cf816f370e2df3be.png?size=96&passthrough=true"
+                        src="https://cdn.discordapp.com/avatar-decoration-presets/a_48b8411feb1e80a69048fc65b3275b75.png?size=256&passthrough=true"
                         alt="Decoration"
-                        width={304}
-                        height={304}
-                        className="absolute left-1/2 top-1/2 w-[304px] h-[304px] -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50"
+                        width={256}
+                        height={256}
+                        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50"
+                        style={{ width: '248px', height: '248px' }}
                         draggable="false"
                         priority
                       />
@@ -706,60 +928,111 @@ export default function Home() {
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         transition={{ delay: 0.3, type: "spring", stiffness: 100 }}
-                        className="w-64 h-64 rounded-full overflow-hidden relative z-40"
+                        className="w-52 h-52 lg:w-64 lg:h-64 rounded-full overflow-visible relative z-40"
                       >
-                        <div className="relative w-full h-full">
+                        <div className="relative w-full h-full rounded-full overflow-hidden">
                           <Image
                             src="https://avatars.githubusercontent.com/u/108514947?v="
                             alt="Tako"
                             fill
-                            sizes="(max-width: 600px) 64px, 128px"
+                            sizes="(max-width: 1024px) 208px, 256px"
                             className="object-cover"
                             priority
                           />
                         </div>
+                        {/* Discordステータスインジケーター */}
+                        {discordStatus && (
+                          <div className="absolute bottom-0 right-2 z-[60]" style={{ 
+                            width: '28px', 
+                            height: '28px',
+                            filter: 'drop-shadow(0 0 0 3px #1a1a1a)'
+                          }}>
+                            {discordStatus === 'online' ? (
+                              <svg width="28" height="28" viewBox="0 0 12 12" className="w-full h-full">
+                                <circle cx="6" cy="6" r="6" fill="rgb(69, 163, 102)" />
+                              </svg>
+                            ) : discordStatus === 'idle' ? (
+                              <svg width="28" height="28" viewBox="0 0 12 12" className="w-full h-full">
+                                <defs>
+                                  <mask id="svg-mask-status-idle">
+                                    <rect width="12" height="12" fill="black" />
+                                    <circle cx="6" cy="6" r="5" fill="white" />
+                                    <path d="M 6 1 A 5 5 0 0 0 1 6 L 6 6 Z" fill="black" />
+                                  </mask>
+                                </defs>
+                                <rect width="12" height="12" x="0" y="0" fill="#ffc04e" mask="url(#svg-mask-status-idle)" />
+                              </svg>
+                            ) : discordStatus === 'dnd' ? (
+                              <svg width="28" height="28" viewBox="0 0 12 12" className="w-full h-full">
+                                <circle cx="6" cy="6" r="6" fill="rgb(237, 66, 69)" />
+                                <rect x="3" y="5" width="6" height="2" fill="white" rx="1" />
+                              </svg>
+                            ) : (
+                              <svg width="28" height="28" viewBox="0 0 12 12" className="w-full h-full">
+                                <circle cx="6" cy="6" r="6" fill="rgb(116, 127, 141)" />
+                                <circle cx="6" cy="6" r="4" fill="rgb(79, 84, 92)" />
+                              </svg>
+                            )}
+                          </div>
+                        )}
+                        
                       </motion.div>
                     </div>
+                    {/* 名前と情報 */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: 0.4 }}
+                      className="mt-6 text-center"
+                    >
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <h2 className="text-4xl lg:text-5xl font-bold text-white" style={{ fontFamily: 'Discord, sans-serif' }}>T4ko</h2>
+                        <div className="flex items-center gap-1.5 border border-white/30 rounded px-2 py-0.5">
+                          <Image
+                            src="https://cdn.discordapp.com/clan-badges/1399359679473254492/df39482e5db7ebbeff7f6d9a832a6144.png?size=16"
+                            alt="Clan Badge"
+                            width={16}
+                            height={16}
+                            className="w-4 h-4"
+                          />
+                          <span className="text-xs lg:text-sm font-bold text-white">OP81</span>
+                        </div>
+                      </div>
+                      <p className="text-base lg:text-lg text-gray-300 mb-1">tako._.v<span className="font-bold">・</span>17yo He/Him</p>
+                    </motion.div>
+                    {/* Spotify Now Playing */}
+                    <SpotifyNowPlaying track={spotifyTrack || undefined} isLoading={isSpotifyLoading} />
                   </motion.div>
-                  <motion.div variants={item}>
+
+                  {/* 右側: About Me */}
+                  <motion.div
+                    initial={{ opacity: 0, x: 50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.8, type: "spring", bounce: 0.4, delay: 0.2 }}
+                    className="flex-1"
+                  >
                     <Card className="bg-transparent border-transparent">
                       <CardContent className="p-6">
-                        <h3 className="text-xl font-bold mb-4 text-cyan-300">💻 About Me</h3>
-                        <p className="mb-4 text-white">
+                        <h3 className="text-2xl lg:text-3xl font-bold mb-6 text-cyan-300">💻 About Me</h3>
+                        <p className="mb-4 text-white text-lg">
                           <span className="font-bold">🎓CS Japanese Student | Full Stack Engineer</span>
                         </p>
-                        <p className="mb-4 text-white">
+                        <p className="mb-6 text-white">
                           2008年大阪生まれ。現在はWeb開発を中心に学習しており、バックエンドとフロントエンドの両方を扱えるフルスタックエンジニアです！2025年10月からmuclaseという会社でエンジニアとしてインターンで働いております！
-                        <br />
-                        <span className="block text-sm italic text-gray-200 translate-x-1 mt-1">
-                        Born in Osaka in 2008. Currently studying web development and is a full-stack engineer capable of both back-end and front-end development. Starting in October 2025, I have been working as an intern at a company called muclase!
-                        </span>
+                          <br />
+                          <span className="block text-sm italic text-gray-200 mt-2">
+                            Born in Osaka in 2008. Currently studying web development and is a full-stack engineer capable of both back-end and front-end development. Starting in October 2025, I have been working as an intern at a company called muclase!
+                          </span>
                         </p>
-                        <div className="grid grid-cols-2 gap-4 mb-6">
-                          {/* 年齢 */}
-                          <motion.div
-                            whileHover={{ scale: 1.03 }}
-                            className="bg-transparent border-transparent p-4 rounded-lg text-white"
-                          >
-                            <div className="flex items-center mb-2">
-                              <Cake className="w-5 h-5 text-purple-500 mr-2" />
-                              <h4 className="text-lg font-medium text-purple-500">Age</h4>
-                            </div>
-                            <div className="flex items-baseline">
-                              <span className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500">
-                                {age}
-                              </span>
-                              <span className="ml-2 text-gray-200">years old</span>
-                            </div>
-                          </motion.div>
+                        <div className="grid grid-cols-1 gap-4">
                           {/* 誕生日 */}
                           <motion.div
-                            whileHover={{ scale: 1.03 }}
-                            className="bg-transparent border-transparent p-4 rounded-lg text-white"
+                            whileHover={{ scale: 1.05 }}
+                            className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 p-4 rounded-lg text-white"
                           >
                             <div className="flex items-center mb-2">
-                              <Gift className="w-5 h-5 text-purple-500 mr-2" />
-                              <h4 className="text-lg font-medium text-purple-500">Birthday</h4>
+                              <Gift className="w-5 h-5 text-white mr-2" />
+                              <h4 className="text-lg font-medium text-white">Birthday</h4>
                             </div>
                             <div className="flex items-baseline">
                               <span className="text-xl font-bold text-gray-200">May 22nd</span>
@@ -771,6 +1044,28 @@ export default function Home() {
                               )}
                             </div>
                           </motion.div>
+                          {/* Skills */}
+                          <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            whileHover={{ scale: 1.05 }}
+                            className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 p-4 rounded-lg text-white"
+                          >
+                            <div className="flex items-center mb-4">
+                              <Code className="w-5 h-5 text-white mr-2" />
+                              <h4 className="text-lg font-medium text-white">Skills</h4>
+                            </div>
+                            <div className="flex justify-center">
+                              <Image
+                                src="https://skillicons.dev/icons?i=js,ts,python,bash,powershell,react,next,vue,astro,remix,angular,tailwind,materialui,nodejs,deno,express,electron,postgres,mysql,docker,kubernetes,gcp,vercel,linux,windows,git,github,gitlab,postman,vscode"
+                                alt="Skills"
+                                width={600}
+                                height={100}
+                                className="w-full h-auto"
+                                unoptimized
+                              />
+                            </div>
+                          </motion.div>
                         </div>
 
                         {/* 誕生日カウントダウン（誕生日が近い場合のみ表示） */}
@@ -778,7 +1073,7 @@ export default function Home() {
                           <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 p-4 rounded-lg mb-6 border border-purple-500/30"
+                            className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 p-4 rounded-lg mt-4 border border-purple-500/30"
                           >
                             <div className="flex items-center justify-between">
                               <div className="flex items-center">
@@ -805,7 +1100,7 @@ export default function Home() {
                           <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            className="relative bg-gradient-to-r from-purple-600/30 to-pink-600/30 p-6 rounded-lg mb-6 border border-pink-500/50 overflow-hidden"
+                            className="relative bg-gradient-to-r from-purple-600/30 to-pink-600/30 p-6 rounded-lg mt-4 border border-pink-500/50 overflow-hidden"
                           >
                             <h4 className="text-xl font-bold text-center mb-2 text-white">🎉 Happy Birthday! 🎂</h4>
                             <p className="text-center text-gray-300 mb-4">May all your wishes come true!</p>
@@ -814,17 +1109,17 @@ export default function Home() {
                       </CardContent>
                     </Card>
                   </motion.div>
-                </motion.div>
-              </div>
+                </div>
+              </motion.div>
             </motion.section>
           )}
 
-          {/* Skills セクション（ページ2） */}
+          {/* Works セクション（ページ2） */}
           {currentPage === 2 && (
             <motion.section
-              key="skills"
-              ref={skillsSectionRef}
-              id="skills"
+              key="works"
+              ref={worksSectionRef}
+              id="works"
               className="absolute inset-0 w-screen h-screen flex items-center justify-center pointer-events-auto"
               custom={scrollDirection}
               variants={pageVariants}
@@ -844,71 +1139,12 @@ export default function Home() {
                   zIndex: 0,
                 }}
               />
-              <div className="container mx-auto px-4 max-w-4xl w-full relative z-10">
-                <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
-                  <motion.div variants={item}>
-                    <Card className="bg-transparent border-transparent">
-                      <CardContent className="p-6">
-                        <h3 className="text-xl font-bold mb-4">
-                          <span>🛠️</span> <span className="text-cyan-300">Tech Stack</span>
-                        </h3>
-                        <div className="flex flex-wrap gap-2">
-                          {techStack.map((tech, index) => (
-                            <motion.div
-                              key={tech.name}
-                              initial={{ opacity: 0, scale: 0.8 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              transition={{ delay: index * 0.05 }}
-                              whileHover={{ scale: 1.1 }}
-                              className="transition-all"
-                            >
-                              <Badge className={`${tech.color} ${tech.textColor} hover:${tech.color}`}>
-                                <Image 
-                                  src={`https://skillicons.dev/icons?i=${tech.iconKey}`} 
-                                  alt={tech.name}
-                                  width={16}
-                                  height={16}
-                                  className="w-4 h-4 mr-2"
-                                />
-                                {tech.name}
-                              </Badge>
-                            </motion.div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                </motion.div>
-              </div>
-            </motion.section>
-          )}
-
-          {/* Works セクション（ページ3） */}
-          {currentPage === 3 && (
-            <motion.section
-              key="works"
-              ref={worksSectionRef}
-              id="works"
-              className="absolute inset-0 w-screen h-screen flex items-center justify-center pointer-events-auto"
-              custom={scrollDirection}
-              variants={pageVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={pageTransition}
-            >
-              {/* 背景画像 */}
-              <div
-                className="absolute inset-0 w-full h-full bg-cover bg-center"
+              <motion.div 
+                className="container mx-auto px-4 max-w-4xl w-full relative z-10"
                 style={{
-                  backgroundImage: `url('${sectionBackgrounds[3].image}')`,
-                  backgroundPosition: sectionBackgrounds[3].position || "center",
-                  filter: sectionBackgrounds[3].filter || "none",
-                  transform: "scale(1.3) translateZ(0px)",
-                  zIndex: 0,
+                  opacity: currentPage === 2 ? 1 - scrollProgress * 0.3 : 1,
                 }}
-              />
-              <div className="container mx-auto px-4 max-w-4xl w-full relative z-10">
+              >
                 <motion.div variants={container} initial="hidden" animate="show" className="space-y-6 w-full">
                   <motion.div variants={item} className="w-full">
                     <Card className="bg-transparent border-transparent w-full">
@@ -995,7 +1231,54 @@ export default function Home() {
                     </Card>
                   </motion.div>
                 </motion.div>
-              </div>
+              </motion.div>
+            </motion.section>
+          )}
+
+          {/* Contact セクション（ページ3） */}
+          {currentPage === 3 && (
+            <motion.section
+              key="contact"
+              ref={contactSectionRef}
+              id="contact"
+              className="absolute inset-0 w-screen h-screen flex items-center justify-center pointer-events-auto"
+              custom={scrollDirection}
+              variants={pageVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={pageTransition}
+            >
+              {/* 背景画像 */}
+              <div
+                className="absolute inset-0 w-full h-full bg-cover bg-center"
+                style={{
+                  backgroundImage: `url('${sectionBackgrounds[3].image}')`,
+                  backgroundPosition: sectionBackgrounds[3].position || "center",
+                  filter: sectionBackgrounds[3].filter || "none",
+                  transform: "scale(1.3) translateZ(0px)",
+                  zIndex: 0,
+                }}
+              />
+              <motion.div 
+                className="container mx-auto px-4 max-w-4xl w-full relative z-10"
+                style={{
+                  opacity: currentPage === 3 ? 1 - scrollProgress * 0.3 : 1,
+                }}
+              >
+                <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
+                  <motion.div variants={item}>
+                    <Card className="bg-transparent border-transparent">
+                      <CardContent className="p-6">
+                        <h3 className="text-xl font-bold mb-4 text-cyan-300">📧 Contact</h3>
+                        <p className="text-white">
+                          Contactセクションのコンテンツは後で追加されます。
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                </motion.div>
+              </motion.div>
             </motion.section>
           )}
         </AnimatePresence>

@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { motion } from "framer-motion"
-import { Code, User, Briefcase } from "lucide-react"
+import { Home, User, Briefcase, Mail } from "lucide-react"
 import localFont from "next/font/local"
 
 const huninn = localFont({
@@ -42,22 +42,28 @@ export default function Header({ onNavigate }: HeaderProps) {
 
   const navItems = [
     {
+      id: "home",
+      label: "Home",
+      icon: Home,
+      sectionId: "main",
+    },
+    {
       id: "about",
       label: "About",
       icon: User,
       sectionId: "about",
     },
     {
-      id: "skills",
-      label: "Skills",
-      icon: Code,
-      sectionId: "skills",
-    },
-    {
       id: "works",
       label: "Works",
       icon: Briefcase,
       sectionId: "works",
+    },
+    {
+      id: "contact",
+      label: "Contact",
+      icon: Mail,
+      sectionId: "contact",
     },
   ]
 
@@ -69,7 +75,7 @@ export default function Header({ onNavigate }: HeaderProps) {
       className="fixed top-0 left-0 right-0 z-50 flex justify-center bg-transparent pointer-events-auto"
     >
       <div className="container mx-auto px-4 max-w-4xl w-full">
-        <div className="grid grid-cols-3 gap-1 py-4">
+        <div className="grid grid-cols-4 gap-1 py-4">
           {navItems.map((item) => {
             const Icon = item.icon
             return (

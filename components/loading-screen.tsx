@@ -9,6 +9,12 @@ const Loader: React.FC<LoaderProps> = ({ onLoadingComplete }) => {
   const [lines, setLines] = useState<Array<{ type: 'prompt' | 'command' | 'output' | 'special'; text: string }>>([]);
   const [currentLine, setCurrentLine] = useState("");
   const contentRef = useRef<HTMLDivElement>(null);
+  const onLoadingCompleteRef = useRef(onLoadingComplete);
+
+  // onLoadingCompleteの最新の参照を保持
+  useEffect(() => {
+    onLoadingCompleteRef.current = onLoadingComplete;
+  }, [onLoadingComplete]);
 
   // 新しい行が追加されたときに自動的にスクロール
   useEffect(() => {
@@ -92,7 +98,7 @@ const Loader: React.FC<LoaderProps> = ({ onLoadingComplete }) => {
       addLine('output', ' ✓ Ready in 1.2s');
       await delay(1000);
 
-      if (!cancelled) onLoadingComplete?.();
+      if (!cancelled) onLoadingCompleteRef.current?.();
     };
 
     run();
@@ -101,7 +107,7 @@ const Loader: React.FC<LoaderProps> = ({ onLoadingComplete }) => {
       cancelled = true;
       timers.forEach(clearTimeout);
     };
-  }, [onLoadingComplete]);
+  }, []); // 依存配列を空にして、一度だけ実行されるようにする
 
   return (
     <StyledWrapper>
