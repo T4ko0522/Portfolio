@@ -7,8 +7,10 @@ import {
   Calendar,
   Gift,
   Code,
+  Mail,
 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
+import { cn } from "@/lib/utils"
 import LoadingScreen from "../components/loading-screen"
 import TypingAnimation from "../components/typing-animation"
 import Image from "next/image"
@@ -17,6 +19,8 @@ import StaggeredCurtainReveal from "../components/staggered-curtain-reveal"
 import Header from "../components/header"
 import SpotifyNowPlaying from "../components/spotify-now-playing"
 import { BgShader } from "../components/bg-shader"
+import { DottedSurface } from "../components/dotted-surface"
+import { ShootingStars } from "../components/shooting-stars"
 import { Pacifico, Rock_Salt } from "next/font/google"
 
 const pacifico = Pacifico({ 
@@ -114,6 +118,7 @@ export default function Home() {
   const [spotifyTrack, setSpotifyTrack] = useState<SpotifyTrack | null>(null)
   const [isSpotifyLoading, setIsSpotifyLoading] = useState(false)
   const [discordStatus, setDiscordStatus] = useState<'online' | 'idle' | 'dnd' | 'offline' | null>(null)
+  const [discordCopied, setDiscordCopied] = useState(false)
   
   // スクロール駆動アニメーション用のref
   const mainSectionRef = useRef<HTMLElement>(null)
@@ -138,28 +143,7 @@ export default function Home() {
       image: "/images/Background1.png",
       position: "center 95%",
       filter: "grayscale(0.0) blur(3px)",
-    },
-    {
-      // Aboutセクション
-      type: "image" as const,
-      image: "/images/Background2.png",
-      position: "center",
-      filter: "blur(2px)",
-    },
-    {
-      // Worksセクション
-      type: "image" as const,
-      image: "/images/Background4.png",
-      position: "center",
-      filter: "blur(2px)",
-    },
-    {
-      // Contactセクション
-      type: "image" as const,
-      image: "/images/Background3.png",
-      position: "center",
-      filter: "blur(2px)",
-    },
+    }
   ]
   
   
@@ -409,6 +393,18 @@ export default function Home() {
     setSelectedProject(null)
   }
 
+  // Discordユーザー名をクリップボードにコピー
+  const handleCopyDiscord = async () => {
+    const discordUsername = "tako._.v"
+    try {
+      await navigator.clipboard.writeText(discordUsername)
+      setDiscordCopied(true)
+      setTimeout(() => setDiscordCopied(false), 2000)
+    } catch (err) {
+      console.error("Failed to copy Discord username:", err)
+    }
+  }
+
   // セクションへのスクロール関数（縦スクロール駆動）
   const scrollToSection = (sectionId: string) => {
     const sections = [
@@ -626,27 +622,6 @@ export default function Home() {
         />
         <Image
           src="/images/Background1.png"
-          alt=""
-          width={1920}
-          height={1080}
-          priority
-        />
-        <Image
-          src="/images/Background2.png"
-          alt=""
-          width={1920}
-          height={1080}
-          priority
-        />
-        <Image
-          src="/images/Background3.png"
-          alt=""
-          width={1920}
-          height={1080}
-          priority
-        />
-        <Image
-          src="/images/Background4.png"
           alt=""
           width={1920}
           height={1080}
@@ -1123,17 +1098,17 @@ export default function Home() {
               exit="exit"
               transition={pageTransition}
             >
-              {/* 背景画像 */}
-              <div
-                className="absolute inset-0 w-full h-full bg-cover bg-center"
-                style={{
-                  backgroundImage: `url('${sectionBackgrounds[2].image}')`,
-                  backgroundPosition: sectionBackgrounds[2].position || "center",
-                  filter: sectionBackgrounds[2].filter || "none",
-                  transform: "scale(1.3) translateZ(0px)",
-                  zIndex: 0,
-                }}
-              />
+              {/* DottedSurface背景 */}
+              <DottedSurface className="absolute inset-0" speed={0.02} >
+                <div
+                  aria-hidden="true"
+                  className={cn(
+                    'pointer-events-none absolute -top-10 left-1/2 size-full -translate-x-1/2 rounded-full',
+                    'bg-[radial-gradient(ellipse_at_center,hsl(var(--foreground)/0.1),transparent_50%)]',
+                    'blur-[30px]',
+                  )}
+                />
+              </DottedSurface>
               <motion.div 
                 className="container mx-auto px-4 max-w-4xl w-full relative z-10"
                 style={{
@@ -1144,7 +1119,6 @@ export default function Home() {
                   <motion.div variants={item} className="w-full">
                     <Card className="bg-transparent border-transparent w-full">
                       <CardContent className="p-6 w-full">
-                        <h3 className="text-xl font-bold mb-6 text-cyan-300">💼 Works</h3>
                         <div className="grid grid-cols-2 gap-4 w-full">
                           {projectDetails.map((project, index) => (
                             <motion.div
@@ -1209,7 +1183,7 @@ export default function Home() {
                                 {project.description}
                               </p>
                               {project.imageUrl && (
-                                <div className="mb-2 rounded-lg overflow-hidden">
+                                <div className="mb-2 rounded-lg overflow-hidden bg-gray-900 dark:bg-gray-100">
                                   <Image
                                     src={project.imageUrl}
                                     alt={project.imageAlt}
@@ -1244,17 +1218,41 @@ export default function Home() {
               exit="exit"
               transition={pageTransition}
             >
-              {/* 背景画像 */}
-              <div
-                className="absolute inset-0 w-full h-full bg-cover bg-center"
-                style={{
-                  backgroundImage: `url('${sectionBackgrounds[3].image}')`,
-                  backgroundPosition: sectionBackgrounds[3].position || "center",
-                  filter: sectionBackgrounds[3].filter || "none",
-                  transform: "scale(1.3) translateZ(0px)",
-                  zIndex: 0,
-                }}
-              />
+              {/* ShootingStars背景 */}
+              <div className="absolute inset-0 pointer-events-none bg-black" style={{ zIndex: 0 }}>
+                {/* 背景グラデーションと星のパターン */}
+                <div className="absolute inset-0">
+                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.15)_0%,rgba(0,0,0,0)_80%)]" />
+                  <div className="stars absolute inset-0" />
+                </div>
+                
+                {/* 複数のShootingStarsレイヤー */}
+                <ShootingStars
+                  starColor="#9E00FF"
+                  trailColor="#2EB9DF"
+                  minSpeed={15}
+                  maxSpeed={35}
+                  minDelay={1000}
+                  maxDelay={3000}
+                />
+                <ShootingStars
+                  starColor="#FF0099"
+                  trailColor="#FFB800"
+                  minSpeed={10}
+                  maxSpeed={25}
+                  minDelay={2000}
+                  maxDelay={4000}
+                />
+                <ShootingStars
+                  starColor="#00FF9E"
+                  trailColor="#00B8FF"
+                  minSpeed={20}
+                  maxSpeed={40}
+                  minDelay={1500}
+                  maxDelay={3500}
+                />
+              </div>
+              
               <motion.div 
                 className="container mx-auto px-4 max-w-4xl w-full relative z-10"
                 style={{
@@ -1265,15 +1263,97 @@ export default function Home() {
                   <motion.div variants={item}>
                     <Card className="bg-transparent border-transparent">
                       <CardContent className="p-6">
-                        <h3 className="text-xl font-bold mb-4 text-cyan-300">📧 Contact</h3>
-                        <p className="text-white">
-                          Contactセクションのコンテンツは後で追加されます。
-                        </p>
+                        <h3 className="text-3xl lg:text-4xl font-bold mb-8 text-white text-center">📧 Contact</h3>
+                        
+                        {/* メールアドレスとDiscord */}
+                        <motion.div
+                          variants={item}
+                          className="mb-8"
+                        >
+                          <div className="grid grid-cols-[1fr_auto_1fr] gap-1 items-center">
+                            {/* Email */}
+                            <div className="bg-transparent rounded-lg p-6">
+                              <div className="flex flex-col items-center gap-4 mb-4">
+                                <div className="flex items-center gap-3">
+                                  <Mail className="w-6 h-6 text-cyan-400" />
+                                  <h4 className="text-xl font-semibold text-white">Email</h4>
+                                </div>
+                              </div>
+                              <div className="text-center">
+                                <a
+                                  href="mailto:tako.work.contact@gmail.com"
+                                  className="text-cyan-400 hover:text-cyan-300 text-lg font-mono transition-colors break-all"
+                                >
+                                  tako.work.contact@gmail.com
+                                </a>
+                              </div>
+                            </div>
+
+                            {/* or */}
+                            <div className="flex items-center justify-center w-fit min-w-fit px-1">
+                              <span className="text-white/60 text-lg font-medium whitespace-nowrap">or</span>
+                            </div>
+
+                            {/* Discord */}
+                            <div className="bg-transparent rounded-lg p-6">
+                              <div className="flex flex-col items-center gap-4 mb-4">
+                                <div className="flex items-center gap-3">
+                                  <svg
+                                    className="w-6 h-6 text-indigo-400"
+                                    fill="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.007-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+                                  </svg>
+                                  <h4 className="text-xl font-semibold text-white">Discord</h4>
+                                </div>
+                              </div>
+                              <div className="text-center">
+                                <motion.span
+                                  onClick={handleCopyDiscord}
+                                  className="text-indigo-400 hover:text-indigo-300 text-lg font-mono transition-colors break-all cursor-pointer"
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
+                                >
+                                  {discordCopied ? "Copied!" : "tako._.v"}
+                                </motion.span>
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                        {/* メッセージ */}
+                        <motion.div
+                          variants={item}
+                          className="text-center"
+                        >
+                          <p className="text-gray-300 text-lg">
+                            お気軽にご連絡ください！
+                          </p>
+                          <p className="text-gray-400 text-sm mt-2 italic">
+                            Feel free to reach out!
+                          </p>
+                        </motion.div>
                       </CardContent>
                     </Card>
                   </motion.div>
                 </motion.div>
               </motion.div>
+              
+              {/* フッター（Contactセクションのみ） */}
+              {currentPage === 3 && (
+                <motion.footer
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.3 }}
+                  className="absolute bottom-0 left-0 right-0 py-6 text-center z-20"
+                >
+                  <div className="container mx-auto px-4">
+                    <p className="text-gray-400 text-sm">
+                      © {new Date().getFullYear()} T4ko0522. All rights reserved.
+                    </p>
+                  </div>
+                </motion.footer>
+              )}
             </motion.section>
           )}
         </AnimatePresence>
