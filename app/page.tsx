@@ -1,23 +1,34 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   ExternalLink,
-  Code,
-  User,
   Calendar,
   Gift,
   Cake,
-  Briefcase,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "src/components/ui/tabs"
 import LoadingScreen from "../components/loading-screen"
 import TypingAnimation from "../components/typing-animation"
 import Image from "next/image"
 import ProjectDetailModal, { ProjectDetail } from "../components/project-detail-modal"
+import StaggeredCurtainReveal from "../components/staggered-curtain-reveal"
+import Header from "../components/header"
+import { Pacifico, Rock_Salt } from "next/font/google"
+
+const pacifico = Pacifico({ 
+  weight: "400",
+  subsets: ["latin"],
+  display: "swap",
+})
+
+const rockSalt = Rock_Salt({
+  weight: "400",
+  subsets: ["latin"],
+  display: "swap",
+})
 
 // 年齢計算関数
 function calculateAge(birthMonth: number, birthDay: number): number {
@@ -71,6 +82,135 @@ export default function Home() {
   const [daysUntilBirthday, setDaysUntilBirthday] = useState<number>(0)
   const [selectedProject, setSelectedProject] = useState<ProjectDetail | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  
+  // スクロール駆動アニメーション用のref
+  const mainSectionRef = useRef<HTMLElement>(null)
+  const aboutSectionRef = useRef<HTMLElement>(null)
+  const skillsSectionRef = useRef<HTMLElement>(null)
+  const worksSectionRef = useRef<HTMLElement>(null)
+  const [currentPage, setCurrentPage] = useState(0) // 現在のページインデックス
+  const [scrollDirection, setScrollDirection] = useState<1 | -1>(1) // スクロール方向（1: 下スクロール→左から右, -1: 上スクロール→右から左）
+
+  // スクロール位置とページ状態を追跡するref
+  const lastScrollY = useRef(0) // 前回のスクロール位置
+  const lastPage = useRef(0) // 前回のページ番号
+  const snapTimeoutRef = useRef<NodeJS.Timeout | null>(null) // スナップ用タイマー
+  const isSnappingRef = useRef(false) // スナップ処理中フラグ
+  
+  // セクションごとの背景設定
+  const sectionBackgrounds = [
+    {
+      // メインセクション
+      type: "image" as const,
+      image: "/images/Background1.png",
+      position: "center 95%",
+      filter: "grayscale(0.0) blur(3px)",
+    },
+    {
+      // Aboutセクション
+      type: "image" as const,
+      image: "/images/Background2.png",
+      position: "center",
+      filter: "blur(2px)",
+    },
+    {
+      // Skillsセクション
+      type: "image" as const,
+      image: "/images/Background3.png",
+      position: "center",
+      filter: "blur(2px)",
+    },
+    {
+      // Worksセクション
+      type: "image" as const,
+      image: "/images/Background4.png",
+      position: "center",
+      filter: "blur(2px)",
+    },
+  ]
+  
+  
+  // ページベースのスクロール（本のページをめくるような体験）
+  // スクロール方向に応じてアニメーション方向を変更：
+  // - 下スクロール（ページ増）→ 左から右に出現（x: "100%" → 0）
+  // - 上スクロール（ページ減）→ 右から左に出現（x: "-100%" → 0）
+  const totalPages = 4 // メイン、About、Skills、Works
+
+  useEffect(() => {
+    const handleScroll = () => {
+      // スナップ処理中は方向判定をスキップ
+      if (isSnappingRef.current) {
+        return
+      }
+      
+      const scrollY = window.scrollY
+      const windowHeight = window.innerHeight
+      const scrollPerPage = windowHeight
+      
+      // 現在のページを計算
+      const calculatedPage = Math.min(
+        Math.round(scrollY / scrollPerPage),
+        totalPages - 1
+      )
+      
+      // ページが変わった場合のみ処理
+      if (calculatedPage !== lastPage.current) {
+        // スクロール方向を判定（ページ番号の比較で確実に判定）
+        const prevPage = lastPage.current
+        const direction: 1 | -1 = calculatedPage > prevPage ? 1 : -1
+
+        // 方向とページを同時に更新（確実に同期させる）
+        setScrollDirection(direction)
+        setCurrentPage(calculatedPage)
+
+        // refを更新（次の判定のため）
+        lastPage.current = calculatedPage
+        lastScrollY.current = scrollY
+      } else {
+        // ページが変わらなくてもスクロール位置は更新
+        lastScrollY.current = scrollY
+      }
+      
+      // スクロール停止後にページ位置にスナップ
+      if (snapTimeoutRef.current) {
+        clearTimeout(snapTimeoutRef.current)
+      }
+      
+      snapTimeoutRef.current = setTimeout(() => {
+        const currentScrollY = window.scrollY
+        const nearestPage = Math.round(currentScrollY / scrollPerPage)
+        const targetScrollY = nearestPage * scrollPerPage
+        
+        // スナップが必要な場合（50px以上のずれ）
+        if (Math.abs(currentScrollY - targetScrollY) > 50) {
+          isSnappingRef.current = true
+          window.scrollTo({
+            top: targetScrollY,
+            behavior: "smooth",
+          })
+          // スナップ完了後にフラグをリセット（アニメーション時間を考慮）
+          setTimeout(() => {
+            isSnappingRef.current = false
+          }, 600) // スナップアニメーション時間より少し長め
+        }
+      }, 150)
+    }
+    
+    // 初期スクロール位置を設定
+    lastScrollY.current = window.scrollY
+    lastPage.current = currentPage
+    
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+      if (snapTimeoutRef.current) {
+        clearTimeout(snapTimeoutRef.current)
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [totalPages]) // currentPageを依存配列から除外（refで管理しているため無限ループを防ぐ）
+  
 
   // 誕生日の設定（5月22日）
   const birthMonth = 5
@@ -122,7 +262,59 @@ export default function Home() {
     setSelectedProject(null)
   }
 
+  // セクションへのスクロール関数（縦スクロール駆動）
+  const scrollToSection = (sectionId: string) => {
+    const sections = [
+      { id: "main", index: 0 },
+      { id: "about", index: 1 },
+      { id: "skills", index: 2 },
+      { id: "works", index: 3 },
+    ]
+
+    const section = sections.find(s => s.id === sectionId)
+    if (section) {
+      const windowHeight = window.innerHeight
+      const targetScrollY = section.index * windowHeight
+      const targetPage = section.index
+
+      // スクロール方向を判定（現在のページと比較）
+      const direction: 1 | -1 = targetPage > currentPage ? 1 : -1
+
+      setScrollDirection(direction)
+
+      // refも更新
+      lastPage.current = currentPage
+      lastScrollY.current = window.scrollY
+
+      window.scrollTo({
+        top: targetScrollY,
+        behavior: "smooth",
+      })
+    }
+  }
+
   if (!mounted) return null
+
+  // ページ遷移のvariantsを定義（スクロール方向に基づく）
+  const pageVariants = {
+    enter: (direction: 1 | -1) => ({
+      opacity: 0,
+      x: direction === 1 ? "100%" : "-100%", // 下スクロール: 右から / 上スクロール: 左から
+    }),
+    center: {
+      opacity: 1,
+      x: 0,
+    },
+    exit: (direction: 1 | -1) => ({
+      opacity: 0,
+      x: direction === 1 ? "-100%" : "100%", // 下スクロール: 左へ / 上スクロール: 右へ
+    }),
+  }
+
+  const pageTransition = {
+    duration: 0.6,
+    ease: [0.4, 0.0, 0.2, 1],
+  }
 
   const container = {
     hidden: { opacity: 0 },
@@ -286,7 +478,28 @@ export default function Home() {
           priority
         />
         <Image
-          src="/images/background.png"
+          src="/images/Background1.png"
+          alt=""
+          width={1920}
+          height={1080}
+          priority
+        />
+        <Image
+          src="/images/Background2.png"
+          alt=""
+          width={1920}
+          height={1080}
+          priority
+        />
+        <Image
+          src="/images/Background3.png"
+          alt=""
+          width={1920}
+          height={1080}
+          priority
+        />
+        <Image
+          src="/images/Background4.png"
           alt=""
           width={1920}
           height={1080}
@@ -300,495 +513,501 @@ export default function Home() {
           priority
         />
       </div>
-      <AnimatePresence mode="wait">
-        {isLoading ? (
-          <div className="fixed inset-0 flex items-center justify-center z-[9999] bg-transparent">
-            <LoadingScreen key="loading" onLoadingComplete={handleLoadingComplete} />
-          </div>
-        ) : (
-          <motion.div
-            key="content"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="relative min-h-screen text-white overflow-hidden"
-          >
-            <div
-              className="fixed inset-0 bg-cover"
-              style={{
-                backgroundImage: "url('/images/background.png')",
-                backgroundPosition: "center 95%",
-                transform: "scale(1.05)",
-                zIndex: -2,
-            }}
-            />
-            {/* 画面幅1500px以下で全画面ブラー、それ以外は中央だけブラー */}
-            <div
-              className="fixed inset-0 flex items-center justify-center pointer-events-none"
-              style={{ zIndex: -1 }}
+      {/* メインコンテンツ（ページベースのトランジション） */}
+      {/* 縦スクロール可能な領域を確保（4ページ分のスクロール領域） */}
+      <div style={{ height: `${totalPages * 100}vh` }} />
+      
+      {/* ページコンテナ（固定・ピン留め） */}
+      <div className="fixed inset-0 overflow-hidden">
+        <AnimatePresence mode="wait" custom={scrollDirection}>
+          {/* メインセクション（ページ0） */}
+          {currentPage === 0 && (
+            <motion.section
+              key="main"
+              ref={mainSectionRef}
+              id="main"
+              className="absolute inset-0 w-screen h-screen flex flex-col items-center justify-center pt-32 pb-16 pointer-events-auto"
+              custom={scrollDirection}
+              variants={pageVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={pageTransition}
             >
+              {/* 背景画像 */}
               <div
-                className="backdrop-blur-md bg-black/20 w-full h-full rounded-none xl2:w-[60%] xl2:rounded-xl"
-                style={{ height: "100%" }}
+                className="absolute inset-0 w-full h-full bg-cover bg-center"
+                style={{
+                  backgroundImage: `url('${sectionBackgrounds[0].image}')`,
+                  backgroundPosition: sectionBackgrounds[0].position || "center",
+                  filter: sectionBackgrounds[0].filter || "none",
+                  transform: "scale(1.3) translateZ(0px)",
+                  zIndex: -1,
+                }}
               />
-            </div>
-            <div className="container mx-auto px-4 py-16 max-w-4xl">
-              {/* ヘッダー */}
+              <div className="relative z-10 w-full h-full flex flex-col items-center justify-center">
+              {/* タイトル（コンテナ制限なしで中央揃え） */}
+              <div className="w-full text-center mb-20 px-4">
+                <motion.div
+                  initial={{ opacity: 0, y: -50 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, type: "spring", bounce: 0.4, delay: 0.15 }}
+                  className={`${pacifico.className} text-6xl md:text-7xl lg:text-8xl font-bold mb-10 flex items-center justify-center gap-4`}
+                >
+                  <Image 
+                    src="https://raw.githubusercontent.com/ABSphreak/ABSphreak/master/gifs/Hi.gif" 
+                    alt="Hi" 
+                    width={80}
+                    height={80}
+                    className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 inline-block"
+                    unoptimized
+                  />
+                  <span className="text-white">Hi there!</span>
+                </motion.div>
+                <motion.h1
+                  initial={{ opacity: 0, y: -50 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, type: "spring", bounce: 0.4, delay: 0.2 }}
+                  className={`${rockSalt.className} text-[10vw] font-bold leading-none whitespace-nowrap text-center`}
+                >
+                  <span className="text-transparent [text-stroke:10px_#ffffff] [-webkit-text-stroke:10px_#ffffff]">I&apos;m T4ko0522!</span>
+                </motion.h1>
+              </div>
+
+              <div className="container mx-auto px-4 max-w-4xl text-center">
+                {/* 以前ここにタイトルがありましたが、上に移動しました */}
+              </div>
+
+              {/* タイピングアニメーション（introText） */}
               <motion.div
                 initial={{ opacity: 0, y: -50 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, type: "spring", bounce: 0.4 }}
-                className="text-center mb-16 -mt-12"
+                transition={{ duration: 0.8, type: "spring", bounce: 0.4, delay: 0.3 }}
+                className="w-full mt-25 flex justify-center items-center px-4"
               >
-                {/* アイコンにホバーエフェクトを追加 */}
-                <div className="relative w-[200px] h-[160px] mx-auto mb-2 flex items-center justify-center">
-                  {/* 装飾画像（Discordデコレーション）だけを表示 */}
-                  <Image
-                    src="https://cdn.discordapp.com/avatar-decoration-presets/a_8552f9857793aed0cf816f370e2df3be.png?size=96&passthrough=true"
-                    alt="Decoration"
-                    width={152}
-                    height={152}
-                    className="absolute left-1/2 top-1/2 w-[152px] h-[152px] -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50"
-                    draggable="false"
-                    priority
-                  />
-                  {/* アイコン本体 */}
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.2, type: "spring", stiffness: 100 }}
-                    className="w-32 h-32 rounded-full overflow-hidden relative z-40"
-                  >
-                    <div className="relative w-full h-full">
-                      <Image
-                        src="https://avatars.githubusercontent.com/u/108514947?v="
-                        alt="Tako"
-                        fill
-                        sizes="(max-width: 600px) 64px, 128px"
-                        className="object-cover"
-                        priority
-                      />
-                    </div>
-                  </motion.div>
-                </div>
-
-                <motion.h1
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.4 }}
-                  className="text-4xl md:text-5xl font-bold mb-2 flex items-center justify-center gap-2"
-                >
-                  <span>👋 </span>
-                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-blue-500">Hi! I&apos;m T4ko!</span>
-                </motion.h1>
-
-                {/* タイピングアニメーション */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.5 }}
-                  className="mb-4 flex justify-center items-center px-4"
-                >
-                  <TypingAnimation
-                    texts={introTexts}
-                    className="text-base md:text-xl lg:text-2xl"
-                  />
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.6 }}
-                  className="flex justify-center space-x-4"
-                >
-                  <motion.a
-                    href="https://github.com/T4ko0522"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="relative p-3 rounded-full bg-transparent"
-                    aria-label="GitHub"
-                    whileHover={{ scale: 1.3, rotate: 7 }}
-                  >
-                    {/* GitHub SVG */}
-                    <svg 
-                      className="w-6 h-6 text-white relative z-10" 
-                      fill="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                    </svg>
-                  </motion.a>
-                  
-                  <motion.a
-                    href="https://www.youtube.com/@%E3%82%BF%E3%82%B3%E3%81%95%E3%82%93%E3%81%A7%E3%81%99"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="relative p-3 rounded-full bg-transparent"
-                    aria-label="YouTube"
-                    whileHover={{ scale: 1.3, rotate: 7 }}
-                  >
-                    {/* YouTube SVG */}
-                    <svg 
-                      className="w-6 h-6 text-white relative z-10" 
-                      fill="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                    </svg>
-                  </motion.a>
-                  
-                  <motion.a
-                    href="https://x.com/T4ko0522"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="relative p-3 rounded-full bg-transparent"
-                    aria-label="Twitter"
-                    whileHover={{ scale: 1.3, rotate: 7 }}
-                  >
-                    {/* Twitter/X SVG */}
-                    <svg 
-                      className="w-6 h-6 text-white relative z-10" 
-                      fill="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                    </svg>
-                  </motion.a>
-                </motion.div>
+                <TypingAnimation
+                  texts={introTexts}
+                  className={`${pacifico.className} text-4xl md:text-5xl lg:text-6xl`}
+                />
               </motion.div>
 
-              {/* タブコンテンツ */}
-              <Tabs defaultValue="about" className="w-full">
-                <TabsList className="grid grid-cols-3 mb-8 -mt-10">
-                  <TabsTrigger
-                    value="about"
-                    className="text-white data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=active]:bg-gradient-to-r data-[state=active]:from-white/80 data-[state=active]:to-white/40 hover:bg-blue-500/10 transition-colors duration-200 relative overflow-hidden group"
-                    onClick={(e) => {
-                      const rect = e.currentTarget.getBoundingClientRect()
-                      const x = e.clientX - rect.left
-                      const y = e.clientY - rect.top
-
-                      // クリック時の波紋エフェクト
-                      const ripple = document.createElement("span")
-                      ripple.style.position = "absolute"
-                      ripple.style.width = "5px"
-                      ripple.style.height = "5px"
-                      ripple.style.borderRadius = "50%"
-                      ripple.style.backgroundColor = "rgba(59, 130, 246, 0.4)"
-                      ripple.style.transform = "scale(0)"
-                      ripple.style.left = `${x}px`
-                      ripple.style.top = `${y}px`
-                      ripple.style.animation = "ripple 0.6s linear"
-
-                      e.currentTarget.appendChild(ripple)
-
-                      setTimeout(() => {
-                        ripple.remove()
-                      }, 600)
-                    }}
+              {/* SNSリンク */}
+              <motion.div
+                initial={{ opacity: 0, y: -50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, type: "spring", bounce: 0.4, delay: 0.5 }}
+                className="flex justify-center space-x-6 mb-16 pointer-events-auto"
+              >
+                <motion.a
+                  href="https://github.com/T4ko0522"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="relative p-4 rounded-full bg-transparent"
+                  aria-label="GitHub"
+                  whileHover={{ scale: 1.3, rotate: 7 }}
+                >
+                  {/* GitHub SVG */}
+                  <svg 
+                    className="w-10 h-10 text-white relative z-10" 
+                    fill="currentColor" 
+                    viewBox="0 0 24 24"
                   >
-                    <User className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
-                    <span className="group-hover:translate-x-0.5 transition-transform duration-200">About</span>
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="skills"
-                    className="text-white data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=active]:bg-gradient-to-r data-[state=active]:from-white/80 data-[state=active]:to-white/40 hover:bg-blue-500/10 transition-colors duration-200 relative overflow-hidden group"
-                    onClick={(e) => {
-                      const rect = e.currentTarget.getBoundingClientRect()
-                      const x = e.clientX - rect.left
-                      const y = e.clientY - rect.top
-
-                      const ripple = document.createElement("span")
-                      ripple.style.position = "absolute"
-                      ripple.style.width = "5px"
-                      ripple.style.height = "5px"
-                      ripple.style.borderRadius = "50%"
-                      ripple.style.backgroundColor = "rgba(59, 130, 246, 0.4)"
-                      ripple.style.transform = "scale(0)"
-                      ripple.style.left = `${x}px`
-                      ripple.style.top = `${y}px`
-                      ripple.style.animation = "ripple 0.6s linear"
-
-                      e.currentTarget.appendChild(ripple)
-
-                      setTimeout(() => {
-                        ripple.remove()
-                      }, 600)
-                    }}
+                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                  </svg>
+                </motion.a>
+                
+                <motion.a
+                  href="https://www.youtube.com/@%E3%82%BF%E3%82%B3%E3%81%95%E3%82%93%E3%81%A7%E3%81%99"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="relative p-4 rounded-full bg-transparent"
+                  aria-label="YouTube"
+                  whileHover={{ scale: 1.3, rotate: 7 }}
+                >
+                  {/* YouTube SVG */}
+                  <svg 
+                    className="w-10 h-10 text-white relative z-10" 
+                    fill="currentColor" 
+                    viewBox="0 0 24 24"
                   >
-                    <Code className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
-                    <span className="group-hover:translate-x-0.5 transition-transform duration-200">Skills</span>
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="works"
-                    className="text-white data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=active]:bg-gradient-to-r data-[state=active]:from-white/80 data-[state=active]:to-white/40 hover:bg-blue-500/10 transition-colors duration-200 relative overflow-hidden group"
-                    onClick={(e) => {
-                      const rect = e.currentTarget.getBoundingClientRect()
-                      const x = e.clientX - rect.left
-                      const y = e.clientY - rect.top
-
-                      const ripple = document.createElement("span")
-                      ripple.style.position = "absolute"
-                      ripple.style.width = "5px"
-                      ripple.style.height = "5px"
-                      ripple.style.borderRadius = "50%"
-                      ripple.style.backgroundColor = "rgba(59, 130, 246, 0.4)"
-                      ripple.style.transform = "scale(0)"
-                      ripple.style.left = `${x}px`
-                      ripple.style.top = `${y}px`
-                      ripple.style.animation = "ripple 0.6s linear"
-
-                      e.currentTarget.appendChild(ripple)
-
-                      setTimeout(() => {
-                        ripple.remove()
-                      }, 600)
-                    }}
+                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                  </svg>
+                </motion.a>
+                
+                <motion.a
+                  href="https://x.com/T4ko0522"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="relative p-4 rounded-full bg-transparent"
+                  aria-label="Twitter"
+                  whileHover={{ scale: 1.3, rotate: 7 }}
+                >
+                  {/* Twitter/X SVG */}
+                  <svg 
+                    className="w-10 h-10 text-white relative z-10" 
+                    fill="currentColor" 
+                    viewBox="0 0 24 24"
                   >
-                    <Briefcase className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
-                    <span className="group-hover:translate-x-0.5 transition-transform duration-200">Works</span>
-                  </TabsTrigger>
-                </TabsList>
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                  </svg>
+                  </motion.a>
+                </motion.div>
+              </div>
+            </motion.section>
+          )}
 
-                {/* About Me */}
-                <TabsContent value="about">
-                  <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
-                    <motion.div variants={item}>
-                      <Card className="bg-transparent border-transparent">
-                        <CardContent className="p-6">
-                          <h3 className="text-xl font-bold mb-4 text-cyan-300">💻 About Me</h3>
-                          <p className="mb-4 text-white">
-                            <span className="font-bold">🎓CS Japanese Student | Full Stack Engineer</span>
-                          </p>
-                          <p className="mb-4 text-white">
-                            2008年大阪生まれ。現在はWeb開発を中心に学習しており、バックエンドとフロントエンドの両方を扱えるフルスタックエンジニアです！2025年10月からmuclaseという会社でエンジニアとしてインターンで働いております！
-                          <br />
-                          <span className="block text-sm italic text-gray-200 translate-x-1 mt-1">
-                          Born in Osaka in 2008. Currently studying web development and is a full-stack engineer capable of both back-end and front-end development. Starting in October 2025, I have been working as an intern at a company called muclase!
-                          </span>
-                          </p>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                            {/* 年齢 */}
-                            <motion.div
-                              whileHover={{ scale: 1.03 }}
-                              className="bg-transparent border-transparent p-4 rounded-lg text-white"
-                            >
-                              <div className="flex items-center mb-2">
-                                <Cake className="w-5 h-5 text-purple-500 mr-2" />
-                                <h4 className="text-lg font-medium text-purple-500">Age</h4>
-                              </div>
-                              <div className="flex items-baseline">
-                                <span className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500">
-                                  {age}
-                                </span>
-                                <span className="ml-2 text-gray-200">years old</span>
-                              </div>
-                            </motion.div>
-                            {/* 誕生日 */}
-                            <motion.div
-                              whileHover={{ scale: 1.03 }}
-                              className="bg-transparent border-transparent p-4 rounded-lg text-white"
-                            >
-                              <div className="flex items-center mb-2">
-                                <Gift className="w-5 h-5 text-purple-500 mr-2" />
-                                <h4 className="text-lg font-medium text-purple-500">Birthday</h4>
-                              </div>
-                              <div className="flex items-baseline">
-                                <span className="text-xl font-bold text-gray-200">May 22nd</span>
-                                {daysUntilBirthday > 0 && (
-                                  <span className="ml-2 text-sm text-gray-200">({daysUntilBirthday} days left)</span>
-                                )}
-                                {daysUntilBirthday === 0 && (
-                                  <span className="ml-2 text-sm text-green-400 font-bold animate-pulse">Today! 🎉</span>
-                                )}
-                              </div>
-                            </motion.div>
-                          </div>
+          {/* About Me セクション（ページ1） */}
+          {currentPage === 1 && (
+            <motion.section
+              key="about"
+              ref={aboutSectionRef}
+              id="about"
+              className="absolute inset-0 w-screen h-screen flex items-center justify-center overflow-hidden pointer-events-auto"
+              custom={scrollDirection}
+              variants={pageVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={pageTransition}
+            >
+              {/* 背景画像 */}
+              <div
+                className="absolute inset-0 w-full h-full bg-cover bg-center"
+                style={{
+                  backgroundImage: `url('${sectionBackgrounds[1].image}')`,
+                  backgroundPosition: sectionBackgrounds[1].position || "center",
+                  filter: sectionBackgrounds[1].filter || "none",
+                  transform: "scale(1.3) translateZ(0px)",
+                  zIndex: 0,
+                }}
+              />
+              <div className="container mx-auto px-4 max-w-4xl w-full relative z-10">
+                <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
+                  {/* アイコン */}
+                  <motion.div
+                    initial={{ opacity: 0, y: -50 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, type: "spring", bounce: 0.4, delay: 0.1 }}
+                    className="text-center mb-8"
+                  >
+                    <div className="relative w-[400px] h-[320px] mx-auto mb-4 flex items-center justify-center">
+                      {/* 装飾画像（Discordデコレーション）だけを表示 */}
+                      <Image
+                        src="https://cdn.discordapp.com/avatar-decoration-presets/a_8552f9857793aed0cf816f370e2df3be.png?size=96&passthrough=true"
+                        alt="Decoration"
+                        width={304}
+                        height={304}
+                        className="absolute left-1/2 top-1/2 w-[304px] h-[304px] -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50"
+                        draggable="false"
+                        priority
+                      />
+                      {/* アイコン本体 */}
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ delay: 0.3, type: "spring", stiffness: 100 }}
+                        className="w-64 h-64 rounded-full overflow-hidden relative z-40"
+                      >
+                        <div className="relative w-full h-full">
+                          <Image
+                            src="https://avatars.githubusercontent.com/u/108514947?v="
+                            alt="Tako"
+                            fill
+                            sizes="(max-width: 600px) 64px, 128px"
+                            className="object-cover"
+                            priority
+                          />
+                        </div>
+                      </motion.div>
+                    </div>
+                  </motion.div>
+                  <motion.div variants={item}>
+                    <Card className="bg-transparent border-transparent">
+                      <CardContent className="p-6">
+                        <h3 className="text-xl font-bold mb-4 text-cyan-300">💻 About Me</h3>
+                        <p className="mb-4 text-white">
+                          <span className="font-bold">🎓CS Japanese Student | Full Stack Engineer</span>
+                        </p>
+                        <p className="mb-4 text-white">
+                          2008年大阪生まれ。現在はWeb開発を中心に学習しており、バックエンドとフロントエンドの両方を扱えるフルスタックエンジニアです！2025年10月からmuclaseという会社でエンジニアとしてインターンで働いております！
+                        <br />
+                        <span className="block text-sm italic text-gray-200 translate-x-1 mt-1">
+                        Born in Osaka in 2008. Currently studying web development and is a full-stack engineer capable of both back-end and front-end development. Starting in October 2025, I have been working as an intern at a company called muclase!
+                        </span>
+                        </p>
+                        <div className="grid grid-cols-2 gap-4 mb-6">
+                          {/* 年齢 */}
+                          <motion.div
+                            whileHover={{ scale: 1.03 }}
+                            className="bg-transparent border-transparent p-4 rounded-lg text-white"
+                          >
+                            <div className="flex items-center mb-2">
+                              <Cake className="w-5 h-5 text-purple-500 mr-2" />
+                              <h4 className="text-lg font-medium text-purple-500">Age</h4>
+                            </div>
+                            <div className="flex items-baseline">
+                              <span className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500">
+                                {age}
+                              </span>
+                              <span className="ml-2 text-gray-200">years old</span>
+                            </div>
+                          </motion.div>
+                          {/* 誕生日 */}
+                          <motion.div
+                            whileHover={{ scale: 1.03 }}
+                            className="bg-transparent border-transparent p-4 rounded-lg text-white"
+                          >
+                            <div className="flex items-center mb-2">
+                              <Gift className="w-5 h-5 text-purple-500 mr-2" />
+                              <h4 className="text-lg font-medium text-purple-500">Birthday</h4>
+                            </div>
+                            <div className="flex items-baseline">
+                              <span className="text-xl font-bold text-gray-200">May 22nd</span>
+                              {daysUntilBirthday > 0 && (
+                                <span className="ml-2 text-sm text-gray-200">({daysUntilBirthday} days left)</span>
+                              )}
+                              {daysUntilBirthday === 0 && (
+                                <span className="ml-2 text-sm text-green-400 font-bold animate-pulse">Today! 🎉</span>
+                              )}
+                            </div>
+                          </motion.div>
+                        </div>
 
-                          {/* 誕生日カウントダウン（誕生日が近い場合のみ表示） */}
-                          {daysUntilBirthday <= 30 && daysUntilBirthday > 0 && (
-                            <motion.div
-                              initial={{ opacity: 0, y: 20 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 p-4 rounded-lg mb-6 border border-purple-500/30"
-                            >
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center">
-                                  <Calendar className="w-5 h-5 text-purple-400 mr-2" />
-                                  <h4 className="font-medium text-purple-300">Birthday Countdown</h4>
-                                </div>
-                                <div className="text-xl font-bold text-white bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500">
-                                  {daysUntilBirthday} {daysUntilBirthday === 1 ? "day" : "days"}
-                                </div>
+                        {/* 誕生日カウントダウン（誕生日が近い場合のみ表示） */}
+                        {daysUntilBirthday <= 30 && daysUntilBirthday > 0 && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 p-4 rounded-lg mb-6 border border-purple-500/30"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center">
+                                <Calendar className="w-5 h-5 text-purple-400 mr-2" />
+                                <h4 className="font-medium text-purple-300">Birthday Countdown</h4>
                               </div>
-                              <div className="mt-2 w-full bg-gray-700 rounded-full h-2.5">
-                                <motion.div
-                                  className="bg-gradient-to-r from-purple-500 to-pink-500 h-2.5 rounded-full"
-                                  initial={{ width: "0%" }}
-                                  animate={{ width: `${100 - (daysUntilBirthday / 30) * 100}%` }}
-                                  transition={{ duration: 1, delay: 0.5 }}
+                              <div className="text-xl font-bold text-white bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500">
+                                {daysUntilBirthday} {daysUntilBirthday === 1 ? "day" : "days"}
+                              </div>
+                            </div>
+                            <div className="mt-2 w-full bg-gray-700 rounded-full h-2.5">
+                              <motion.div
+                                className="bg-gradient-to-r from-purple-500 to-pink-500 h-2.5 rounded-full"
+                                initial={{ width: "0%" }}
+                                animate={{ width: `${100 - (daysUntilBirthday / 30) * 100}%` }}
+                                transition={{ duration: 1, delay: 0.5 }}
+                              />
+                            </div>
+                          </motion.div>
+                        )}
+
+                        {/* 誕生日アニメーション（誕生日当日のみ表示） */}
+                        {daysUntilBirthday === 0 && (
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="relative bg-gradient-to-r from-purple-600/30 to-pink-600/30 p-6 rounded-lg mb-6 border border-pink-500/50 overflow-hidden"
+                          >
+                            <h4 className="text-xl font-bold text-center mb-2 text-white">🎉 Happy Birthday! 🎂</h4>
+                            <p className="text-center text-gray-300 mb-4">May all your wishes come true!</p>
+                          </motion.div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                </motion.div>
+              </div>
+            </motion.section>
+          )}
+
+          {/* Skills セクション（ページ2） */}
+          {currentPage === 2 && (
+            <motion.section
+              key="skills"
+              ref={skillsSectionRef}
+              id="skills"
+              className="absolute inset-0 w-screen h-screen flex items-center justify-center pointer-events-auto"
+              custom={scrollDirection}
+              variants={pageVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={pageTransition}
+            >
+              {/* 背景画像 */}
+              <div
+                className="absolute inset-0 w-full h-full bg-cover bg-center"
+                style={{
+                  backgroundImage: `url('${sectionBackgrounds[2].image}')`,
+                  backgroundPosition: sectionBackgrounds[2].position || "center",
+                  filter: sectionBackgrounds[2].filter || "none",
+                  transform: "scale(1.3) translateZ(0px)",
+                  zIndex: 0,
+                }}
+              />
+              <div className="container mx-auto px-4 max-w-4xl w-full relative z-10">
+                <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
+                  <motion.div variants={item}>
+                    <Card className="bg-transparent border-transparent">
+                      <CardContent className="p-6">
+                        <h3 className="text-xl font-bold mb-4">
+                          <span>🛠️</span> <span className="text-cyan-300">Tech Stack</span>
+                        </h3>
+                        <div className="flex flex-wrap gap-2">
+                          {techStack.map((tech, index) => (
+                            <motion.div
+                              key={tech.name}
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ delay: index * 0.05 }}
+                              whileHover={{ scale: 1.1 }}
+                              className="transition-all"
+                            >
+                              <Badge className={`${tech.color} ${tech.textColor} hover:${tech.color}`}>
+                                <Image 
+                                  src={`https://skillicons.dev/icons?i=${tech.iconKey}`} 
+                                  alt={tech.name}
+                                  width={16}
+                                  height={16}
+                                  className="w-4 h-4 mr-2"
                                 />
-                              </div>
+                                {tech.name}
+                              </Badge>
                             </motion.div>
-                          )}
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                </motion.div>
+              </div>
+            </motion.section>
+          )}
 
-                          {/* 誕生日アニメーション（誕生日当日のみ表示） */}
-                          {daysUntilBirthday === 0 && (
+          {/* Works セクション（ページ3） */}
+          {currentPage === 3 && (
+            <motion.section
+              key="works"
+              ref={worksSectionRef}
+              id="works"
+              className="absolute inset-0 w-screen h-screen flex items-center justify-center pointer-events-auto"
+              custom={scrollDirection}
+              variants={pageVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={pageTransition}
+            >
+              {/* 背景画像 */}
+              <div
+                className="absolute inset-0 w-full h-full bg-cover bg-center"
+                style={{
+                  backgroundImage: `url('${sectionBackgrounds[3].image}')`,
+                  backgroundPosition: sectionBackgrounds[3].position || "center",
+                  filter: sectionBackgrounds[3].filter || "none",
+                  transform: "scale(1.3) translateZ(0px)",
+                  zIndex: 0,
+                }}
+              />
+              <div className="container mx-auto px-4 max-w-4xl w-full relative z-10">
+                <motion.div variants={container} initial="hidden" animate="show" className="space-y-6 w-full">
+                  <motion.div variants={item} className="w-full">
+                    <Card className="bg-transparent border-transparent w-full">
+                      <CardContent className="p-6 w-full">
+                        <h3 className="text-xl font-bold mb-6 text-cyan-300">💼 Works</h3>
+                        <div className="grid grid-cols-2 gap-4 w-full">
+                          {projectDetails.map((project, index) => (
                             <motion.div
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              className="relative bg-gradient-to-r from-purple-600/30 to-pink-600/30 p-6 rounded-lg mb-6 border border-pink-500/50 overflow-hidden"
+                              key={project.title}
+                              initial={{ opacity: 0, scale: 0.9 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ delay: index * 0.1 }}
+                              whileHover={{ scale: 1.02 }}
+                              onClick={(e) => {
+                                const target = e.target as HTMLElement
+                                if (target.closest('a')) {
+                                  return
+                                }
+                                handleProjectClick(project)
+                              }}
+                              className="w-full min-w-0 bg-gray-800/50 border border-gray-700/50 rounded-lg p-4 hover:border-blue-500/50 transition-all duration-300 cursor-pointer"
                             >
-                              <h4 className="text-xl font-bold text-center mb-2 text-white">🎉 Happy Birthday! 🎂</h4>
-                              <p className="text-center text-gray-300 mb-4">May all your wishes come true!</p>
-                            </motion.div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  </motion.div>
-                </TabsContent>
-                {/* Skills */}
-                <TabsContent value="skills">
-                  <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
-                    <motion.div variants={item}>
-                      <Card className="bg-transparent border-transparent">
-                        <CardContent className="p-6">
-                          <h3 className="text-xl font-bold mb-4">
-                            <span>🛠️</span> <span className="text-cyan-300">Tech Stack</span>
-                          </h3>
-                          <div className="flex flex-wrap gap-2">
-                            {techStack.map((tech, index) => (
-                              <motion.div
-                                key={tech.name}
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: index * 0.05 }}
-                                whileHover={{ scale: 1.1 }}
-                                className="transition-all"
-                              >
-                                <Badge className={`${tech.color} ${tech.textColor} hover:${tech.color}`}>
-                                  <Image 
-                                    src={`https://skillicons.dev/icons?i=${tech.iconKey}`} 
-                                    alt={tech.name}
-                                    width={16}
-                                    height={16}
-                                    className="w-4 h-4 mr-2"
-                                  />
-                                  {tech.name}
-                                </Badge>
-                              </motion.div>
-                            ))}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  </motion.div>
-                </TabsContent>
-                {/* Works */}
-                <TabsContent value="works">
-                  <motion.div variants={container} initial="hidden" animate="show" className="space-y-6 w-full">
-                    <motion.div variants={item} className="w-full">
-                      <Card className="bg-transparent border-transparent w-full">
-                        <CardContent className="p-6 w-full">
-                          <h3 className="text-xl font-bold mb-6 text-cyan-300">💼 Works</h3>
-                          <div className="grid grid-cols-2 gap-4 w-full">
-                            {projectDetails.map((project, index) => (
-                              <motion.div
-                                key={project.title}
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: index * 0.1 }}
-                                whileHover={{ scale: 1.02 }}
-                                onClick={(e) => {
-                                  // リンクがクリックされた場合はモーダルを開かない
-                                  const target = e.target as HTMLElement
-                                  if (target.closest('a')) {
-                                    return
-                                  }
-                                  handleProjectClick(project)
-                                }}
-                                className="w-full min-w-0 bg-gray-800/50 border border-gray-700/50 rounded-lg p-4 hover:border-blue-500/50 transition-all duration-300 cursor-pointer"
-                              >
-                                <div className="flex items-start justify-between mb-3">
-                                  {project.url ? (
+                              <div className="flex items-start justify-between mb-3">
+                                {project.url ? (
+                                  <a
+                                    href={project.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="text-lg font-bold text-white hover:text-blue-400 transition-colors cursor-pointer"
+                                  >
+                                    <h4>{project.title}</h4>
+                                  </a>
+                                ) : (
+                                  <h4 className="text-lg font-bold text-white">{project.title}</h4>
+                                )}
+                                <div className="flex gap-2">
+                                  {project.url && (
                                     <a
                                       href={project.url}
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       onClick={(e) => e.stopPropagation()}
-                                      className="text-lg font-bold text-white hover:text-blue-400 transition-colors cursor-pointer"
+                                      className="text-blue-400 hover:text-blue-300 transition-colors"
+                                      aria-label={`Visit ${project.title}`}
                                     >
-                                      <h4>{project.title}</h4>
+                                      <ExternalLink className="w-5 h-5" />
                                     </a>
-                                  ) : (
-                                    <h4 className="text-lg font-bold text-white">{project.title}</h4>
                                   )}
-                                  <div className="flex gap-2">
-                                    {project.url && (
-                                      <a
-                                        href={project.url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        onClick={(e) => e.stopPropagation()}
-                                        className="text-blue-400 hover:text-blue-300 transition-colors"
-                                        aria-label={`Visit ${project.title}`}
-                                      >
-                                        <ExternalLink className="w-5 h-5" />
-                                      </a>
-                                    )}
-                                    {project.githubUrl && (
-                                      <a
-                                        href={project.githubUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        onClick={(e) => e.stopPropagation()}
-                                        className="text-gray-400 hover:text-gray-300 transition-colors"
-                                        aria-label={`View ${project.title} on GitHub`}
-                                      >
-                                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                          <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                                        </svg>
-                                      </a>
-                                    )}
-                                  </div>
+                                  {project.githubUrl && (
+                                    <a
+                                      href={project.githubUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="text-gray-400 hover:text-gray-300 transition-colors"
+                                      aria-label={`View ${project.title} on GitHub`}
+                                    >
+                                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                      </svg>
+                                    </a>
+                                  )}
                                 </div>
-                                <p className="text-gray-300 text-sm mb-3">
-                                  {project.description}
-                                </p>
-                                {project.imageUrl && (
-                                  <div className="mb-2 rounded-lg overflow-hidden">
-                                    <Image
-                                      src={project.imageUrl}
-                                      alt={project.imageAlt}
-                                      width={600}
-                                      height={400}
-                                      className="w-full h-auto object-cover"
-                                    />
-                                  </div>
-                                )}
-                              </motion.div>
-                            ))}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
+                              </div>
+                              <p className="text-gray-300 text-sm mb-3">
+                                {project.description}
+                              </p>
+                              {project.imageUrl && (
+                                <div className="mb-2 rounded-lg overflow-hidden">
+                                  <Image
+                                    src={project.imageUrl}
+                                    alt={project.imageAlt}
+                                    width={600}
+                                    height={400}
+                                    className="w-full h-auto object-cover"
+                                  />
+                                </div>
+                              )}
+                            </motion.div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
                   </motion.div>
-                </TabsContent>
-              </Tabs>
-              {/* フッター */}
-              <motion.footer
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1, duration: 1 }}
-                className="mt-16 text-center text-gray-200 text-sm"
-              >
-                <p>© {new Date().getFullYear()} Tako. All rights reserved.</p>
-              </motion.footer>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                </motion.div>
+              </div>
+            </motion.section>
+          )}
+        </AnimatePresence>
+
+        {/* 固定ナビゲーションヘッダー */}
+        <Header onNavigate={scrollToSection} />
+      </div>
+
+      {/* ローディング画面（Staggered Curtain Revealアニメーション） */}
+      <StaggeredCurtainReveal isVisible={isLoading}>
+        <LoadingScreen key="loading" onLoadingComplete={handleLoadingComplete} />
+      </StaggeredCurtainReveal>
       {/* プロジェクト詳細モーダル */}
       <ProjectDetailModal
         project={selectedProject}
