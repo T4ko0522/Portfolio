@@ -8,6 +8,10 @@ const nextConfig = {
           protocol: 'https',
           hostname: 'skillicons.dev',
         },
+        {
+          protocol: 'https',
+          hostname: 'raw.githubusercontent.com',
+        },
       ],
     },
     // Next.js 15の新しい設定
