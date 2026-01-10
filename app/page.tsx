@@ -925,9 +925,6 @@ export default function Home() {
                       />
                       {/* アイコン本体 */}
                       <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ delay: 0.3, type: "spring", stiffness: 100 }}
                         className="w-52 h-52 lg:w-64 lg:h-64 rounded-full overflow-visible relative z-40"
                       >
                         <div className="relative w-full h-full rounded-full overflow-hidden">
@@ -1046,8 +1043,6 @@ export default function Home() {
                           </motion.div>
                           {/* Skills */}
                           <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
                             whileHover={{ scale: 1.05 }}
                             className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 p-4 rounded-lg text-white"
                           >
