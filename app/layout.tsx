@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     siteName: "T4ko0522",
     images: [
       {
-        url: "/favicon.ico",
+        url: "https://avatars.githubusercontent.com/u/108514947?v=",
         width: 512,
         height: 512,
       },
