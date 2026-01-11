@@ -640,70 +640,88 @@ export default function Home() {
       <div style={{ height: `${totalPages * 100}vh` }} />
       
       {/* スクロール進行状況インジケーター（下部） */}
-      {currentPage < totalPages - 1 && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
-          {/* メインセクションのみ「Scroll down to explore」と右矢印を表示 */}
-          {currentPage === 0 && (
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
+        {/* メインセクションのみ「Scroll down to explore」と右矢印を表示 */}
+        {currentPage === 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.7 }}
+            className="flex flex-row items-center gap-2 mb-3 justify-center"
+          >
+            <span className="text-white/80 text-sm font-medium">
+              Scroll down to explore
+            </span>
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.7 }}
-              className="flex flex-row items-center gap-2 mb-3 justify-center"
+              animate={{ x: [0, 6, 0] }}
+              transition={{
+                duration: 1.5,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+              className="text-white/80"
             >
-              <span className="text-white/80 text-sm font-medium">
-                Scroll down to explore
-              </span>
-              <motion.div
-                animate={{ x: [0, 6, 0] }}
-                transition={{
-                  duration: 1.5,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-                className="text-white/80"
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               >
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-              </motion.div>
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
             </motion.div>
-          )}
+          </motion.div>
+        )}
           <div className="flex flex-row items-center gap-3 bg-black/30 backdrop-blur-sm px-4 py-2 rounded-full">
-            {/* 現在のセクション名 */}
-            <span className="text-white text-sm font-medium">
-              {currentPage === 0 && "Home"}
-              {currentPage === 1 && "About"}
-              {currentPage === 2 && "Works"}
-              {currentPage === 3 && "Contact"}
-            </span>
-            {/* プログレスバー */}
-            <div className="w-32 h-1.5 bg-white/20 rounded-full overflow-hidden">
-              <motion.div
-                className="h-full bg-white rounded-full"
-                style={{
-                  width: `${scrollProgress * 100}%`,
-                }}
-                transition={{ duration: 0.1 }}
-              />
-            </div>
-            {/* 次のセクション名 */}
-            <span className="text-white/60 text-sm">
-              {currentPage === 0 && "About"}
-              {currentPage === 1 && "Works"}
-              {currentPage === 2 && "Contact"}
-            </span>
+            {/* WorksとContactセクションの場合は「Works Contact」の順番で表示 */}
+            {(currentPage === 2 || currentPage === 3) ? (
+              <>
+                <span className={`text-sm font-medium ${currentPage === 2 ? "text-white" : "text-white/60"}`}>
+                  Works
+                </span>
+                <div className="w-32 h-1.5 bg-white/20 rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-white rounded-full"
+                    style={{
+                      width: `${scrollProgress * 100}%`,
+                    }}
+                    transition={{ duration: 0.1 }}
+                  />
+                </div>
+                <span className={`text-sm font-medium ${currentPage === 3 ? "text-white" : "text-white/60"}`}>
+                  Contact
+                </span>
+              </>
+            ) : (
+              <>
+                {/* 現在のセクション名 */}
+                <span className="text-white text-sm font-medium">
+                  {currentPage === 0 && "Home"}
+                  {currentPage === 1 && "About"}
+                </span>
+                {/* プログレスバー */}
+                <div className="w-32 h-1.5 bg-white/20 rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-white rounded-full"
+                    style={{
+                      width: `${scrollProgress * 100}%`,
+                    }}
+                    transition={{ duration: 0.1 }}
+                  />
+                </div>
+                {/* 次のセクション名 */}
+                <span className="text-white/60 text-sm">
+                  {currentPage === 0 && "About"}
+                  {currentPage === 1 && "Works"}
+                </span>
+              </>
+            )}
           </div>
-        </div>
-      )}
+      </div>
       
       {/* ページコンテナ（固定・ピン留め） */}
       <div className="fixed inset-0 overflow-hidden bg-black">
@@ -1000,7 +1018,7 @@ export default function Home() {
                           {/* 誕生日 */}
                           <motion.div
                             whileHover={{ scale: 1.05 }}
-                            className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 p-4 rounded-lg text-white"
+                            className="bg-transparent backdrop-blur-sm border border-white/10 hover:border-purple-500/50 transition-all duration-300 rounded-2xl p-5 shadow-lg text-white"
                           >
                             <div className="flex items-center mb-2">
                               <Gift className="w-5 h-5 text-white mr-2" />
@@ -1019,7 +1037,7 @@ export default function Home() {
                           {/* Skills */}
                           <motion.div
                             whileHover={{ scale: 1.05 }}
-                            className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 p-4 rounded-lg text-white"
+                            className="bg-transparent backdrop-blur-sm border border-white/10 hover:border-cyan-500/50 transition-all duration-300 rounded-2xl p-5 shadow-lg text-white"
                           >
                             <div className="flex items-center mb-4">
                               <Code className="w-5 h-5 text-white mr-2" />
@@ -1345,7 +1363,7 @@ export default function Home() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.3 }}
-                  className="absolute bottom-0 left-0 right-0 py-6 text-center z-20"
+                  className="absolute bottom-20 left-0 right-0 py-6 text-center z-20"
                 >
                   <div className="container mx-auto px-4">
                     <p className="text-gray-400 text-sm">
