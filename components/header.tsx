@@ -4,6 +4,8 @@ import { useState } from "react"
 import { motion } from "framer-motion"
 import { Home, User, Briefcase, Mail } from "lucide-react"
 import localFont from "next/font/local"
+import { useIsMobile } from "../hooks/use-mobile"
+import MobileHeader from "./mobile-header"
 
 const huninn = localFont({
   src: "../public/Huninn-Regular.ttf",
@@ -15,7 +17,13 @@ interface HeaderProps {
 }
 
 export default function Header({ onNavigate }: HeaderProps) {
+  const isMobile = useIsMobile()
   const [hoveredButtons, setHoveredButtons] = useState<Set<string>>(new Set())
+
+  // モバイルの場合はモバイル用ヘッダーを表示
+  if (isMobile) {
+    return <MobileHeader onNavigate={onNavigate} />
+  }
 
   const handleRippleEffect = (e: React.MouseEvent<HTMLButtonElement>) => {
     const rect = e.currentTarget.getBoundingClientRect()

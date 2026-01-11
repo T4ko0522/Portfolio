@@ -13,6 +13,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import LoadingScreen from "../components/loading-screen"
 import TypingAnimation from "../components/typing-animation"
+import MobileTypingAnimation from "../components/mobile-typing-animation"
+import { useIsMobile } from "../hooks/use-mobile"
 import Image from "next/image"
 import ProjectDetailModal, { ProjectDetail } from "../components/project-detail-modal"
 import StaggeredCurtainReveal from "../components/staggered-curtain-reveal"
@@ -21,6 +23,10 @@ import SpotifyNowPlaying from "../components/spotify-now-playing"
 import { BgShader } from "../components/bg-shader"
 import { DottedSurface } from "../components/dotted-surface"
 import { ShootingStars } from "../components/shooting-stars"
+import MobileTitle from "../components/mobile-title"
+import MobileAbout from "../components/mobile-about"
+import MobileWorks from "../components/mobile-works"
+import MobileContact from "../components/mobile-contact"
 import { Pacifico, Rock_Salt } from "next/font/google"
 
 const pacifico = Pacifico({ 
@@ -110,6 +116,7 @@ interface SpotifyApiResponse {
 }
 
 export default function Home() {
+  const isMobile = useIsMobile()
   const [mounted, setMounted] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [daysUntilBirthday, setDaysUntilBirthday] = useState<number>(0)
@@ -775,14 +782,7 @@ export default function Home() {
                   />
                   <span className="text-white">Hi there!</span>
                 </motion.div>
-                <motion.h1
-                  initial={{ opacity: 0, y: -50 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, type: "spring", bounce: 0.4, delay: 0.2 }}
-                  className={`${rockSalt.className} text-[10vw] font-bold leading-none whitespace-nowrap text-center`}
-                >
-                  <span className="text-transparent [text-stroke:10px_#ffffff] [-webkit-text-stroke:10px_#ffffff]">I&apos;m T4ko0522!</span>
-                </motion.h1>
+                <MobileTitle />
               </div>
 
               <div className="container mx-auto px-4 max-w-4xl text-center">
@@ -796,10 +796,17 @@ export default function Home() {
                 transition={{ duration: 0.8, type: "spring", bounce: 0.4, delay: 0.3 }}
                 className="w-full mt-25 flex justify-center items-center px-4"
               >
-                <TypingAnimation
-                  texts={introTexts}
-                  className={`${pacifico.className} text-4xl md:text-5xl lg:text-6xl`}
-                />
+                {isMobile ? (
+                  <MobileTypingAnimation
+                    texts={introTexts}
+                    className={`${pacifico.className} text-xl sm:text-4xl md:text-5xl lg:text-6xl`}
+                  />
+                ) : (
+                  <TypingAnimation
+                    texts={introTexts}
+                    className={`${pacifico.className} text-4xl md:text-5xl lg:text-6xl`}
+                  />
+                )}
               </motion.div>
 
               {/* SNSリンク */}
@@ -896,208 +903,214 @@ export default function Home() {
                   opacity: currentPage === 1 ? 1 - scrollProgress * 0.3 : 1,
                 }}
               >
-                <div className="flex flex-row items-center gap-8 lg:gap-12 w-full">
-                  {/* 左側: アイコン */}
-                  <motion.div
-                    initial={{ opacity: 0, x: -50 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.8, type: "spring", bounce: 0.4, delay: 0.1 }}
-                    className="flex-shrink-0 flex flex-col items-center"
-                  >
-                    <div className="relative w-[300px] h-[240px] lg:w-[400px] lg:h-[320px] flex items-center justify-center">
-                      {/* 装飾画像（Discordデコレーション） */}
-                      <Image
-                        src="https://cdn.discordapp.com/avatar-decoration-presets/a_48b8411feb1e80a69048fc65b3275b75.png?size=256&passthrough=true"
-                        alt="Decoration"
-                        width={256}
-                        height={256}
-                        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50"
-                        style={{ width: '248px', height: '248px' }}
-                        draggable="false"
-                        priority
-                      />
-                      {/* アイコン本体 */}
-                      <motion.div
-                        className="w-52 h-52 lg:w-64 lg:h-64 rounded-full overflow-visible relative z-40"
-                      >
-                        <div className="relative w-full h-full rounded-full overflow-hidden">
-                          <Image
-                            src="https://avatars.githubusercontent.com/u/108514947?v="
-                            alt="Tako"
-                            fill
-                            sizes="(max-width: 1024px) 208px, 256px"
-                            className="object-cover"
-                            priority
-                          />
-                        </div>
-                        {/* Discordステータスインジケーター */}
-                        {discordStatus && (
-                          <div className="absolute bottom-0 right-2 z-[60]" style={{ 
-                            width: '28px', 
-                            height: '28px',
-                            filter: 'drop-shadow(0 0 0 3px #1a1a1a)'
-                          }}>
-                            {discordStatus === 'online' ? (
-                              <svg width="28" height="28" viewBox="0 0 12 12" className="w-full h-full">
-                                <circle cx="6" cy="6" r="6" fill="rgb(69, 163, 102)" />
-                              </svg>
-                            ) : discordStatus === 'idle' ? (
-                              <svg width="28" height="28" viewBox="0 0 12 12" className="w-full h-full">
-                                <defs>
-                                  <mask id="svg-mask-status-idle">
-                                    <rect width="12" height="12" fill="black" />
-                                    <circle cx="6" cy="6" r="5" fill="white" />
-                                    <path d="M 6 1 A 5 5 0 0 0 1 6 L 6 6 Z" fill="black" />
-                                  </mask>
-                                </defs>
-                                <rect width="12" height="12" x="0" y="0" fill="#ffc04e" mask="url(#svg-mask-status-idle)" />
-                              </svg>
-                            ) : discordStatus === 'dnd' ? (
-                              <svg width="28" height="28" viewBox="0 0 12 12" className="w-full h-full">
-                                <circle cx="6" cy="6" r="6" fill="rgb(237, 66, 69)" />
-                                <rect x="3" y="5" width="6" height="2" fill="white" rx="1" />
-                              </svg>
-                            ) : (
-                              <svg width="28" height="28" viewBox="0 0 12 12" className="w-full h-full">
-                                <circle cx="6" cy="6" r="6" fill="rgb(116, 127, 141)" />
-                                <circle cx="6" cy="6" r="4" fill="rgb(79, 84, 92)" />
-                              </svg>
-                            )}
-                          </div>
-                        )}
-                        
-                      </motion.div>
-                    </div>
-                    {/* 名前と情報 */}
+                {isMobile ? (
+                  // モバイル: アイコンのみ上に表示 + About Meの内容
+                  <MobileAbout daysUntilBirthday={daysUntilBirthday} discordStatus={discordStatus} />
+                ) : (
+                  // デスクトップ: 既存のレイアウト（アイコン + About Me）
+                  <div className="flex flex-row items-center gap-8 lg:gap-12 w-full">
+                    {/* 左側: アイコン */}
                     <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: 0.4 }}
-                      className="mt-6 text-center"
+                      initial={{ opacity: 0, x: -50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.8, type: "spring", bounce: 0.4, delay: 0.1 }}
+                      className="flex-shrink-0 flex flex-col items-center"
                     >
-                      <div className="flex items-center justify-center gap-2 mb-2">
-                        <h2 className="text-4xl lg:text-5xl font-bold text-white" style={{ fontFamily: 'Discord, sans-serif' }}>T4ko</h2>
-                        <div className="flex items-center gap-1.5 border border-white/30 rounded px-2 py-0.5">
-                          <Image
-                            src="https://cdn.discordapp.com/clan-badges/1399359679473254492/df39482e5db7ebbeff7f6d9a832a6144.png?size=16"
-                            alt="Clan Badge"
-                            width={16}
-                            height={16}
-                            className="w-4 h-4"
-                          />
-                          <span className="text-xs lg:text-sm font-bold text-white">OP81</span>
-                        </div>
+                      <div className="relative w-[300px] h-[240px] lg:w-[400px] lg:h-[320px] flex items-center justify-center">
+                        {/* 装飾画像（Discordデコレーション） */}
+                        <Image
+                          src="https://cdn.discordapp.com/avatar-decoration-presets/a_48b8411feb1e80a69048fc65b3275b75.png?size=256&passthrough=true"
+                          alt="Decoration"
+                          width={256}
+                          height={256}
+                          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50"
+                          style={{ width: '248px', height: '248px' }}
+                          draggable="false"
+                          priority
+                        />
+                        {/* アイコン本体 */}
+                        <motion.div
+                          className="w-52 h-52 lg:w-64 lg:h-64 rounded-full overflow-visible relative z-40"
+                        >
+                          <div className="relative w-full h-full rounded-full overflow-hidden">
+                            <Image
+                              src="https://avatars.githubusercontent.com/u/108514947?v="
+                              alt="Tako"
+                              fill
+                              sizes="(max-width: 1024px) 208px, 256px"
+                              className="object-cover"
+                              priority
+                            />
+                          </div>
+                          {/* Discordステータスインジケーター */}
+                          {discordStatus && (
+                            <div className="absolute bottom-0 right-2 z-[60]" style={{ 
+                              width: '28px', 
+                              height: '28px',
+                              filter: 'drop-shadow(0 0 0 3px #1a1a1a)'
+                            }}>
+                              {discordStatus === 'online' ? (
+                                <svg width="28" height="28" viewBox="0 0 12 12" className="w-full h-full">
+                                  <circle cx="6" cy="6" r="6" fill="rgb(69, 163, 102)" />
+                                </svg>
+                              ) : discordStatus === 'idle' ? (
+                                <svg width="28" height="28" viewBox="0 0 12 12" className="w-full h-full">
+                                  <defs>
+                                    <mask id="svg-mask-status-idle">
+                                      <rect width="12" height="12" fill="black" />
+                                      <circle cx="6" cy="6" r="5" fill="white" />
+                                      <path d="M 6 1 A 5 5 0 0 0 1 6 L 6 6 Z" fill="black" />
+                                    </mask>
+                                  </defs>
+                                  <rect width="12" height="12" x="0" y="0" fill="#ffc04e" mask="url(#svg-mask-status-idle)" />
+                                </svg>
+                              ) : discordStatus === 'dnd' ? (
+                                <svg width="28" height="28" viewBox="0 0 12 12" className="w-full h-full">
+                                  <circle cx="6" cy="6" r="6" fill="rgb(237, 66, 69)" />
+                                  <rect x="3" y="5" width="6" height="2" fill="white" rx="1" />
+                                </svg>
+                              ) : (
+                                <svg width="28" height="28" viewBox="0 0 12 12" className="w-full h-full">
+                                  <circle cx="6" cy="6" r="6" fill="rgb(116, 127, 141)" />
+                                  <circle cx="6" cy="6" r="4" fill="rgb(79, 84, 92)" />
+                                </svg>
+                              )}
+                            </div>
+                          )}
+                          
+                        </motion.div>
                       </div>
-                      <p className="text-base lg:text-lg text-gray-300 mb-1">tako._.v<span className="font-bold">・</span>17yo He/Him</p>
-                    </motion.div>
-                    {/* Spotify Now Playing */}
-                    <SpotifyNowPlaying track={spotifyTrack || undefined} isLoading={isSpotifyLoading} />
-                  </motion.div>
-
-                  {/* 右側: About Me */}
-                  <motion.div
-                    initial={{ opacity: 0, x: 50 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.8, type: "spring", bounce: 0.4, delay: 0.2 }}
-                    className="flex-1"
-                  >
-                    <Card className="bg-transparent border-transparent">
-                      <CardContent className="p-6">
-                        <h3 className="text-2xl lg:text-3xl font-bold mb-6 text-cyan-300">💻 About Me</h3>
-                        <p className="mb-4 text-white text-lg">
-                          <span className="font-bold">🎓CS Japanese Student | Full Stack Engineer</span>
-                        </p>
-                        <p className="mb-6 text-white">
-                          2008年大阪生まれ。現在はWeb開発を中心に学習しており、バックエンドとフロントエンドの両方を扱えるフルスタックエンジニアです！2025年10月からmuclaseという会社でエンジニアとしてインターンで働いております！
-                          <br />
-                          <span className="block text-sm italic text-gray-200 mt-2">
-                            Born in Osaka in 2008. Currently studying web development and is a full-stack engineer capable of both back-end and front-end development. Starting in October 2025, I have been working as an intern at a company called muclase!
-                          </span>
-                        </p>
-                        <div className="grid grid-cols-1 gap-4">
-                          {/* 誕生日 */}
-                          <motion.div
-                            whileHover={{ scale: 1.05 }}
-                            className="bg-transparent backdrop-blur-sm border border-white/10 hover:border-purple-500/50 transition-all duration-300 rounded-2xl p-5 shadow-lg text-white"
-                          >
-                            <div className="flex items-center mb-2">
-                              <Gift className="w-5 h-5 text-white mr-2" />
-                              <h4 className="text-lg font-medium text-white">Birthday</h4>
-                            </div>
-                            <div className="flex items-baseline">
-                              <span className="text-xl font-bold text-gray-200">May 22nd</span>
-                              {daysUntilBirthday > 0 && (
-                                <span className="ml-2 text-sm text-gray-200">({daysUntilBirthday} days left)</span>
-                              )}
-                              {daysUntilBirthday === 0 && (
-                                <span className="ml-2 text-sm text-green-400 font-bold animate-pulse">Today! 🎉</span>
-                              )}
-                            </div>
-                          </motion.div>
-                          {/* Skills */}
-                          <motion.div
-                            whileHover={{ scale: 1.05 }}
-                            className="bg-transparent backdrop-blur-sm border border-white/10 hover:border-cyan-500/50 transition-all duration-300 rounded-2xl p-5 shadow-lg text-white"
-                          >
-                            <div className="flex items-center mb-4">
-                              <Code className="w-5 h-5 text-white mr-2" />
-                              <h4 className="text-lg font-medium text-white">Skills</h4>
-                            </div>
-                            <div className="flex justify-center">
-                              <Image
-                                src="https://skillicons.dev/icons?i=js,ts,python,bash,powershell,react,next,vue,astro,remix,angular,tailwind,materialui,nodejs,deno,express,electron,postgres,mysql,docker,kubernetes,gcp,vercel,linux,windows,git,github,gitlab,postman,vscode"
-                                alt="Skills"
-                                width={600}
-                                height={100}
-                                className="w-full h-auto"
-                                unoptimized
-                              />
-                            </div>
-                          </motion.div>
+                      {/* 名前と情報 */}
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.4 }}
+                        className="mt-6 text-center"
+                      >
+                        <div className="flex items-center justify-center gap-2 mb-2">
+                          <h2 className="text-4xl lg:text-5xl font-bold text-white" style={{ fontFamily: 'Discord, sans-serif' }}>T4ko</h2>
+                          <div className="flex items-center gap-1.5 border border-white/30 rounded px-2 py-0.5">
+                            <Image
+                              src="https://cdn.discordapp.com/clan-badges/1399359679473254492/df39482e5db7ebbeff7f6d9a832a6144.png?size=16"
+                              alt="Clan Badge"
+                              width={16}
+                              height={16}
+                              className="w-4 h-4"
+                            />
+                            <span className="text-xs lg:text-sm font-bold text-white">OP81</span>
+                          </div>
                         </div>
+                        <p className="text-base lg:text-lg text-gray-300 mb-1">tako._.v<span className="font-bold">・</span>17yo He/Him</p>
+                      </motion.div>
+                      {/* Spotify Now Playing */}
+                      <SpotifyNowPlaying track={spotifyTrack || undefined} isLoading={isSpotifyLoading} />
+                    </motion.div>
 
-                        {/* 誕生日カウントダウン（誕生日が近い場合のみ表示） */}
-                        {daysUntilBirthday <= 30 && daysUntilBirthday > 0 && (
-                          <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 p-4 rounded-lg mt-4 border border-purple-500/30"
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center">
-                                <Calendar className="w-5 h-5 text-purple-400 mr-2" />
-                                <h4 className="font-medium text-purple-300">Birthday Countdown</h4>
+                    {/* 右側: About Me */}
+                    <motion.div
+                      initial={{ opacity: 0, x: 50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.8, type: "spring", bounce: 0.4, delay: 0.2 }}
+                      className="flex-1"
+                    >
+                      <Card className="bg-transparent border-transparent">
+                        <CardContent className="p-6">
+                          <h3 className="text-2xl lg:text-3xl font-bold mb-6 text-cyan-300">💻 About Me</h3>
+                          <p className="mb-4 text-white text-lg">
+                            <span className="font-bold">🎓CS Japanese Student | Full Stack Engineer</span>
+                          </p>
+                          <p className="mb-6 text-white">
+                            2008年大阪生まれ。現在はWeb開発を中心に学習しており、バックエンドとフロントエンドの両方を扱えるフルスタックエンジニアです！2025年10月からmuclaseという会社でエンジニアとしてインターンで働いております！
+                            <br />
+                            <span className="block text-sm italic text-gray-200 mt-2">
+                              Born in Osaka in 2008. Currently studying web development and is a full-stack engineer capable of both back-end and front-end development. Starting in October 2025, I have been working as an intern at a company called muclase!
+                            </span>
+                          </p>
+                          <div className="grid grid-cols-1 gap-4">
+                            {/* 誕生日 */}
+                            <motion.div
+                              whileHover={{ scale: 1.05 }}
+                              className="bg-transparent backdrop-blur-sm border border-white/10 hover:border-purple-500/50 transition-all duration-300 rounded-2xl p-5 shadow-lg text-white"
+                            >
+                              <div className="flex items-center mb-2">
+                                <Gift className="w-5 h-5 text-white mr-2" />
+                                <h4 className="text-lg font-medium text-white">Birthday</h4>
                               </div>
-                              <div className="text-xl font-bold text-white bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500">
-                                {daysUntilBirthday} {daysUntilBirthday === 1 ? "day" : "days"}
+                              <div className="flex items-baseline">
+                                <span className="text-xl font-bold text-gray-200">May 22nd</span>
+                                {daysUntilBirthday > 0 && (
+                                  <span className="ml-2 text-sm text-gray-200">({daysUntilBirthday} days left)</span>
+                                )}
+                                {daysUntilBirthday === 0 && (
+                                  <span className="ml-2 text-sm text-green-400 font-bold animate-pulse">Today! 🎉</span>
+                                )}
                               </div>
-                            </div>
-                            <div className="mt-2 w-full bg-gray-700 rounded-full h-2.5">
-                              <motion.div
-                                className="bg-gradient-to-r from-purple-500 to-pink-500 h-2.5 rounded-full"
-                                initial={{ width: "0%" }}
-                                animate={{ width: `${100 - (daysUntilBirthday / 30) * 100}%` }}
-                                transition={{ duration: 1, delay: 0.5 }}
-                              />
-                            </div>
-                          </motion.div>
-                        )}
+                            </motion.div>
+                            {/* Skills */}
+                            <motion.div
+                              whileHover={{ scale: 1.05 }}
+                              className="bg-transparent backdrop-blur-sm border border-white/10 hover:border-cyan-500/50 transition-all duration-300 rounded-2xl p-5 shadow-lg text-white"
+                            >
+                              <div className="flex items-center mb-4">
+                                <Code className="w-5 h-5 text-white mr-2" />
+                                <h4 className="text-lg font-medium text-white">Skills</h4>
+                              </div>
+                              <div className="flex justify-center">
+                                <Image
+                                  src="https://skillicons.dev/icons?i=js,ts,python,bash,powershell,react,next,vue,astro,remix,angular,tailwind,materialui,nodejs,deno,express,electron,postgres,mysql,docker,kubernetes,gcp,vercel,linux,windows,git,github,gitlab,postman,vscode"
+                                  alt="Skills"
+                                  width={600}
+                                  height={100}
+                                  className="w-full h-auto"
+                                  unoptimized
+                                />
+                              </div>
+                            </motion.div>
+                          </div>
 
-                        {/* 誕生日アニメーション（誕生日当日のみ表示） */}
-                        {daysUntilBirthday === 0 && (
-                          <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="relative bg-gradient-to-r from-purple-600/30 to-pink-600/30 p-6 rounded-lg mt-4 border border-pink-500/50 overflow-hidden"
-                          >
-                            <h4 className="text-xl font-bold text-center mb-2 text-white">🎉 Happy Birthday! 🎂</h4>
-                            <p className="text-center text-gray-300 mb-4">May all your wishes come true!</p>
-                          </motion.div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                </div>
+                          {/* 誕生日カウントダウン（誕生日が近い場合のみ表示） */}
+                          {daysUntilBirthday <= 30 && daysUntilBirthday > 0 && (
+                            <motion.div
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 p-4 rounded-lg mt-4 border border-purple-500/30"
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center">
+                                  <Calendar className="w-5 h-5 text-purple-400 mr-2" />
+                                  <h4 className="font-medium text-purple-300">Birthday Countdown</h4>
+                                </div>
+                                <div className="text-xl font-bold text-white bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500">
+                                  {daysUntilBirthday} {daysUntilBirthday === 1 ? "day" : "days"}
+                                </div>
+                              </div>
+                              <div className="mt-2 w-full bg-gray-700 rounded-full h-2.5">
+                                <motion.div
+                                  className="bg-gradient-to-r from-purple-500 to-pink-500 h-2.5 rounded-full"
+                                  initial={{ width: "0%" }}
+                                  animate={{ width: `${100 - (daysUntilBirthday / 30) * 100}%` }}
+                                  transition={{ duration: 1, delay: 0.5 }}
+                                />
+                              </div>
+                            </motion.div>
+                          )}
+
+                          {/* 誕生日アニメーション（誕生日当日のみ表示） */}
+                          {daysUntilBirthday === 0 && (
+                            <motion.div
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              className="relative bg-gradient-to-r from-purple-600/30 to-pink-600/30 p-6 rounded-lg mt-4 border border-pink-500/50 overflow-hidden"
+                            >
+                              <h4 className="text-xl font-bold text-center mb-2 text-white">🎉 Happy Birthday! 🎂</h4>
+                              <p className="text-center text-gray-300 mb-4">May all your wishes come true!</p>
+                            </motion.div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  </div>
+                )}
               </motion.div>
             </motion.section>
           )}
@@ -1133,91 +1146,97 @@ export default function Home() {
                   opacity: currentPage === 2 ? 1 - scrollProgress * 0.3 : 1,
                 }}
               >
-                <motion.div variants={container} initial="hidden" animate="show" className="space-y-6 w-full">
-                  <motion.div variants={item} className="w-full">
-                    <Card className="bg-transparent border-transparent w-full">
-                      <CardContent className="p-6 w-full">
-                        <div className="grid grid-cols-2 gap-4 w-full">
-                          {projectDetails.map((project, index) => (
-                            <motion.div
-                              key={project.title}
-                              initial={{ opacity: 0, scale: 0.9 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              transition={{ delay: index * 0.1 }}
-                              whileHover={{ scale: 1.02 }}
-                              onClick={(e) => {
-                                const target = e.target as HTMLElement
-                                if (target.closest('a')) {
-                                  return
-                                }
-                                handleProjectClick(project)
-                              }}
-                              className="w-full min-w-0 bg-gray-800/50 border border-gray-700/50 rounded-lg p-4 hover:border-blue-500/50 transition-all duration-300 cursor-pointer"
-                            >
-                              <div className="flex items-start justify-between mb-3">
-                                {project.url ? (
-                                  <a
-                                    href={project.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="text-lg font-bold text-white hover:text-blue-400 transition-colors cursor-pointer"
-                                  >
-                                    <h4>{project.title}</h4>
-                                  </a>
-                                ) : (
-                                  <h4 className="text-lg font-bold text-white">{project.title}</h4>
-                                )}
-                                <div className="flex gap-2">
-                                  {project.url && (
+                {isMobile ? (
+                  // モバイル: 縦に1つずつ並べる
+                  <MobileWorks projects={projectDetails} onProjectClick={handleProjectClick} />
+                ) : (
+                  // デスクトップ: 既存のレイアウト（2列グリッド）
+                  <motion.div variants={container} initial="hidden" animate="show" className="space-y-6 w-full">
+                    <motion.div variants={item} className="w-full">
+                      <Card className="bg-transparent border-transparent w-full">
+                        <CardContent className="p-6 w-full">
+                          <div className="grid grid-cols-2 gap-4 w-full">
+                            {projectDetails.map((project, index) => (
+                              <motion.div
+                                key={project.title}
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: index * 0.1 }}
+                                whileHover={{ scale: 1.02 }}
+                                onClick={(e) => {
+                                  const target = e.target as HTMLElement
+                                  if (target.closest('a')) {
+                                    return
+                                  }
+                                  handleProjectClick(project)
+                                }}
+                                className="w-full min-w-0 bg-gray-800/50 border border-gray-700/50 rounded-lg p-4 hover:border-blue-500/50 transition-all duration-300 cursor-pointer"
+                              >
+                                <div className="flex items-start justify-between mb-3">
+                                  {project.url ? (
                                     <a
                                       href={project.url}
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       onClick={(e) => e.stopPropagation()}
-                                      className="text-blue-400 hover:text-blue-300 transition-colors"
-                                      aria-label={`Visit ${project.title}`}
+                                      className="text-lg font-bold text-white hover:text-blue-400 transition-colors cursor-pointer"
                                     >
-                                      <ExternalLink className="w-5 h-5" />
+                                      <h4>{project.title}</h4>
                                     </a>
+                                  ) : (
+                                    <h4 className="text-lg font-bold text-white">{project.title}</h4>
                                   )}
-                                  {project.githubUrl && (
-                                    <a
-                                      href={project.githubUrl}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      onClick={(e) => e.stopPropagation()}
-                                      className="text-gray-400 hover:text-gray-300 transition-colors"
-                                      aria-label={`View ${project.title} on GitHub`}
-                                    >
-                                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                                      </svg>
-                                    </a>
-                                  )}
+                                  <div className="flex gap-2">
+                                    {project.url && (
+                                      <a
+                                        href={project.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="text-blue-400 hover:text-blue-300 transition-colors"
+                                        aria-label={`Visit ${project.title}`}
+                                      >
+                                        <ExternalLink className="w-5 h-5" />
+                                      </a>
+                                    )}
+                                    {project.githubUrl && (
+                                      <a
+                                        href={project.githubUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="text-gray-400 hover:text-gray-300 transition-colors"
+                                        aria-label={`View ${project.title} on GitHub`}
+                                      >
+                                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                          <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                        </svg>
+                                      </a>
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
-                              <p className="text-gray-300 text-sm mb-3">
-                                {project.description}
-                              </p>
-                              {project.imageUrl && (
-                                <div className="mb-2 rounded-lg overflow-hidden bg-gray-900 dark:bg-gray-100">
-                                  <Image
-                                    src={project.imageUrl}
-                                    alt={project.imageAlt}
-                                    width={600}
-                                    height={400}
-                                    className="w-full h-auto object-cover"
-                                  />
-                                </div>
-                              )}
-                            </motion.div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
+                                <p className="text-gray-300 text-sm mb-3">
+                                  {project.description}
+                                </p>
+                                {project.imageUrl && (
+                                  <div className="mb-2 rounded-lg overflow-hidden bg-gray-900 dark:bg-gray-100">
+                                    <Image
+                                      src={project.imageUrl}
+                                      alt={project.imageAlt}
+                                      width={600}
+                                      height={400}
+                                      className="w-full h-auto object-cover"
+                                    />
+                                  </div>
+                                )}
+                              </motion.div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
                   </motion.div>
-                </motion.div>
+                )}
               </motion.div>
             </motion.section>
           )}
@@ -1277,84 +1296,90 @@ export default function Home() {
                   opacity: currentPage === 3 ? 1 - scrollProgress * 0.3 : 1,
                 }}
               >
-                <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
-                  <motion.div variants={item}>
-                    <Card className="bg-transparent border-transparent">
-                      <CardContent className="p-6">
-                        <h3 className="text-3xl lg:text-4xl font-bold mb-8 text-white text-center">📧 Contact</h3>
-                        
-                        {/* メールアドレスとDiscord */}
-                        <motion.div
-                          variants={item}
-                          className="mb-8"
-                        >
-                          <div className="grid grid-cols-[1fr_auto_1fr] gap-1 items-center">
-                            {/* Email */}
-                            <div className="bg-transparent rounded-lg p-6">
-                              <div className="flex flex-col items-center gap-4 mb-4">
-                                <div className="flex items-center gap-3">
-                                  <Mail className="w-6 h-6 text-cyan-400" />
-                                  <h4 className="text-xl font-semibold text-white">Email</h4>
+                {isMobile ? (
+                  // モバイル: EmailとDiscordを縦に並べる
+                  <MobileContact onCopyDiscord={handleCopyDiscord} discordCopied={discordCopied} />
+                ) : (
+                  // デスクトップ: 既存のレイアウト（横並び）
+                  <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
+                    <motion.div variants={item}>
+                      <Card className="bg-transparent border-transparent">
+                        <CardContent className="p-6">
+                          <h3 className="text-3xl lg:text-4xl font-bold mb-8 text-white text-center">📧 Contact</h3>
+                          
+                          {/* メールアドレスとDiscord */}
+                          <motion.div
+                            variants={item}
+                            className="mb-8"
+                          >
+                            <div className="grid grid-cols-[1fr_auto_1fr] gap-1 items-center">
+                              {/* Email */}
+                              <div className="bg-transparent rounded-lg p-6">
+                                <div className="flex flex-col items-center gap-4 mb-4">
+                                  <div className="flex items-center gap-3">
+                                    <Mail className="w-6 h-6 text-cyan-400" />
+                                    <h4 className="text-xl font-semibold text-white">Email</h4>
+                                  </div>
                                 </div>
-                              </div>
-                              <div className="text-center">
-                                <a
-                                  href="mailto:tako.work.contact@gmail.com"
-                                  className="text-cyan-400 hover:text-cyan-300 text-lg font-mono transition-colors break-all"
-                                >
-                                  tako.work.contact@gmail.com
-                                </a>
-                              </div>
-                            </div>
-
-                            {/* or */}
-                            <div className="flex items-center justify-center w-fit min-w-fit px-1">
-                              <span className="text-white/60 text-lg font-medium whitespace-nowrap">or</span>
-                            </div>
-
-                            {/* Discord */}
-                            <div className="bg-transparent rounded-lg p-6">
-                              <div className="flex flex-col items-center gap-4 mb-4">
-                                <div className="flex items-center gap-3">
-                                  <svg
-                                    className="w-6 h-6 text-indigo-400"
-                                    fill="currentColor"
-                                    viewBox="0 0 24 24"
+                                <div className="text-center">
+                                  <a
+                                    href="mailto:tako.work.contact@gmail.com"
+                                    className="text-cyan-400 hover:text-cyan-300 text-lg font-mono transition-colors break-all"
                                   >
-                                    <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.007-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
-                                  </svg>
-                                  <h4 className="text-xl font-semibold text-white">Discord</h4>
+                                    tako.work.contact@gmail.com
+                                  </a>
                                 </div>
                               </div>
-                              <div className="text-center">
-                                <motion.span
-                                  onClick={handleCopyDiscord}
-                                  className="text-indigo-400 hover:text-indigo-300 text-lg font-mono transition-colors break-all cursor-pointer"
-                                  whileHover={{ scale: 1.05 }}
-                                  whileTap={{ scale: 0.95 }}
-                                >
-                                  {discordCopied ? "Copied!" : "tako._.v"}
-                                </motion.span>
+
+                              {/* or */}
+                              <div className="flex items-center justify-center w-fit min-w-fit px-1">
+                                <span className="text-white/60 text-lg font-medium whitespace-nowrap">or</span>
+                              </div>
+
+                              {/* Discord */}
+                              <div className="bg-transparent rounded-lg p-6">
+                                <div className="flex flex-col items-center gap-4 mb-4">
+                                  <div className="flex items-center gap-3">
+                                    <svg
+                                      className="w-6 h-6 text-indigo-400"
+                                      fill="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.007-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+                                    </svg>
+                                    <h4 className="text-xl font-semibold text-white">Discord</h4>
+                                  </div>
+                                </div>
+                                <div className="text-center">
+                                  <motion.span
+                                    onClick={handleCopyDiscord}
+                                    className="text-indigo-400 hover:text-indigo-300 text-lg font-mono transition-colors break-all cursor-pointer"
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                  >
+                                    {discordCopied ? "Copied!" : "tako._.v"}
+                                  </motion.span>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </motion.div>
-                        {/* メッセージ */}
-                        <motion.div
-                          variants={item}
-                          className="text-center"
-                        >
-                          <p className="text-gray-300 text-lg">
-                            お気軽にご連絡ください！
-                          </p>
-                          <p className="text-gray-400 text-sm mt-2 italic">
-                            Feel free to reach out!
-                          </p>
-                        </motion.div>
-                      </CardContent>
-                    </Card>
+                          </motion.div>
+                          {/* メッセージ */}
+                          <motion.div
+                            variants={item}
+                            className="text-center"
+                          >
+                            <p className="text-gray-300 text-lg">
+                              お気軽にご連絡ください！
+                            </p>
+                            <p className="text-gray-400 text-sm mt-2 italic">
+                              Feel free to reach out!
+                            </p>
+                          </motion.div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
                   </motion.div>
-                </motion.div>
+                )}
               </motion.div>
               
               {/* フッター（Contactセクションのみ） */}
