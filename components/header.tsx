@@ -95,7 +95,7 @@ export default function Header({ onNavigate }: HeaderProps) {
                   handleRippleEffect(e)
                   onNavigate(item.sectionId)
                 }}
-                className={`${huninn.className} text-white bg-transparent hover:bg-blue-500/10 transition-colors duration-200 relative overflow-x-visible overflow-y-hidden group px-4 py-2 rounded-md flex items-center justify-center`}
+                className={`${huninn.className} text-white bg-transparent transition-colors duration-200 relative overflow-x-visible overflow-y-hidden group px-4 py-2 rounded-md flex items-center justify-center`}
               >
                 <span
                   className={`text-reveal-container mr-2 ${
