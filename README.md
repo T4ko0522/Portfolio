@@ -35,7 +35,7 @@ pnpm run dev
 Apache License 2.0  
 詳細は[LICENSE](https://github.com/T4ko0522/Portfolio/blob/master/LICENSE)を参照してください。 
 ```
-Copyright 2025 T4ko0522
+Copyright 2026 T4ko0522
 
 Licensed under the Apache License, Version 2.0 (the “License”);
 you may not use this file except in compliance with the License.
