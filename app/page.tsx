@@ -1,37 +1,45 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   ExternalLink,
-  Code,
-  User,
   Calendar,
   Gift,
-  Cake,
-  Briefcase,
+  Code,
+  Mail,
 } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "src/components/ui/tabs"
+import { cn } from "@/lib/utils"
 import LoadingScreen from "../components/loading-screen"
 import TypingAnimation from "../components/typing-animation"
+import MobileTypingAnimation from "../components/mobile-typing-animation"
+import { useIsMobile } from "../hooks/use-mobile"
 import Image from "next/image"
 import ProjectDetailModal, { ProjectDetail } from "../components/project-detail-modal"
+import StaggeredCurtainReveal from "../components/staggered-curtain-reveal"
+import Header from "../components/header"
+import SpotifyNowPlaying from "../components/spotify-now-playing"
+import { BgShader } from "../components/bg-shader"
+import { DottedSurface } from "../components/dotted-surface"
+import { ShootingStars } from "../components/shooting-stars"
+import MobileTitle from "../components/mobile-title"
+import MobileAbout from "../components/mobile-about"
+import MobileWorks from "../components/mobile-works"
+import MobileContact from "../components/mobile-contact"
+import { Pacifico, Rock_Salt } from "next/font/google"
 
-// 年齢計算関数
-function calculateAge(birthMonth: number, birthDay: number): number {
-  const today = new Date()
-  const currentYear = today.getFullYear()
-  const birthDate = new Date(currentYear, birthMonth - 1, birthDay)
+const pacifico = Pacifico({ 
+  weight: "400",
+  subsets: ["latin"],
+  display: "swap",
+})
 
-  // 今年の誕生日がまだ来ていない場合は1歳引く
-  if (today < birthDate) {
-    return currentYear - 2008 - 1
-  }
-
-  return currentYear - 2008
-}
+const rockSalt = Rock_Salt({
+  weight: "400",
+  subsets: ["latin"],
+  display: "swap",
+})
 
 // 次の誕生日までの日数を計算
 function getDaysUntilBirthday(birthMonth: number, birthDay: number): number {
@@ -64,13 +72,175 @@ const introTexts = [
   "\"Araiguma\" community founder.",
 ]
 
+interface SpotifyTrack {
+  name: string
+  artist: string
+  album: string
+  albumArtUrl: string
+  isPlaying: boolean
+  spotifyUrl?: string
+  currentTime?: number // 現在の再生時間（秒）
+  duration?: number // 総再生時間（秒）
+}
+
+interface SpotifyApiResponse {
+  spotify?: {
+    trackName: string
+    artistName: string
+    albumName: string
+    albumArt: string
+    isPlaying: boolean
+    position: number // ミリ秒
+    duration: number // ミリ秒
+  }
+  discord?: {
+    userId: string
+    status: 'online' | 'idle' | 'dnd' | 'offline'
+    activities?: Array<{
+      name: string
+      type: number
+      details?: string
+      state?: string
+      timestamps?: {
+        start?: number
+        end?: number
+      }
+      assets?: {
+        largeImage?: string
+        largeText?: string
+      }
+    }>
+    timestamp: number
+  }
+  error?: string
+}
+
 export default function Home() {
+  const isMobile = useIsMobile()
   const [mounted, setMounted] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [age, setAge] = useState<number>(0)
   const [daysUntilBirthday, setDaysUntilBirthday] = useState<number>(0)
   const [selectedProject, setSelectedProject] = useState<ProjectDetail | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [spotifyTrack, setSpotifyTrack] = useState<SpotifyTrack | null>(null)
+  const [isSpotifyLoading, setIsSpotifyLoading] = useState(false)
+  const [discordStatus, setDiscordStatus] = useState<'online' | 'idle' | 'dnd' | 'offline' | null>(null)
+  const [discordCopied, setDiscordCopied] = useState(false)
+  
+  // スクロール駆動アニメーション用のref
+  const mainSectionRef = useRef<HTMLElement>(null)
+  const aboutSectionRef = useRef<HTMLElement>(null)
+  const worksSectionRef = useRef<HTMLElement>(null)
+  const contactSectionRef = useRef<HTMLElement>(null)
+  const [currentPage, setCurrentPage] = useState(0) // 現在のページインデックス
+  const [scrollDirection, setScrollDirection] = useState<1 | -1>(1) // スクロール方向（1: 下スクロール→左から右, -1: 上スクロール→右から左）
+  const [scrollProgress, setScrollProgress] = useState(0) // 現在のページ間のスクロール進行状況（0-1）
+
+  // スクロール位置とページ状態を追跡するref
+  const lastScrollY = useRef(0) // 前回のスクロール位置
+  const lastPage = useRef(0) // 前回のページ番号
+  const snapTimeoutRef = useRef<NodeJS.Timeout | null>(null) // スナップ用タイマー
+  const isSnappingRef = useRef(false) // スナップ処理中フラグ
+  
+  // セクションごとの背景設定
+  const sectionBackgrounds = [
+    {
+      // メインセクション
+      type: "image" as const,
+      image: "/images/Background1.png",
+      position: "center 95%",
+      filter: "grayscale(0.0) blur(3px)",
+    }
+  ]
+  
+  
+  // ページベースのスクロール（本のページをめくるような体験）
+  // スクロール方向に応じてアニメーション方向を変更：
+  // - 下スクロール（ページ増）→ 左から右に出現（x: "100%" → 0）
+  // - 上スクロール（ページ減）→ 右から左に出現（x: "-100%" → 0）
+  const totalPages = 4 // メイン、About、Works、Contact
+
+  useEffect(() => {
+    const handleScroll = () => {
+      // スナップ処理中は方向判定をスキップ
+      if (isSnappingRef.current) {
+        return
+      }
+      
+      const scrollY = window.scrollY
+      const windowHeight = window.innerHeight
+      const scrollPerPage = windowHeight * 0.8 // 画面の60%スクロールで次のセクションに移動
+      
+      // 現在のページを計算
+      const calculatedPage = Math.min(
+        Math.floor(scrollY / scrollPerPage),
+        totalPages - 1
+      )
+      
+      // 現在のページ間のスクロール進行状況を計算（0-1）
+      const currentPageStart = calculatedPage * scrollPerPage
+      const currentPageEnd = Math.min((calculatedPage + 1) * scrollPerPage, totalPages * scrollPerPage)
+      const progressInPage = Math.max(0, Math.min(1, (scrollY - currentPageStart) / (currentPageEnd - currentPageStart)))
+      setScrollProgress(progressInPage)
+      
+      // ページが変わった場合のみ処理
+      if (calculatedPage !== lastPage.current) {
+        // スクロール方向を判定（ページ番号の比較で確実に判定）
+        const prevPage = lastPage.current
+        const direction: 1 | -1 = calculatedPage > prevPage ? 1 : -1
+
+        // 方向とページを同時に更新（確実に同期させる）
+        setScrollDirection(direction)
+        setCurrentPage(calculatedPage)
+
+        // refを更新（次の判定のため）
+        lastPage.current = calculatedPage
+        lastScrollY.current = scrollY
+      } else {
+        // ページが変わらなくてもスクロール位置は更新
+        lastScrollY.current = scrollY
+      }
+      
+      // スクロール停止後にページ位置にスナップ
+      if (snapTimeoutRef.current) {
+        clearTimeout(snapTimeoutRef.current)
+      }
+      
+      snapTimeoutRef.current = setTimeout(() => {
+        const currentScrollY = window.scrollY
+        const nearestPage = Math.round(currentScrollY / scrollPerPage)
+        const targetScrollY = nearestPage * scrollPerPage
+        
+        // スナップが必要な場合（50px以上のずれ）
+        if (Math.abs(currentScrollY - targetScrollY) > 50) {
+          isSnappingRef.current = true
+          window.scrollTo({
+            top: targetScrollY,
+            behavior: "smooth",
+          })
+          // スナップ完了後にフラグをリセット（アニメーション時間を考慮）
+          setTimeout(() => {
+            isSnappingRef.current = false
+          }, 600) // スナップアニメーション時間より少し長め
+        }
+      }, 150)
+    }
+    
+    // 初期スクロール位置を設定
+    lastScrollY.current = window.scrollY
+    lastPage.current = currentPage
+    
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+      if (snapTimeoutRef.current) {
+        clearTimeout(snapTimeoutRef.current)
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [totalPages]) // currentPageを依存配列から除外（refで管理しているため無限ループを防ぐ）
+  
 
   // 誕生日の設定（5月22日）
   const birthMonth = 5
@@ -79,12 +249,10 @@ export default function Home() {
   // クライアント イドレンダリングのためのマウント確認と年齢・カウントダウン計算
   useEffect(() => {
     setMounted(true)
-    setAge(calculateAge(birthMonth, birthDay))
     setDaysUntilBirthday(getDaysUntilBirthday(birthMonth, birthDay))
 
-    // 毎日0時に年齢とカウントダウンを更新
-    const updateAgeAndCountdown = () => {
-      setAge(calculateAge(birthMonth, birthDay))
+    // 毎日0時にカウントダウンを更新
+    const updateCountdown = () => {
       setDaysUntilBirthday(getDaysUntilBirthday(birthMonth, birthDay))
     }
 
@@ -95,13 +263,123 @@ export default function Home() {
 
     // 0時にタイマーをセット
     const midnightTimer = setTimeout(() => {
-      updateAgeAndCountdown()
+      updateCountdown()
       // その後は24時間ごとに更新
-      setInterval(updateAgeAndCountdown, 24 * 60 * 60 * 1000)
+      setInterval(updateCountdown, 24 * 60 * 60 * 1000)
     }, timeUntilMidnight)
 
     return () => {
       clearTimeout(midnightTimer)
+    }
+  }, [])
+
+  // Spotifyデータを取得（SSE使用 - trackNameが変わったときだけ更新）
+  useEffect(() => {
+    let eventSource: EventSource | null = null
+    let reconnectTimeout: NodeJS.Timeout | null = null
+
+    const connectSSE = () => {
+      try {
+        setIsSpotifyLoading(true)
+        eventSource = new EventSource('/api/spotify-status/stream')
+
+        eventSource.onmessage = (event) => {
+          try {
+            const data: SpotifyApiResponse = JSON.parse(event.data)
+            
+            // エラーの場合はスキップ
+            if (data.error) {
+              console.error('SSE error:', data.error)
+              setIsSpotifyLoading(false)
+              return
+            }
+            
+            // DiscordのactivitiesからSpotify情報を取得
+            const spotifyActivity = data.discord?.activities?.find(
+              (activity) => activity.name === 'Spotify'
+            )
+            
+            if (spotifyActivity) {
+              const startTime = spotifyActivity.timestamps?.start || 0
+              const endTime = spotifyActivity.timestamps?.end || 0
+              const now = Date.now()
+              const currentPosition = Math.max(0, now - startTime)
+              const duration = endTime > startTime ? endTime - startTime : 0
+              
+              setSpotifyTrack({
+                name: spotifyActivity.details || '',
+                artist: spotifyActivity.state || '',
+                album: spotifyActivity.assets?.largeText || '',
+                albumArtUrl: spotifyActivity.assets?.largeImage || '',
+                isPlaying: true,
+                currentTime: Math.floor(currentPosition / 1000), // ミリ秒を秒に変換
+                duration: Math.floor(duration / 1000), // ミリ秒を秒に変換
+              })
+            } else {
+              // フォールバック: 従来のspotifyデータがある場合
+              if (data.spotify && data.spotify.isPlaying) {
+                setSpotifyTrack({
+                  name: data.spotify.trackName,
+                  artist: data.spotify.artistName,
+                  album: data.spotify.albumName,
+                  albumArtUrl: data.spotify.albumArt,
+                  isPlaying: data.spotify.isPlaying,
+                  currentTime: Math.floor(data.spotify.position / 1000), // ミリ秒を秒に変換
+                  duration: Math.floor(data.spotify.duration / 1000), // ミリ秒を秒に変換
+                })
+              } else {
+                setSpotifyTrack(null)
+              }
+            }
+            
+            // Discordステータスを更新
+            if (data.discord) {
+              setDiscordStatus(data.discord.status)
+            }
+            
+            setIsSpotifyLoading(false)
+          } catch (error) {
+            console.error('Error parsing SSE data:', error)
+            setIsSpotifyLoading(false)
+          }
+        }
+
+        eventSource.onerror = (error) => {
+          console.error('SSE connection error:', error)
+          setIsSpotifyLoading(false)
+          
+          // 接続を閉じる
+          if (eventSource) {
+            eventSource.close()
+            eventSource = null
+          }
+          
+          // 3秒後に再接続を試みる
+          reconnectTimeout = setTimeout(() => {
+            connectSSE()
+          }, 3000)
+        }
+      } catch (error) {
+        console.error('Error setting up SSE:', error)
+        setIsSpotifyLoading(false)
+        
+        // 3秒後に再接続を試みる
+        reconnectTimeout = setTimeout(() => {
+          connectSSE()
+        }, 3000)
+      }
+    }
+
+    // 初回接続
+    connectSSE()
+
+    return () => {
+      if (eventSource) {
+        eventSource.close()
+      }
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout)
+      }
     }
   }, [])
 
@@ -122,7 +400,71 @@ export default function Home() {
     setSelectedProject(null)
   }
 
+  // Discordユーザー名をクリップボードにコピー
+  const handleCopyDiscord = async () => {
+    const discordUsername = "tako._.v"
+    try {
+      await navigator.clipboard.writeText(discordUsername)
+      setDiscordCopied(true)
+      setTimeout(() => setDiscordCopied(false), 2000)
+    } catch (err) {
+      console.error("Failed to copy Discord username:", err)
+    }
+  }
+
+  // セクションへのスクロール関数（縦スクロール駆動）
+  const scrollToSection = (sectionId: string) => {
+    const sections = [
+      { id: "main", index: 0 },
+      { id: "about", index: 1 },
+      { id: "works", index: 2 },
+      { id: "contact", index: 3 },
+    ]
+
+    const section = sections.find(s => s.id === sectionId)
+    if (section) {
+      const windowHeight = window.innerHeight
+      const targetScrollY = section.index * windowHeight
+      const targetPage = section.index
+
+      // スクロール方向を判定（現在のページと比較）
+      const direction: 1 | -1 = targetPage > currentPage ? 1 : -1
+
+      setScrollDirection(direction)
+
+      // refも更新
+      lastPage.current = currentPage
+      lastScrollY.current = window.scrollY
+
+      window.scrollTo({
+        top: targetScrollY,
+        behavior: "smooth",
+      })
+    }
+  }
+
   if (!mounted) return null
+
+  // ページ遷移のvariantsを定義（スクロール方向に基づく）
+  const pageVariants = {
+    enter: (direction: 1 | -1) => ({
+      opacity: 0,
+      x: direction === 1 ? "100%" : "-100%", // 下スクロール: 右から / 上スクロール: 左から
+    }),
+    center: {
+      opacity: 1,
+      x: 0,
+    },
+    exit: (direction: 1 | -1) => ({
+      opacity: 0.3, // 完全に非表示にせず、少し見えるようにする
+      x: direction === 1 ? "-100%" : "100%", // 下スクロール: 左へ / 上スクロール: 右へ
+    }),
+  }
+
+  const pageTransition = {
+    duration: 0.6,
+    ease: [0.4, 0.0, 0.2, 1],
+  }
 
   const container = {
     hidden: { opacity: 0 },
@@ -240,8 +582,8 @@ export default function Home() {
       ]
     },
   ]
-
-  const techStack = [
+  //eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const techStacks = [
     { name: "JavaScript", iconKey: "js", color: "bg-yellow-500", textColor: "text-black" },
     { name: "TypeScript", iconKey: "ts", color: "bg-blue-600", textColor: "text-white" },
     { name: "Python", iconKey: "python", color: "bg-yellow-400", textColor: "text-black" },
@@ -286,7 +628,7 @@ export default function Home() {
           priority
         />
         <Image
-          src="/images/background.png"
+          src="/images/Background1.png"
           alt=""
           width={1920}
           height={1080}
@@ -300,298 +642,399 @@ export default function Home() {
           priority
         />
       </div>
-      <AnimatePresence mode="wait">
-        {isLoading ? (
-          <div className="fixed inset-0 flex items-center justify-center z-[9999] bg-transparent">
-            <LoadingScreen key="loading" onLoadingComplete={handleLoadingComplete} />
-          </div>
-        ) : (
+      {/* メインコンテンツ（ページベースのトランジション） */}
+      {/* 縦スクロール可能な領域を確保（4ページ分のスクロール領域） */}
+      <div style={{ height: `${totalPages * 100}vh` }} />
+      
+      {/* スクロール進行状況インジケーター（下部） */}
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
+        {/* メインセクションのみ「Scroll down to explore」と右矢印を表示 */}
+        {currentPage === 0 && (
           <motion.div
-            key="content"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="relative min-h-screen text-white overflow-hidden"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.7 }}
+            className="flex flex-row items-center gap-2 mb-3 justify-center"
           >
-            <div
-              className="fixed inset-0 bg-cover"
-              style={{
-                backgroundImage: "url('/images/background.png')",
-                backgroundPosition: "center 95%",
-                transform: "scale(1.05)",
-                zIndex: -2,
-            }}
-            />
-            {/* 画面幅1500px以下で全画面ブラー、それ以外は中央だけブラー */}
-            <div
-              className="fixed inset-0 flex items-center justify-center pointer-events-none"
-              style={{ zIndex: -1 }}
+            <span className="text-white/80 text-sm font-medium">
+              Scroll down to explore
+            </span>
+            <motion.div
+              animate={{ x: [0, 6, 0] }}
+              transition={{
+                duration: 1.5,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+              className="text-white/80"
             >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </motion.div>
+          </motion.div>
+        )}
+          <div className="flex flex-row items-center gap-3 bg-black/30 backdrop-blur-sm px-4 py-2 rounded-full">
+            {/* WorksとContactセクションの場合は「Works Contact」の順番で表示 */}
+            {(currentPage === 2 || currentPage === 3) ? (
+              <>
+                <span className={`text-sm font-medium ${currentPage === 2 ? "text-white" : "text-white/60"}`}>
+                  Works
+                </span>
+                <div className="w-32 h-1.5 bg-white/20 rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-white rounded-full"
+                    style={{
+                      width: `${scrollProgress * 100}%`,
+                    }}
+                    transition={{ duration: 0.1 }}
+                  />
+                </div>
+                <span className={`text-sm font-medium ${currentPage === 3 ? "text-white" : "text-white/60"}`}>
+                  Contact
+                </span>
+              </>
+            ) : (
+              <>
+                {/* 現在のセクション名 */}
+                <span className="text-white text-sm font-medium">
+                  {currentPage === 0 && "Home"}
+                  {currentPage === 1 && "About"}
+                </span>
+                {/* プログレスバー */}
+                <div className="w-32 h-1.5 bg-white/20 rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-white rounded-full"
+                    style={{
+                      width: `${scrollProgress * 100}%`,
+                    }}
+                    transition={{ duration: 0.1 }}
+                  />
+                </div>
+                {/* 次のセクション名 */}
+                <span className="text-white/60 text-sm">
+                  {currentPage === 0 && "About"}
+                  {currentPage === 1 && "Works"}
+                </span>
+              </>
+            )}
+          </div>
+      </div>
+      
+      {/* ページコンテナ（固定・ピン留め） */}
+      <div className="fixed inset-0 overflow-hidden bg-black">
+        <AnimatePresence mode="sync" custom={scrollDirection}>
+          {/* メインセクション（ページ0） */}
+          {currentPage === 0 && (
+            <motion.section
+              key="main"
+              ref={mainSectionRef}
+              id="main"
+              className="absolute inset-0 w-screen h-screen flex flex-col items-center justify-center pt-32 pb-16 pointer-events-auto"
+              custom={scrollDirection}
+              variants={pageVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={pageTransition}
+            >
+              {/* 背景画像 */}
               <div
-                className="backdrop-blur-md bg-black/20 w-full h-full rounded-none xl2:w-[60%] xl2:rounded-xl"
-                style={{ height: "100%" }}
+                className="absolute inset-0 w-full h-full bg-cover bg-center"
+                style={{
+                  backgroundImage: `url('${sectionBackgrounds[0].image}')`,
+                  backgroundPosition: sectionBackgrounds[0].position || "center",
+                  filter: sectionBackgrounds[0].filter || "none",
+                  transform: "scale(1.3) translateZ(0px)",
+                  zIndex: -1,
+                }}
               />
-            </div>
-            <div className="container mx-auto px-4 py-16 max-w-4xl">
-              {/* ヘッダー */}
+              <motion.div 
+                className="relative z-10 w-full h-full flex flex-col items-center justify-center"
+                style={{
+                  opacity: currentPage === 0 ? 1 - scrollProgress * 0.3 : 1,
+                }}
+              >
+                {/* タイトル（コンテナ制限なしで中央揃え） */}
+              <div className="w-full text-center mb-20 px-4">
+                <motion.div
+                  initial={{ opacity: 0, y: -50 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, type: "spring", bounce: 0.4, delay: 0.15 }}
+                  className={`${pacifico.className} text-6xl md:text-7xl lg:text-8xl font-bold mb-10 flex items-center justify-center gap-4`}
+                >
+                  <Image 
+                    src="https://raw.githubusercontent.com/ABSphreak/ABSphreak/master/gifs/Hi.gif" 
+                    alt="Hi" 
+                    width={80}
+                    height={80}
+                    className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 inline-block"
+                    unoptimized
+                  />
+                  <span className="text-white">Hi there!</span>
+                </motion.div>
+                <MobileTitle />
+              </div>
+
+              <div className="container mx-auto px-4 max-w-4xl text-center">
+                {/* 以前ここにタイトルがありましたが、上に移動しました */}
+              </div>
+
+              {/* タイピングアニメーション（introText） */}
               <motion.div
                 initial={{ opacity: 0, y: -50 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, type: "spring", bounce: 0.4 }}
-                className="text-center mb-16 -mt-12"
+                transition={{ duration: 0.8, type: "spring", bounce: 0.4, delay: 0.3 }}
+                className="w-full mt-25 flex justify-center items-center px-4"
               >
-                {/* アイコンにホバーエフェクトを追加 */}
-                <div className="relative w-[200px] h-[160px] mx-auto mb-2 flex items-center justify-center">
-                  {/* 装飾画像（Discordデコレーション）だけを表示 */}
-                  <Image
-                    src="https://cdn.discordapp.com/avatar-decoration-presets/a_8552f9857793aed0cf816f370e2df3be.png?size=96&passthrough=true"
-                    alt="Decoration"
-                    width={152}
-                    height={152}
-                    className="absolute left-1/2 top-1/2 w-[152px] h-[152px] -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50"
-                    draggable="false"
-                    priority
+                {isMobile ? (
+                  <MobileTypingAnimation
+                    texts={introTexts}
+                    className={`${pacifico.className} text-xl sm:text-4xl md:text-5xl lg:text-6xl`}
                   />
-                  {/* アイコン本体 */}
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.2, type: "spring", stiffness: 100 }}
-                    className="w-32 h-32 rounded-full overflow-hidden relative z-40"
-                  >
-                    <div className="relative w-full h-full">
-                      <Image
-                        src="https://avatars.githubusercontent.com/u/108514947?v="
-                        alt="Tako"
-                        fill
-                        sizes="(max-width: 600px) 64px, 128px"
-                        className="object-cover"
-                        priority
-                      />
-                    </div>
-                  </motion.div>
-                </div>
-
-                <motion.h1
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.4 }}
-                  className="text-4xl md:text-5xl font-bold mb-2 flex items-center justify-center gap-2"
-                >
-                  <span>👋 </span>
-                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-blue-500">Hi! I&apos;m T4ko!</span>
-                </motion.h1>
-
-                {/* タイピングアニメーション */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.5 }}
-                  className="mb-4 flex justify-center items-center px-4"
-                >
+                ) : (
                   <TypingAnimation
                     texts={introTexts}
-                    className="text-base md:text-xl lg:text-2xl"
+                    className={`${pacifico.className} text-4xl md:text-5xl lg:text-6xl`}
                   />
-                </motion.div>
+                )}
+              </motion.div>
 
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.6 }}
-                  className="flex justify-center space-x-4"
+              {/* SNSリンク */}
+              <motion.div
+                initial={{ opacity: 0, y: -50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, type: "spring", bounce: 0.4, delay: 0.5 }}
+                className="flex justify-center space-x-6 mb-16 pointer-events-auto"
+              >
+                <motion.a
+                  href="https://github.com/T4ko0522"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="relative p-4 rounded-full bg-transparent"
+                  aria-label="GitHub"
+                  whileHover={{ scale: 1.3, rotate: 7 }}
                 >
-                  <motion.a
-                    href="https://github.com/T4ko0522"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="relative p-3 rounded-full bg-transparent"
-                    aria-label="GitHub"
-                    whileHover={{ scale: 1.3, rotate: 7 }}
+                  {/* GitHub SVG */}
+                  <svg 
+                    className="w-10 h-10 text-white relative z-10" 
+                    fill="currentColor" 
+                    viewBox="0 0 24 24"
                   >
-                    {/* GitHub SVG */}
-                    <svg 
-                      className="w-6 h-6 text-white relative z-10" 
-                      fill="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                    </svg>
-                  </motion.a>
-                  
-                  <motion.a
-                    href="https://www.youtube.com/@%E3%82%BF%E3%82%B3%E3%81%95%E3%82%93%E3%81%A7%E3%81%99"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="relative p-3 rounded-full bg-transparent"
-                    aria-label="YouTube"
-                    whileHover={{ scale: 1.3, rotate: 7 }}
+                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                  </svg>
+                </motion.a>
+                
+                <motion.a
+                  href="https://www.youtube.com/@%E3%82%BF%E3%82%B3%E3%81%95%E3%82%93%E3%81%A7%E3%81%99"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="relative p-4 rounded-full bg-transparent"
+                  aria-label="YouTube"
+                  whileHover={{ scale: 1.3, rotate: 7 }}
+                >
+                  {/* YouTube SVG */}
+                  <svg 
+                    className="w-10 h-10 text-white relative z-10" 
+                    fill="currentColor" 
+                    viewBox="0 0 24 24"
                   >
-                    {/* YouTube SVG */}
-                    <svg 
-                      className="w-6 h-6 text-white relative z-10" 
-                      fill="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                    </svg>
-                  </motion.a>
-                  
-                  <motion.a
-                    href="https://x.com/T4ko0522"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="relative p-3 rounded-full bg-transparent"
-                    aria-label="Twitter"
-                    whileHover={{ scale: 1.3, rotate: 7 }}
+                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                  </svg>
+                </motion.a>
+                
+                <motion.a
+                  href="https://x.com/T4ko0522"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="relative p-4 rounded-full bg-transparent"
+                  aria-label="Twitter"
+                  whileHover={{ scale: 1.3, rotate: 7 }}
+                >
+                  {/* Twitter/X SVG */}
+                  <svg 
+                    className="w-10 h-10 text-white relative z-10" 
+                    fill="currentColor" 
+                    viewBox="0 0 24 24"
                   >
-                    {/* Twitter/X SVG */}
-                    <svg 
-                      className="w-6 h-6 text-white relative z-10" 
-                      fill="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                    </svg>
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                  </svg>
                   </motion.a>
                 </motion.div>
               </motion.div>
+            </motion.section>
+          )}
 
-              {/* タブコンテンツ */}
-              <Tabs defaultValue="about" className="w-full">
-                <TabsList className="grid grid-cols-3 mb-8 -mt-10">
-                  <TabsTrigger
-                    value="about"
-                    className="text-white data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=active]:bg-gradient-to-r data-[state=active]:from-white/80 data-[state=active]:to-white/40 hover:bg-blue-500/10 transition-colors duration-200 relative overflow-hidden group"
-                    onClick={(e) => {
-                      const rect = e.currentTarget.getBoundingClientRect()
-                      const x = e.clientX - rect.left
-                      const y = e.clientY - rect.top
+          {/* About Me セクション（ページ1） */}
+          {currentPage === 1 && (
+            <motion.section
+              key="about"
+              ref={aboutSectionRef}
+              id="about"
+              className="absolute inset-0 w-screen h-screen flex items-center justify-center overflow-hidden pointer-events-auto"
+              custom={scrollDirection}
+              variants={pageVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={pageTransition}
+            >
+              {/* BgShader */}
+              <BgShader
+                colors={["#f97316", "#fb923c", "#fdba74", "#fda4af", "#fb7185", "#f472b6"]}
+                distortion={2}
+                swirl={1}
+                speed={0.8}
+                offsetX={0.08}
+                veilOpacity="bg-black/20"
+              />
+              <motion.div
+                className="container mx-auto px-4 max-w-6xl w-full h-full relative z-10 flex items-center justify-center"
+                style={{
+                  opacity: currentPage === 1 ? 1 - scrollProgress * 0.3 : 1,
+                }}
+              >
+                {isMobile ? (
+                  // モバイル: アイコンのみ上に表示 + About Meの内容
+                  <MobileAbout daysUntilBirthday={daysUntilBirthday} discordStatus={discordStatus} />
+                ) : (
+                  // デスクトップ: 既存のレイアウト（アイコン + About Me）
+                  <div className="flex flex-row items-center gap-8 lg:gap-12 w-full">
+                    {/* 左側: アイコン */}
+                    <motion.div
+                      initial={{ opacity: 0, x: -50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.8, type: "spring", bounce: 0.4, delay: 0.1 }}
+                      className="flex-shrink-0 flex flex-col items-center"
+                    >
+                      <div className="relative w-[300px] h-[240px] lg:w-[400px] lg:h-[320px] flex items-center justify-center">
+                        {/* 装飾画像（Discordデコレーション） */}
+                        <Image
+                          src="https://cdn.discordapp.com/avatar-decoration-presets/a_48b8411feb1e80a69048fc65b3275b75.png?size=256&passthrough=true"
+                          alt="Decoration"
+                          width={256}
+                          height={256}
+                          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50"
+                          style={{ width: '248px', height: '248px' }}
+                          draggable="false"
+                          priority
+                        />
+                        {/* アイコン本体 */}
+                        <motion.div
+                          className="w-52 h-52 lg:w-64 lg:h-64 rounded-full overflow-visible relative z-40"
+                        >
+                          <div className="relative w-full h-full rounded-full overflow-hidden">
+                            <Image
+                              src="https://avatars.githubusercontent.com/u/108514947?v="
+                              alt="Tako"
+                              fill
+                              sizes="(max-width: 1024px) 208px, 256px"
+                              className="object-cover"
+                              priority
+                            />
+                          </div>
+                          {/* Discordステータスインジケーター */}
+                          {discordStatus && (
+                            <div className="absolute bottom-0 right-2 z-[60]" style={{ 
+                              width: '28px', 
+                              height: '28px',
+                              filter: 'drop-shadow(0 0 0 3px #1a1a1a)'
+                            }}>
+                              {discordStatus === 'online' ? (
+                                <svg width="28" height="28" viewBox="0 0 12 12" className="w-full h-full">
+                                  <circle cx="6" cy="6" r="6" fill="rgb(69, 163, 102)" />
+                                </svg>
+                              ) : discordStatus === 'idle' ? (
+                                <svg width="28" height="28" viewBox="0 0 12 12" className="w-full h-full">
+                                  <defs>
+                                    <mask id="svg-mask-status-idle">
+                                      <rect width="12" height="12" fill="black" />
+                                      <circle cx="6" cy="6" r="5" fill="white" />
+                                      <path d="M 6 1 A 5 5 0 0 0 1 6 L 6 6 Z" fill="black" />
+                                    </mask>
+                                  </defs>
+                                  <rect width="12" height="12" x="0" y="0" fill="#ffc04e" mask="url(#svg-mask-status-idle)" />
+                                </svg>
+                              ) : discordStatus === 'dnd' ? (
+                                <svg width="28" height="28" viewBox="0 0 12 12" className="w-full h-full">
+                                  <circle cx="6" cy="6" r="6" fill="rgb(237, 66, 69)" />
+                                  <rect x="3" y="5" width="6" height="2" fill="white" rx="1" />
+                                </svg>
+                              ) : (
+                                <svg width="28" height="28" viewBox="0 0 12 12" className="w-full h-full">
+                                  <circle cx="6" cy="6" r="6" fill="rgb(116, 127, 141)" />
+                                  <circle cx="6" cy="6" r="4" fill="rgb(79, 84, 92)" />
+                                </svg>
+                              )}
+                            </div>
+                          )}
+                          
+                        </motion.div>
+                      </div>
+                      {/* 名前と情報 */}
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.4 }}
+                        className="mt-6 text-center"
+                      >
+                        <div className="flex items-center justify-center gap-2 mb-2">
+                          <h2 className="text-4xl lg:text-5xl font-bold text-white" style={{ fontFamily: 'Discord, sans-serif' }}>T4ko</h2>
+                          <div className="flex items-center gap-1.5 border border-white/30 rounded px-2 py-0.5">
+                            <Image
+                              src="https://cdn.discordapp.com/clan-badges/1399359679473254492/df39482e5db7ebbeff7f6d9a832a6144.png?size=16"
+                              alt="Clan Badge"
+                              width={16}
+                              height={16}
+                              className="w-4 h-4"
+                            />
+                            <span className="text-xs lg:text-sm font-bold text-white">OP81</span>
+                          </div>
+                        </div>
+                        <p className="text-base lg:text-lg text-gray-300 mb-1">tako._.v<span className="font-bold">・</span>17yo He/Him</p>
+                      </motion.div>
+                      {/* Spotify Now Playing */}
+                      <SpotifyNowPlaying track={spotifyTrack || undefined} isLoading={isSpotifyLoading} />
+                    </motion.div>
 
-                      // クリック時の波紋エフェクト
-                      const ripple = document.createElement("span")
-                      ripple.style.position = "absolute"
-                      ripple.style.width = "5px"
-                      ripple.style.height = "5px"
-                      ripple.style.borderRadius = "50%"
-                      ripple.style.backgroundColor = "rgba(59, 130, 246, 0.4)"
-                      ripple.style.transform = "scale(0)"
-                      ripple.style.left = `${x}px`
-                      ripple.style.top = `${y}px`
-                      ripple.style.animation = "ripple 0.6s linear"
-
-                      e.currentTarget.appendChild(ripple)
-
-                      setTimeout(() => {
-                        ripple.remove()
-                      }, 600)
-                    }}
-                  >
-                    <User className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
-                    <span className="group-hover:translate-x-0.5 transition-transform duration-200">About</span>
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="skills"
-                    className="text-white data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=active]:bg-gradient-to-r data-[state=active]:from-white/80 data-[state=active]:to-white/40 hover:bg-blue-500/10 transition-colors duration-200 relative overflow-hidden group"
-                    onClick={(e) => {
-                      const rect = e.currentTarget.getBoundingClientRect()
-                      const x = e.clientX - rect.left
-                      const y = e.clientY - rect.top
-
-                      const ripple = document.createElement("span")
-                      ripple.style.position = "absolute"
-                      ripple.style.width = "5px"
-                      ripple.style.height = "5px"
-                      ripple.style.borderRadius = "50%"
-                      ripple.style.backgroundColor = "rgba(59, 130, 246, 0.4)"
-                      ripple.style.transform = "scale(0)"
-                      ripple.style.left = `${x}px`
-                      ripple.style.top = `${y}px`
-                      ripple.style.animation = "ripple 0.6s linear"
-
-                      e.currentTarget.appendChild(ripple)
-
-                      setTimeout(() => {
-                        ripple.remove()
-                      }, 600)
-                    }}
-                  >
-                    <Code className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
-                    <span className="group-hover:translate-x-0.5 transition-transform duration-200">Skills</span>
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="works"
-                    className="text-white data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=active]:bg-gradient-to-r data-[state=active]:from-white/80 data-[state=active]:to-white/40 hover:bg-blue-500/10 transition-colors duration-200 relative overflow-hidden group"
-                    onClick={(e) => {
-                      const rect = e.currentTarget.getBoundingClientRect()
-                      const x = e.clientX - rect.left
-                      const y = e.clientY - rect.top
-
-                      const ripple = document.createElement("span")
-                      ripple.style.position = "absolute"
-                      ripple.style.width = "5px"
-                      ripple.style.height = "5px"
-                      ripple.style.borderRadius = "50%"
-                      ripple.style.backgroundColor = "rgba(59, 130, 246, 0.4)"
-                      ripple.style.transform = "scale(0)"
-                      ripple.style.left = `${x}px`
-                      ripple.style.top = `${y}px`
-                      ripple.style.animation = "ripple 0.6s linear"
-
-                      e.currentTarget.appendChild(ripple)
-
-                      setTimeout(() => {
-                        ripple.remove()
-                      }, 600)
-                    }}
-                  >
-                    <Briefcase className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
-                    <span className="group-hover:translate-x-0.5 transition-transform duration-200">Works</span>
-                  </TabsTrigger>
-                </TabsList>
-
-                {/* About Me */}
-                <TabsContent value="about">
-                  <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
-                    <motion.div variants={item}>
+                    {/* 右側: About Me */}
+                    <motion.div
+                      initial={{ opacity: 0, x: 50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.8, type: "spring", bounce: 0.4, delay: 0.2 }}
+                      className="flex-1"
+                    >
                       <Card className="bg-transparent border-transparent">
                         <CardContent className="p-6">
-                          <h3 className="text-xl font-bold mb-4 text-cyan-300">💻 About Me</h3>
-                          <p className="mb-4 text-white">
+                          <h3 className="text-2xl lg:text-3xl font-bold mb-6 text-cyan-300">💻 About Me</h3>
+                          <p className="mb-4 text-white text-lg">
                             <span className="font-bold">🎓CS Japanese Student | Full Stack Engineer</span>
                           </p>
-                          <p className="mb-4 text-white">
+                          <p className="mb-6 text-white">
                             2008年大阪生まれ。現在はWeb開発を中心に学習しており、バックエンドとフロントエンドの両方を扱えるフルスタックエンジニアです！2025年10月からmuclaseという会社でエンジニアとしてインターンで働いております！
-                          <br />
-                          <span className="block text-sm italic text-gray-200 translate-x-1 mt-1">
-                          Born in Osaka in 2008. Currently studying web development and is a full-stack engineer capable of both back-end and front-end development. Starting in October 2025, I have been working as an intern at a company called muclase!
-                          </span>
+                            <br />
+                            <span className="block text-sm italic text-gray-200 mt-2">
+                              Born in Osaka in 2008. Currently studying web development and is a full-stack engineer capable of both back-end and front-end development. Starting in October 2025, I have been working as an intern at a company called muclase!
+                            </span>
                           </p>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                            {/* 年齢 */}
-                            <motion.div
-                              whileHover={{ scale: 1.03 }}
-                              className="bg-transparent border-transparent p-4 rounded-lg text-white"
-                            >
-                              <div className="flex items-center mb-2">
-                                <Cake className="w-5 h-5 text-purple-500 mr-2" />
-                                <h4 className="text-lg font-medium text-purple-500">Age</h4>
-                              </div>
-                              <div className="flex items-baseline">
-                                <span className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500">
-                                  {age}
-                                </span>
-                                <span className="ml-2 text-gray-200">years old</span>
-                              </div>
-                            </motion.div>
+                          <div className="grid grid-cols-1 gap-4">
                             {/* 誕生日 */}
                             <motion.div
-                              whileHover={{ scale: 1.03 }}
-                              className="bg-transparent border-transparent p-4 rounded-lg text-white"
+                              whileHover={{ scale: 1.05 }}
+                              className="bg-transparent backdrop-blur-sm border border-white/10 hover:border-purple-500/50 transition-all duration-300 rounded-2xl p-5 shadow-lg text-white"
                             >
                               <div className="flex items-center mb-2">
-                                <Gift className="w-5 h-5 text-purple-500 mr-2" />
-                                <h4 className="text-lg font-medium text-purple-500">Birthday</h4>
+                                <Gift className="w-5 h-5 text-white mr-2" />
+                                <h4 className="text-lg font-medium text-white">Birthday</h4>
                               </div>
                               <div className="flex items-baseline">
                                 <span className="text-xl font-bold text-gray-200">May 22nd</span>
@@ -603,6 +1046,26 @@ export default function Home() {
                                 )}
                               </div>
                             </motion.div>
+                            {/* Skills */}
+                            <motion.div
+                              whileHover={{ scale: 1.05 }}
+                              className="bg-transparent backdrop-blur-sm border border-white/10 hover:border-cyan-500/50 transition-all duration-300 rounded-2xl p-5 shadow-lg text-white"
+                            >
+                              <div className="flex items-center mb-4">
+                                <Code className="w-5 h-5 text-white mr-2" />
+                                <h4 className="text-lg font-medium text-white">Skills</h4>
+                              </div>
+                              <div className="flex justify-center">
+                                <Image
+                                  src="https://skillicons.dev/icons?i=js,ts,python,bash,powershell,react,next,vue,astro,remix,angular,tailwind,materialui,nodejs,deno,express,electron,postgres,mysql,docker,kubernetes,gcp,vercel,linux,windows,git,github,gitlab,postman,vscode"
+                                  alt="Skills"
+                                  width={600}
+                                  height={100}
+                                  className="w-full h-auto"
+                                  unoptimized
+                                />
+                              </div>
+                            </motion.div>
                           </div>
 
                           {/* 誕生日カウントダウン（誕生日が近い場合のみ表示） */}
@@ -610,7 +1073,7 @@ export default function Home() {
                             <motion.div
                               initial={{ opacity: 0, y: 20 }}
                               animate={{ opacity: 1, y: 0 }}
-                              className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 p-4 rounded-lg mb-6 border border-purple-500/30"
+                              className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 p-4 rounded-lg mt-4 border border-purple-500/30"
                             >
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center">
@@ -637,7 +1100,7 @@ export default function Home() {
                             <motion.div
                               initial={{ opacity: 0 }}
                               animate={{ opacity: 1 }}
-                              className="relative bg-gradient-to-r from-purple-600/30 to-pink-600/30 p-6 rounded-lg mb-6 border border-pink-500/50 overflow-hidden"
+                              className="relative bg-gradient-to-r from-purple-600/30 to-pink-600/30 p-6 rounded-lg mt-4 border border-pink-500/50 overflow-hidden"
                             >
                               <h4 className="text-xl font-bold text-center mb-2 text-white">🎉 Happy Birthday! 🎂</h4>
                               <p className="text-center text-gray-300 mb-4">May all your wishes come true!</p>
@@ -646,52 +1109,52 @@ export default function Home() {
                         </CardContent>
                       </Card>
                     </motion.div>
-                  </motion.div>
-                </TabsContent>
-                {/* Skills */}
-                <TabsContent value="skills">
-                  <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
-                    <motion.div variants={item}>
-                      <Card className="bg-transparent border-transparent">
-                        <CardContent className="p-6">
-                          <h3 className="text-xl font-bold mb-4">
-                            <span>🛠️</span> <span className="text-cyan-300">Tech Stack</span>
-                          </h3>
-                          <div className="flex flex-wrap gap-2">
-                            {techStack.map((tech, index) => (
-                              <motion.div
-                                key={tech.name}
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: index * 0.05 }}
-                                whileHover={{ scale: 1.1 }}
-                                className="transition-all"
-                              >
-                                <Badge className={`${tech.color} ${tech.textColor} hover:${tech.color}`}>
-                                  <Image 
-                                    src={`https://skillicons.dev/icons?i=${tech.iconKey}`} 
-                                    alt={tech.name}
-                                    width={16}
-                                    height={16}
-                                    className="w-4 h-4 mr-2"
-                                  />
-                                  {tech.name}
-                                </Badge>
-                              </motion.div>
-                            ))}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  </motion.div>
-                </TabsContent>
-                {/* Works */}
-                <TabsContent value="works">
+                  </div>
+                )}
+              </motion.div>
+            </motion.section>
+          )}
+
+          {/* Works セクション（ページ2） */}
+          {currentPage === 2 && (
+            <motion.section
+              key="works"
+              ref={worksSectionRef}
+              id="works"
+              className="absolute inset-0 w-screen h-screen flex items-center justify-center pointer-events-auto"
+              custom={scrollDirection}
+              variants={pageVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={pageTransition}
+            >
+              {/* DottedSurface背景 */}
+              <DottedSurface className="absolute inset-0" speed={0.02} >
+                <div
+                  aria-hidden="true"
+                  className={cn(
+                    'pointer-events-none absolute -top-10 left-1/2 size-full -translate-x-1/2 rounded-full',
+                    'bg-[radial-gradient(ellipse_at_center,hsl(var(--foreground)/0.1),transparent_50%)]',
+                    'blur-[30px]',
+                  )}
+                />
+              </DottedSurface>
+              <motion.div 
+                className="container mx-auto px-4 max-w-4xl w-full relative z-10"
+                style={{
+                  opacity: currentPage === 2 ? 1 - scrollProgress * 0.3 : 1,
+                }}
+              >
+                {isMobile ? (
+                  // モバイル: 縦に1つずつ並べる
+                  <MobileWorks projects={projectDetails} onProjectClick={handleProjectClick} />
+                ) : (
+                  // デスクトップ: 既存のレイアウト（2列グリッド）
                   <motion.div variants={container} initial="hidden" animate="show" className="space-y-6 w-full">
                     <motion.div variants={item} className="w-full">
                       <Card className="bg-transparent border-transparent w-full">
                         <CardContent className="p-6 w-full">
-                          <h3 className="text-xl font-bold mb-6 text-cyan-300">💼 Works</h3>
                           <div className="grid grid-cols-2 gap-4 w-full">
                             {projectDetails.map((project, index) => (
                               <motion.div
@@ -701,7 +1164,6 @@ export default function Home() {
                                 transition={{ delay: index * 0.1 }}
                                 whileHover={{ scale: 1.02 }}
                                 onClick={(e) => {
-                                  // リンクがクリックされた場合はモーダルを開かない
                                   const target = e.target as HTMLElement
                                   if (target.closest('a')) {
                                     return
@@ -757,7 +1219,7 @@ export default function Home() {
                                   {project.description}
                                 </p>
                                 {project.imageUrl && (
-                                  <div className="mb-2 rounded-lg overflow-hidden">
+                                  <div className="mb-2 rounded-lg overflow-hidden bg-gray-900 dark:bg-gray-100">
                                     <Image
                                       src={project.imageUrl}
                                       alt={project.imageAlt}
@@ -774,21 +1236,179 @@ export default function Home() {
                       </Card>
                     </motion.div>
                   </motion.div>
-                </TabsContent>
-              </Tabs>
-              {/* フッター */}
-              <motion.footer
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1, duration: 1 }}
-                className="mt-16 text-center text-gray-200 text-sm"
+                )}
+              </motion.div>
+            </motion.section>
+          )}
+
+          {/* Contact セクション（ページ3） */}
+          {currentPage === 3 && (
+            <motion.section
+              key="contact"
+              ref={contactSectionRef}
+              id="contact"
+              className="absolute inset-0 w-screen h-screen flex items-center justify-center pointer-events-auto"
+              custom={scrollDirection}
+              variants={pageVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={pageTransition}
+            >
+              {/* ShootingStars背景 */}
+              <div className="absolute inset-0 pointer-events-none bg-black" style={{ zIndex: 0 }}>
+                {/* 背景グラデーションと星のパターン */}
+                <div className="absolute inset-0">
+                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.15)_0%,rgba(0,0,0,0)_80%)]" />
+                  <div className="stars absolute inset-0" />
+                </div>
+                
+                {/* 複数のShootingStarsレイヤー */}
+                <ShootingStars
+                  starColor="#9E00FF"
+                  trailColor="#2EB9DF"
+                  minSpeed={15}
+                  maxSpeed={35}
+                  minDelay={1000}
+                  maxDelay={3000}
+                />
+                <ShootingStars
+                  starColor="#FF0099"
+                  trailColor="#FFB800"
+                  minSpeed={10}
+                  maxSpeed={25}
+                  minDelay={2000}
+                  maxDelay={4000}
+                />
+                <ShootingStars
+                  starColor="#00FF9E"
+                  trailColor="#00B8FF"
+                  minSpeed={20}
+                  maxSpeed={40}
+                  minDelay={1500}
+                  maxDelay={3500}
+                />
+              </div>
+              
+              <motion.div 
+                className="container mx-auto px-4 max-w-4xl w-full relative z-10"
+                style={{
+                  opacity: currentPage === 3 ? 1 - scrollProgress * 0.3 : 1,
+                }}
               >
-                <p>© {new Date().getFullYear()} Tako. All rights reserved.</p>
-              </motion.footer>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                {isMobile ? (
+                  // モバイル: EmailとDiscordを縦に並べる
+                  <MobileContact onCopyDiscord={handleCopyDiscord} discordCopied={discordCopied} />
+                ) : (
+                  // デスクトップ: 既存のレイアウト（横並び）
+                  <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
+                    <motion.div variants={item}>
+                      <Card className="bg-transparent border-transparent">
+                        <CardContent className="p-6">
+                          <h3 className="text-3xl lg:text-4xl font-bold mb-8 text-white text-center">📧 Contact</h3>
+                          
+                          {/* メールアドレスとDiscord */}
+                          <motion.div
+                            variants={item}
+                            className="mb-8"
+                          >
+                            <div className="grid grid-cols-[1fr_auto_1fr] gap-1 items-center">
+                              {/* Email */}
+                              <div className="bg-transparent rounded-lg p-6">
+                                <div className="flex flex-col items-center gap-4 mb-4">
+                                  <div className="flex items-center gap-3">
+                                    <Mail className="w-6 h-6 text-cyan-400" />
+                                    <h4 className="text-xl font-semibold text-white">Email</h4>
+                                  </div>
+                                </div>
+                                <div className="text-center">
+                                  <a
+                                    href="mailto:tako.work.contact@gmail.com"
+                                    className="text-cyan-400 hover:text-cyan-300 text-lg font-mono transition-colors break-all"
+                                  >
+                                    tako.work.contact@gmail.com
+                                  </a>
+                                </div>
+                              </div>
+
+                              {/* or */}
+                              <div className="flex items-center justify-center w-fit min-w-fit px-1">
+                                <span className="text-white/60 text-lg font-medium whitespace-nowrap">or</span>
+                              </div>
+
+                              {/* Discord */}
+                              <div className="bg-transparent rounded-lg p-6">
+                                <div className="flex flex-col items-center gap-4 mb-4">
+                                  <div className="flex items-center gap-3">
+                                    <svg
+                                      className="w-6 h-6 text-indigo-400"
+                                      fill="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.007-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+                                    </svg>
+                                    <h4 className="text-xl font-semibold text-white">Discord</h4>
+                                  </div>
+                                </div>
+                                <div className="text-center">
+                                  <motion.span
+                                    onClick={handleCopyDiscord}
+                                    className="text-indigo-400 hover:text-indigo-300 text-lg font-mono transition-colors break-all cursor-pointer"
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                  >
+                                    {discordCopied ? "Copied!" : "tako._.v"}
+                                  </motion.span>
+                                </div>
+                              </div>
+                            </div>
+                          </motion.div>
+                          {/* メッセージ */}
+                          <motion.div
+                            variants={item}
+                            className="text-center"
+                          >
+                            <p className="text-gray-300 text-lg">
+                              お気軽にご連絡ください！
+                            </p>
+                            <p className="text-gray-400 text-sm mt-2 italic">
+                              Feel free to reach out!
+                            </p>
+                          </motion.div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </motion.div>
+              
+              {/* フッター（Contactセクションのみ） */}
+              {currentPage === 3 && (
+                <motion.footer
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.3 }}
+                  className="absolute bottom-20 left-0 right-0 py-6 text-center z-20"
+                >
+                  <div className="container mx-auto px-4">
+                    <p className="text-gray-400 text-sm">
+                      © {new Date().getFullYear()} T4ko0522. All rights reserved.
+                    </p>
+                  </div>
+                </motion.footer>
+              )}
+            </motion.section>
+          )}
+        </AnimatePresence>
+
+        {/* 固定ナビゲーションヘッダー */}
+        <Header onNavigate={scrollToSection} />
+      </div>
+
+      {/* ローディング画面（Staggered Curtain Revealアニメーション） */}
+      <StaggeredCurtainReveal isVisible={isLoading}>
+        <LoadingScreen key="loading" onLoadingComplete={handleLoadingComplete} />
+      </StaggeredCurtainReveal>
       {/* プロジェクト詳細モーダル */}
       <ProjectDetailModal
         project={selectedProject}

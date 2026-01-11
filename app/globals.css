@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Discordフォント */
+@font-face {
+  font-family: 'Discord';
+  src: url('/discord.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -133,4 +142,77 @@
   51%, 100% {
     opacity: 0;
   }
+}
+
+/* Staggered Curtain Reveal アニメーション */
+@keyframes curtainReveal {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-100%);
+  }
+}
+
+/* Text Reveal Animation */
+@keyframes textReveal {
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+  100% {
+    clip-path: inset(0 0% 0 0);
+  }
+}
+
+/* Text Reveal Reverse Animation (右から左に隠れる) */
+@keyframes textRevealReverse {
+  0% {
+    clip-path: inset(0 0% 0 0);
+  }
+  100% {
+    clip-path: inset(0 100% 0 0);
+  }
+}
+
+/* ShootingStars背景用の星のパターン */
+.stars {
+  background-image: 
+    radial-gradient(2px 2px at 20px 30px, #eee, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 40px 70px, #fff, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 50px 160px, #ddd, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 90px 40px, #fff, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 130px 80px, #fff, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 160px 120px, #ddd, rgba(0,0,0,0));
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  animation: twinkle 5s ease-in-out infinite;
+  opacity: 0.5;
+}
+
+@keyframes twinkle {
+  0% { opacity: 0.5; }
+  50% { opacity: 0.8; }
+  100% { opacity: 0.5; }
+}
+
+/* Text Reveal Animation用のカスタムクラス */
+.text-reveal-container {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+}
+
+/* 初期状態: 表示されている */
+.text-reveal-container > * {
+  clip-path: inset(0 0% 0 0);
+}
+
+/* ホバー時: 左から右に現れるアニメーション */
+.text-reveal-container.reveal-active > * {
+  animation: textReveal 0.5s ease-out forwards;
+}
+
+/* ホバー解除時: 右から左に隠れるアニメーション */
+.text-reveal-container.reveal-reverse > * {
+  animation: textRevealReverse 0.5s ease-out forwards;
 }
