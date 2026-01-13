@@ -926,7 +926,6 @@ export default function Home() {
                           className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50"
                           style={{ width: '248px', height: '248px' }}
                           draggable="false"
-                          priority
                         />
                         {/* アイコン本体 */}
                         <motion.div
@@ -939,7 +938,6 @@ export default function Home() {
                               fill
                               sizes="(max-width: 1024px) 208px, 256px"
                               className="object-cover"
-                              priority
                             />
                           </div>
                           {/* Discordステータスインジケーター */}
