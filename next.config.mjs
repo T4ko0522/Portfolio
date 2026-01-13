@@ -6,10 +6,6 @@ const nextConfig = {
       remotePatterns: [
         {
           protocol: 'https',
-          hostname: 'skillicons.dev',
-        },
-        {
-          protocol: 'https',
           hostname: 'raw.githubusercontent.com',
         },
       ],

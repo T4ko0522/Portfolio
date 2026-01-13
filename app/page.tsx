@@ -1020,7 +1020,7 @@ export default function Home() {
                               </div>
                               <div className="flex justify-center">
                                 <Image
-                                  src="https://skillicons.dev/icons?i=js,ts,python,bash,powershell,react,next,vue,astro,remix,angular,tailwind,materialui,nodejs,deno,express,electron,postgres,mysql,docker,kubernetes,gcp,vercel,linux,windows,git,github,gitlab,postman,vscode"
+                                  src="/images/skills.svg"
                                   alt="Skills"
                                   width={600}
                                   height={100}
