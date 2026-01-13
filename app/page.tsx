@@ -23,29 +23,39 @@ import { BgShader } from "../components/bg-shader"
 import { DottedSurface } from "../components/dotted-surface"
 import { ShootingStars } from "../components/shooting-stars"
 import { Pacifico, Rock_Salt } from "next/font/google"
-import { createMobileComponent } from "@/lib/mobile-component-loader"
+import dynamic from "next/dynamic"
 
-const MobileTypingAnimation = createMobileComponent<{
+const MobileTypingAnimation = dynamic<{
   texts: string[]
   className?: string
-}>("../components/mobile-typing-animation")
+}>(() => import("../components/mobile-typing-animation"), {
+  ssr: false,
+})
 
-const MobileTitle = createMobileComponent("../components/mobile-title")
+const MobileTitle = dynamic(() => import("../components/mobile-title"), {
+  ssr: false,
+})
 
-const MobileAbout = createMobileComponent<{
+const MobileAbout = dynamic<{
   daysUntilBirthday: number
   discordStatus?: string | null
-}>("../components/mobile-about")
+}>(() => import("../components/mobile-about"), {
+  ssr: false,
+})
 
-const MobileWorks = createMobileComponent<{
+const MobileWorks = dynamic<{
   projects: ProjectDetail[]
   onProjectClick: (project: ProjectDetail) => void
-}>("../components/mobile-works")
+}>(() => import("../components/mobile-works"), {
+  ssr: false,
+})
 
-const MobileContact = createMobileComponent<{
+const MobileContact = dynamic<{
   onCopyDiscord: () => void
   discordCopied: boolean
-}>("../components/mobile-contact")
+}>(() => import("../components/mobile-contact"), {
+  ssr: false,
+})
 
 const pacifico = Pacifico({ 
   weight: "400",
