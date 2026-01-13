@@ -238,9 +238,7 @@ export default function Home() {
         clearTimeout(snapTimeoutRef.current)
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [totalPages]) // currentPageを依存配列から除外（refで管理しているため無限ループを防ぐ）
-  
 
   // 誕生日の設定（5月22日）
   const birthMonth = 5
@@ -581,39 +579,6 @@ export default function Home() {
         "スニペットの移行"
       ]
     },
-  ]
-  //eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const techStacks = [
-    { name: "JavaScript", iconKey: "js", color: "bg-yellow-500", textColor: "text-black" },
-    { name: "TypeScript", iconKey: "ts", color: "bg-blue-600", textColor: "text-white" },
-    { name: "Python", iconKey: "python", color: "bg-yellow-400", textColor: "text-black" },
-    { name: "Shell", iconKey: "bash", color: "bg-gray-700", textColor: "text-white" },
-    { name: "PowerShell", iconKey: "powershell", color: "bg-blue-600", textColor: "text-white" },
-    { name: "React", iconKey: "react", color: "bg-cyan-400", textColor: "text-black" },
-    { name: "Next.js", iconKey: "nextjs", color: "bg-black", textColor: "text-white" },
-    { name: "Vue", iconKey: "vue", color: "bg-green-500", textColor: "text-white" },
-    { name: "Astro", iconKey: "astro", color: "bg-orange-500", textColor: "text-white" },
-    { name: "Remix", iconKey: "remix", color: "bg-gray-900", textColor: "text-white" },
-    { name: "Angular", iconKey: "angular", color: "bg-red-600", textColor: "text-white" },
-    { name: "Tailwind CSS", iconKey: "tailwind", color: "bg-cyan-500", textColor: "text-black" },
-    { name: "Material UI", iconKey: "mui", color: "bg-blue-600", textColor: "text-white" },
-    { name: "Node.js", iconKey: "nodejs", color: "bg-green-600", textColor: "text-white" },
-    { name: "Deno", iconKey: "deno", color: "bg-black", textColor: "text-white" },
-    { name: "Express", iconKey: "express", color: "bg-gray-800", textColor: "text-white" },
-    { name: "Electron", iconKey: "electron", color: "bg-blue-500", textColor: "text-white" },
-    { name: "PostgreSQL", iconKey: "postgresql", color: "bg-blue-700", textColor: "text-white" },
-    { name: "MySQL", iconKey: "mysql", color: "bg-gray-800", textColor: "text-white" },
-    { name: "Docker", iconKey: "docker", color: "bg-blue-600", textColor: "text-white" },
-    { name: "Kubernetes", iconKey: "kubernetes", color: "bg-blue-600", textColor: "text-white" },
-    { name: "Google Cloud", iconKey: "gcp", color: "bg-blue-500", textColor: "text-white" },
-    { name: "Vercel", iconKey: "vercel", color: "bg-black", textColor: "text-white" },
-    { name: "Linux", iconKey: "linux", color: "bg-yellow-500", textColor: "text-black" },
-    { name: "Windows", iconKey: "windows", color: "bg-blue-500", textColor: "text-white" },
-    { name: "Git", iconKey: "git", color: "bg-orange-600", textColor: "text-white" },
-    { name: "GitHub", iconKey: "github", color: "bg-gray-800", textColor: "text-white" },
-    { name: "GitLab", iconKey: "gitlab", color: "bg-orange-500", textColor: "text-white" },
-    { name: "Postman", iconKey: "postman", color: "bg-orange-500", textColor: "text-white" },
-    { name: "VS Code", iconKey: "vscode", color: "bg-blue-600", textColor: "text-white" },
   ]
 
   return (
