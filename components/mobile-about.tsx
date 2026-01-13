@@ -30,7 +30,6 @@ export default function MobileAbout({ daysUntilBirthday, discordStatus }: Mobile
             className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50"
             style={{ width: '180px', height: '180px' }}
             draggable="false"
-            priority
           />
           {/* アイコン本体 */}
           <motion.div
@@ -43,7 +42,6 @@ export default function MobileAbout({ daysUntilBirthday, discordStatus }: Mobile
                 fill
                 sizes="(max-width: 640px) 160px, 192px"
                 className="object-cover"
-                priority
               />
             </div>
             {/* Discordステータスインジケーター */}
@@ -136,7 +134,7 @@ export default function MobileAbout({ daysUntilBirthday, discordStatus }: Mobile
               </div>
               <div className="flex justify-center">
                 <Image
-                  src="https://skillicons.dev/icons?i=js,ts,python,bash,powershell,react,next,vue,astro,remix,angular,tailwind,materialui,nodejs,deno,express,electron,postgres,mysql,docker,kubernetes,gcp,vercel,linux,windows,git,github,gitlab,postman,vscode"
+                  src="/images/skills.svg"
                   alt="Skills"
                   width={600}
                   height={100}

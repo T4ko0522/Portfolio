@@ -13,29 +13,51 @@ import { Card, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import LoadingScreen from "../components/loading-screen"
 import TypingAnimation from "../components/typing-animation"
-import MobileTypingAnimation from "../components/mobile-typing-animation"
 import { useIsMobile } from "../hooks/use-mobile"
 import Image from "next/image"
-import ProjectDetailModal, { ProjectDetail } from "../components/project-detail-modal"
+import ProjectDetailModal, { type ProjectDetail } from "../components/project-detail-modal"
 import StaggeredCurtainReveal from "../components/staggered-curtain-reveal"
 import Header from "../components/header"
 import SpotifyNowPlaying from "../components/spotify-now-playing"
 import { BgShader } from "../components/bg-shader"
 import { DottedSurface } from "../components/dotted-surface"
 import { ShootingStars } from "../components/shooting-stars"
-import MobileTitle from "../components/mobile-title"
-import MobileAbout from "../components/mobile-about"
-import MobileWorks from "../components/mobile-works"
-import MobileContact from "../components/mobile-contact"
-import { Pacifico, Rock_Salt } from "next/font/google"
+import { Pacifico } from "next/font/google"
+import dynamic from "next/dynamic"
 
-const pacifico = Pacifico({ 
-  weight: "400",
-  subsets: ["latin"],
-  display: "swap",
+const MobileTypingAnimation = dynamic<{
+  texts: string[]
+  className?: string
+}>(() => import("../components/mobile-typing-animation"), {
+  ssr: false,
 })
 
-const rockSalt = Rock_Salt({
+const MobileTitle = dynamic(() => import("../components/mobile-title"), {
+  ssr: false,
+})
+
+const MobileAbout = dynamic<{
+  daysUntilBirthday: number
+  discordStatus?: string | null
+}>(() => import("../components/mobile-about"), {
+  ssr: false,
+})
+
+const MobileWorks = dynamic<{
+  projects: ProjectDetail[]
+  onProjectClick: (project: ProjectDetail) => void
+}>(() => import("../components/mobile-works"), {
+  ssr: false,
+})
+
+const MobileContact = dynamic<{
+  onCopyDiscord: () => void
+  discordCopied: boolean
+}>(() => import("../components/mobile-contact"), {
+  ssr: false,
+})
+
+const pacifico = Pacifico({ 
   weight: "400",
   subsets: ["latin"],
   display: "swap",
@@ -238,9 +260,7 @@ export default function Home() {
         clearTimeout(snapTimeoutRef.current)
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [totalPages]) // currentPageを依存配列から除外（refで管理しているため無限ループを防ぐ）
-  
 
   // 誕生日の設定（5月22日）
   const birthMonth = 5
@@ -582,39 +602,6 @@ export default function Home() {
       ]
     },
   ]
-  //eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const techStacks = [
-    { name: "JavaScript", iconKey: "js", color: "bg-yellow-500", textColor: "text-black" },
-    { name: "TypeScript", iconKey: "ts", color: "bg-blue-600", textColor: "text-white" },
-    { name: "Python", iconKey: "python", color: "bg-yellow-400", textColor: "text-black" },
-    { name: "Shell", iconKey: "bash", color: "bg-gray-700", textColor: "text-white" },
-    { name: "PowerShell", iconKey: "powershell", color: "bg-blue-600", textColor: "text-white" },
-    { name: "React", iconKey: "react", color: "bg-cyan-400", textColor: "text-black" },
-    { name: "Next.js", iconKey: "nextjs", color: "bg-black", textColor: "text-white" },
-    { name: "Vue", iconKey: "vue", color: "bg-green-500", textColor: "text-white" },
-    { name: "Astro", iconKey: "astro", color: "bg-orange-500", textColor: "text-white" },
-    { name: "Remix", iconKey: "remix", color: "bg-gray-900", textColor: "text-white" },
-    { name: "Angular", iconKey: "angular", color: "bg-red-600", textColor: "text-white" },
-    { name: "Tailwind CSS", iconKey: "tailwind", color: "bg-cyan-500", textColor: "text-black" },
-    { name: "Material UI", iconKey: "mui", color: "bg-blue-600", textColor: "text-white" },
-    { name: "Node.js", iconKey: "nodejs", color: "bg-green-600", textColor: "text-white" },
-    { name: "Deno", iconKey: "deno", color: "bg-black", textColor: "text-white" },
-    { name: "Express", iconKey: "express", color: "bg-gray-800", textColor: "text-white" },
-    { name: "Electron", iconKey: "electron", color: "bg-blue-500", textColor: "text-white" },
-    { name: "PostgreSQL", iconKey: "postgresql", color: "bg-blue-700", textColor: "text-white" },
-    { name: "MySQL", iconKey: "mysql", color: "bg-gray-800", textColor: "text-white" },
-    { name: "Docker", iconKey: "docker", color: "bg-blue-600", textColor: "text-white" },
-    { name: "Kubernetes", iconKey: "kubernetes", color: "bg-blue-600", textColor: "text-white" },
-    { name: "Google Cloud", iconKey: "gcp", color: "bg-blue-500", textColor: "text-white" },
-    { name: "Vercel", iconKey: "vercel", color: "bg-black", textColor: "text-white" },
-    { name: "Linux", iconKey: "linux", color: "bg-yellow-500", textColor: "text-black" },
-    { name: "Windows", iconKey: "windows", color: "bg-blue-500", textColor: "text-white" },
-    { name: "Git", iconKey: "git", color: "bg-orange-600", textColor: "text-white" },
-    { name: "GitHub", iconKey: "github", color: "bg-gray-800", textColor: "text-white" },
-    { name: "GitLab", iconKey: "gitlab", color: "bg-orange-500", textColor: "text-white" },
-    { name: "Postman", iconKey: "postman", color: "bg-orange-500", textColor: "text-white" },
-    { name: "VS Code", iconKey: "vscode", color: "bg-blue-600", textColor: "text-white" },
-  ]
 
   return (
     <>
@@ -926,7 +913,6 @@ export default function Home() {
                           className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50"
                           style={{ width: '248px', height: '248px' }}
                           draggable="false"
-                          priority
                         />
                         {/* アイコン本体 */}
                         <motion.div
@@ -939,7 +925,6 @@ export default function Home() {
                               fill
                               sizes="(max-width: 1024px) 208px, 256px"
                               className="object-cover"
-                              priority
                             />
                           </div>
                           {/* Discordステータスインジケーター */}
@@ -1057,7 +1042,7 @@ export default function Home() {
                               </div>
                               <div className="flex justify-center">
                                 <Image
-                                  src="https://skillicons.dev/icons?i=js,ts,python,bash,powershell,react,next,vue,astro,remix,angular,tailwind,materialui,nodejs,deno,express,electron,postgres,mysql,docker,kubernetes,gcp,vercel,linux,windows,git,github,gitlab,postman,vscode"
+                                  src="/images/skills.svg"
                                   alt="Skills"
                                   width={600}
                                   height={100}
