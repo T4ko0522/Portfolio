@@ -13,29 +13,41 @@ import { Card, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import LoadingScreen from "../components/loading-screen"
 import TypingAnimation from "../components/typing-animation"
-import MobileTypingAnimation from "../components/mobile-typing-animation"
 import { useIsMobile } from "../hooks/use-mobile"
 import Image from "next/image"
-import ProjectDetailModal, { ProjectDetail } from "../components/project-detail-modal"
+import ProjectDetailModal, { type ProjectDetail } from "../components/project-detail-modal"
 import StaggeredCurtainReveal from "../components/staggered-curtain-reveal"
 import Header from "../components/header"
 import SpotifyNowPlaying from "../components/spotify-now-playing"
 import { BgShader } from "../components/bg-shader"
 import { DottedSurface } from "../components/dotted-surface"
 import { ShootingStars } from "../components/shooting-stars"
-import MobileTitle from "../components/mobile-title"
-import MobileAbout from "../components/mobile-about"
-import MobileWorks from "../components/mobile-works"
-import MobileContact from "../components/mobile-contact"
 import { Pacifico, Rock_Salt } from "next/font/google"
+import { createMobileComponent } from "@/lib/mobile-component-loader"
+
+const MobileTypingAnimation = createMobileComponent<{
+  texts: string[]
+  className?: string
+}>("../components/mobile-typing-animation")
+
+const MobileTitle = createMobileComponent("../components/mobile-title")
+
+const MobileAbout = createMobileComponent<{
+  daysUntilBirthday: number
+  discordStatus?: string | null
+}>("../components/mobile-about")
+
+const MobileWorks = createMobileComponent<{
+  projects: ProjectDetail[]
+  onProjectClick: (project: ProjectDetail) => void
+}>("../components/mobile-works")
+
+const MobileContact = createMobileComponent<{
+  onCopyDiscord: () => void
+  discordCopied: boolean
+}>("../components/mobile-contact")
 
 const pacifico = Pacifico({ 
-  weight: "400",
-  subsets: ["latin"],
-  display: "swap",
-})
-
-const rockSalt = Rock_Salt({
   weight: "400",
   subsets: ["latin"],
   display: "swap",
