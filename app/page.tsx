@@ -22,7 +22,7 @@ import SpotifyNowPlaying from "../components/spotify-now-playing"
 import { BgShader } from "../components/bg-shader"
 import { DottedSurface } from "../components/dotted-surface"
 import { ShootingStars } from "../components/shooting-stars"
-import { Pacifico, Rock_Salt } from "next/font/google"
+import { Pacifico } from "next/font/google"
 import dynamic from "next/dynamic"
 
 const MobileTypingAnimation = dynamic<{
