@@ -12,7 +12,18 @@ export const metadata: Metadata = {
   title: "T4ko0522",
   description:
     "About T4ko0522",
+  keywords: [
+    "T4ko0522",
+    "Portfolio",
+    "Full Stack Engineer",
+    "Japanese Developer",
+  ],
+  authors: [{ name: "T4ko0522" }],
+  creator: "T4ko0522",
   metadataBase: new URL("https://t4ko.vercel.app"),
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     title: "T4ko0522",
     description:
@@ -24,18 +35,36 @@ export const metadata: Metadata = {
         url: "https://avatars.githubusercontent.com/u/108514947?v=",
         width: 512,
         height: 512,
+        alt: "T4ko0522 Profile Picture",
       },
     ],
     locale: "ja_JP",
     type: "website",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "T4ko0522",
+    description:
+      "About T4ko0522",
+    images: ["https://avatars.githubusercontent.com/u/108514947?v="],
+    creator: "@T4ko0522",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  icons: "/favicon.ico",
+  manifest: "/site.webmanifest",
 }
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "white" },
-    { media: "(prefers-color-scheme: dark)", color: "#09090b" },
-  ],
   width: "device-width",
   initialScale: 1,
 }
