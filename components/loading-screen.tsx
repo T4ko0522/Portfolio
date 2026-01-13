@@ -26,6 +26,7 @@ const Loader: React.FC<LoaderProps> = ({ onLoadingComplete }) => {
   useEffect(() => {
     let cancelled = false;
     const timers: ReturnType<typeof setTimeout>[] = [];
+    const startTime = Date.now();
 
     const delay = (ms: number) =>
       new Promise<void>((resolve) => {
@@ -58,30 +59,6 @@ const Loader: React.FC<LoaderProps> = ({ onLoadingComplete }) => {
 
       // 新しいプロンプト行
       addLine('prompt', '~/Project/Portfolio $');
-      await typeText("pnpm run build", 90);
-      addLine('command', 'pnpm run build');
-      
-      // ビルド出力をシミュレート
-      await delay(500);
-      addLine('output', '> portfolio@1.1.0 build');
-      await delay(300);
-      addLine('output', '> next build');
-      await delay(400);
-      addLine('output', '');
-      await delay(300);
-      addLine('special', '   ▲ Next.js 15.0.5');
-      await delay(400);
-      addLine('output', '');
-      await delay(400);
-      addLine('output', '   Creating an optimized production build ...');
-      await delay(800);
-      addLine('output', ' ✓ Compiled successfully');
-      await delay(1200);
-      addLine('output', '✓ Generating static pages (5/5)');
-      await delay(200);
-
-      // 新しいプロンプト行
-      addLine('prompt', '~/Project/Portfolio $');
       await typeText("pnpm start", 90);
       addLine('command', 'pnpm start');
       
@@ -95,7 +72,11 @@ const Loader: React.FC<LoaderProps> = ({ onLoadingComplete }) => {
       await delay(400);
       addLine('output', ' ✓ Starting...');
       await delay(400);
-      addLine('output', ' ✓ Ready in 1.2s');
+      
+      // 実際の経過時間を計算して表示
+      const elapsedTime = (Date.now() - startTime) / 1000;
+      const formattedTime = elapsedTime.toFixed(1);
+      addLine('output', ` ✓ Ready in ${formattedTime}s`);
       await delay(1000);
 
       if (!cancelled) onLoadingCompleteRef.current?.();
