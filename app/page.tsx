@@ -747,9 +747,6 @@ export default function Home() {
               />
               <motion.div 
                 className="relative z-10 w-full h-full flex flex-col items-center justify-center"
-                style={{
-                  opacity: currentPage === 0 ? 1 - scrollProgress * 0.3 : 1,
-                }}
               >
                 {/* タイトル（コンテナ制限なしで中央揃え） */}
               <div className="w-full text-center mb-20 px-4">
@@ -886,9 +883,6 @@ export default function Home() {
               />
               <motion.div
                 className="container mx-auto px-4 max-w-6xl w-full h-full relative z-10 flex items-center justify-center"
-                style={{
-                  opacity: currentPage === 1 ? 1 - scrollProgress * 0.3 : 1,
-                }}
               >
                 {isMobile ? (
                   // モバイル: アイコンのみ上に表示 + About Meの内容
@@ -1127,9 +1121,6 @@ export default function Home() {
               </DottedSurface>
               <motion.div 
                 className="container mx-auto px-4 max-w-4xl w-full relative z-10"
-                style={{
-                  opacity: currentPage === 2 ? 1 - scrollProgress * 0.3 : 1,
-                }}
               >
                 {isMobile ? (
                   // モバイル: 縦に1つずつ並べる
@@ -1277,9 +1268,6 @@ export default function Home() {
               
               <motion.div 
                 className="container mx-auto px-4 max-w-4xl w-full relative z-10"
-                style={{
-                  opacity: currentPage === 3 ? 1 - scrollProgress * 0.3 : 1,
-                }}
               >
                 {isMobile ? (
                   // モバイル: EmailとDiscordを縦に並べる
