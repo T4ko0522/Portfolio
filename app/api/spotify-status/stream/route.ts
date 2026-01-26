@@ -1,15 +1,23 @@
 import { NextRequest } from 'next/server'
 
+export const runtime = 'edge'
+export const dynamic = 'force-dynamic'
+
 // 外部APIからSpotifyデータを取得する関数
 async function fetchSpotifyData() {
   try {
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 10000) // 10秒でタイムアウト
     
-    const response = await fetch('https://xs492099.xsrv.jp/status.json', {
+    const url = new URL('https://xs492099.xsrv.jp/status.json')
+    url.searchParams.set('_t', String(Date.now()))
+    const response = await fetch(url.toString(), {
       signal: controller.signal,
+      cache: 'no-store',
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Cache-Control': 'no-cache',
+        Pragma: 'no-cache',
       },
     })
     
@@ -129,13 +137,15 @@ export async function GET(request: NextRequest) {
     async start(controller) {
       let lastSpotifyData: string | null = null
       let lastDiscordStatus: string | null = null
-      
+      let lastDiscordActivities: string | null = null
+
       // 初回データを取得
       try {
         const data = await fetchSpotifyData()
         lastSpotifyData = data?.spotify ? JSON.stringify(data.spotify) : null
-        lastDiscordStatus = data?.discord?.status || null
-        
+        lastDiscordStatus = data?.discord?.status ?? null
+        lastDiscordActivities = JSON.stringify(data?.discord?.activities ?? [])
+
         // 初回データを送信
         const message = `data: ${JSON.stringify(data)}\n\n`
         controller.enqueue(encoder.encode(message))
@@ -149,16 +159,17 @@ export async function GET(request: NextRequest) {
         try {
           const data = await fetchSpotifyData()
           const currentSpotifyData = data?.spotify ? JSON.stringify(data.spotify) : null
-          const currentDiscordStatus = data?.discord?.status || null
-          
-          // SpotifyデータまたはDiscordステータスが変わった場合のみ送信
+          const currentDiscordStatus = data?.discord?.status ?? null
+          const currentDiscordActivities = JSON.stringify(data?.discord?.activities ?? [])
+
           const spotifyChanged = currentSpotifyData !== lastSpotifyData
           const discordChanged = currentDiscordStatus !== lastDiscordStatus
-          
-          if (spotifyChanged || discordChanged) {
+          const discordActivitiesChanged = currentDiscordActivities !== lastDiscordActivities
+
+          if (spotifyChanged || discordChanged || discordActivitiesChanged) {
             lastSpotifyData = currentSpotifyData
             lastDiscordStatus = currentDiscordStatus
-            
+            lastDiscordActivities = currentDiscordActivities
             const message = `data: ${JSON.stringify(data)}\n\n`
             controller.enqueue(encoder.encode(message))
           }
