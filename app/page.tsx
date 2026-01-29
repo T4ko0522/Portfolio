@@ -908,6 +908,35 @@ export default function Home() {
                           style={{ width: '248px', height: '248px' }}
                           draggable="false"
                         />
+                        {/* Discordステータスインジケーター（装飾より前面に表示） */}
+                        {discordStatus && (
+                          <div
+                            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-52 h-52 lg:w-64 lg:h-64 pointer-events-none z-[60]"
+                            aria-hidden
+                          >
+                            <div className="absolute bottom-0 right-2" style={{ width: '28px', height: '28px', filter: 'drop-shadow(0 0 0 3px #1a1a1a)' }}>
+                              {discordStatus === 'online' ? (
+                                <svg width="28" height="28" viewBox="0 0 12 12" className="w-full h-full">
+                                  <circle cx="6" cy="6" r="6" fill="rgb(69, 163, 102)" />
+                                </svg>
+                              ) : discordStatus === 'idle' ? (
+                                <svg width="28" height="28" viewBox="2 2 20 20" className="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <path d="M3 17C10.952 18.6176 16.6829 8.75775 11 3C16.0007 3.13144 20 7.11149 20 12C20 16.9715 16.1188 21 11 21C7.77111 21 4.65938 19.4319 3 17Z" fill="#ffc04e" stroke="#ffc04e" strokeWidth="1.5" strokeLinejoin="round" />
+                                </svg>
+                              ) : discordStatus === 'dnd' ? (
+                                <svg width="28" height="28" viewBox="0 0 12 12" className="w-full h-full">
+                                  <circle cx="6" cy="6" r="6" fill="rgb(237, 66, 69)" />
+                                  <rect x="2" y="5" width="8" height="2" fill="black" rx="1" />
+                                </svg>
+                              ) : (
+                                <svg width="28" height="28" viewBox="0 0 12 12" className="w-full h-full">
+                                  <circle cx="6" cy="6" r="6" fill="rgb(116, 127, 141)" />
+                                  <circle cx="6" cy="6" r="4" fill="rgb(79, 84, 92)" />
+                                </svg>
+                              )}
+                            </div>
+                          </div>
+                        )}
                         {/* アイコン本体 */}
                         <motion.div
                           className="w-52 h-52 lg:w-64 lg:h-64 rounded-full overflow-visible relative z-40"
@@ -921,42 +950,6 @@ export default function Home() {
                               className="object-cover"
                             />
                           </div>
-                          {/* Discordステータスインジケーター */}
-                          {discordStatus && (
-                            <div className="absolute bottom-0 right-2 z-[60]" style={{ 
-                              width: '28px', 
-                              height: '28px',
-                              filter: 'drop-shadow(0 0 0 3px #1a1a1a)'
-                            }}>
-                              {discordStatus === 'online' ? (
-                                <svg width="28" height="28" viewBox="0 0 12 12" className="w-full h-full">
-                                  <circle cx="6" cy="6" r="6" fill="rgb(69, 163, 102)" />
-                                </svg>
-                              ) : discordStatus === 'idle' ? (
-                                <svg width="28" height="28" viewBox="0 0 12 12" className="w-full h-full">
-                                  <defs>
-                                    <mask id="svg-mask-status-idle">
-                                      <rect width="12" height="12" fill="black" />
-                                      <circle cx="6" cy="6" r="5" fill="white" />
-                                      <path d="M 6 1 A 5 5 0 0 0 1 6 L 6 6 Z" fill="black" />
-                                    </mask>
-                                  </defs>
-                                  <rect width="12" height="12" x="0" y="0" fill="#ffc04e" mask="url(#svg-mask-status-idle)" />
-                                </svg>
-                              ) : discordStatus === 'dnd' ? (
-                                <svg width="28" height="28" viewBox="0 0 12 12" className="w-full h-full">
-                                  <circle cx="6" cy="6" r="6" fill="rgb(237, 66, 69)" />
-                                  <rect x="3" y="5" width="6" height="2" fill="white" rx="1" />
-                                </svg>
-                              ) : (
-                                <svg width="28" height="28" viewBox="0 0 12 12" className="w-full h-full">
-                                  <circle cx="6" cy="6" r="6" fill="rgb(116, 127, 141)" />
-                                  <circle cx="6" cy="6" r="4" fill="rgb(79, 84, 92)" />
-                                </svg>
-                              )}
-                            </div>
-                          )}
-                          
                         </motion.div>
                       </div>
                       {/* 名前と情報 */}

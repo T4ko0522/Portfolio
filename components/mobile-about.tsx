@@ -69,7 +69,7 @@ export default function MobileAbout({ daysUntilBirthday, discordStatus }: Mobile
                 ) : discordStatus === 'dnd' ? (
                   <svg width="20" height="20" viewBox="0 0 12 12" className="w-full h-full">
                     <circle cx="6" cy="6" r="6" fill="rgb(237, 66, 69)" />
-                    <rect x="3" y="5" width="6" height="2" fill="white" rx="1" />
+                    <rect x="2" y="5" width="8" height="2" fill="black" rx="1" />
                   </svg>
                 ) : (
                   <svg width="20" height="20" viewBox="0 0 12 12" className="w-full h-full">
