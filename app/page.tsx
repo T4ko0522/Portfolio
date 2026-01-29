@@ -632,9 +632,6 @@ export default function Home() {
       {/* メインコンテンツ（ページベースのトランジション） */}
       {/* 縦スクロール可能な領域を確保（4ページ分のスクロール領域） */}
       <div style={{ height: `${totalPages * 100}vh` }} />
-      
-      {/* スクロール進行状況インジケーター（下部）※モバイルでは非表示 */}
-      {!isMobile && (
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
         {/* メインセクションのみ「Scroll down to explore」と右矢印を表示 */}
         {currentPage === 0 && (
@@ -717,7 +714,6 @@ export default function Home() {
             )}
           </div>
       </div>
-      )}
       
       {/* ページコンテナ（固定・ピン留め） */}
       <div className="fixed inset-0 overflow-hidden bg-black">
