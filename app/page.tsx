@@ -165,6 +165,8 @@ export default function Home() {
   const [currentProjectIndex, setCurrentProjectIndex] = useState(0) // 0-4（5件）
   const lastWheelTime = useRef(0) // デバウンス用
   const previousPage = useRef(0) // Worksセクションに入る方向を判定するため
+  const worksScrollProgress = useRef(0) // 現在のプロジェクト内のスクロール進行度（累積値）
+  const [worksProjectProgress, setWorksProjectProgress] = useState(0) // 現在のプロジェクト内の進行度（0-1）
   // Works コンテナ（90vh）の中央Y（フォーカスカードを中央に配置するため）
   const [worksContainerCenterY, setWorksContainerCenterY] = useState(0)
   useEffect(() => {
@@ -236,6 +238,8 @@ export default function Home() {
         if (calculatedPage === 2) {
           // 上から入る（Aboutから）場合は最初のプロジェクト、下から入る（Contactから）場合は最後のプロジェクト
           setCurrentProjectIndex(direction === 1 ? 0 : 4)
+          worksScrollProgress.current = 0 // スクロール進行度もリセット
+          setWorksProjectProgress(0) // プロジェクト進行度もリセット
         }
         previousPage.current = prevPage
 
@@ -288,29 +292,88 @@ export default function Home() {
 
   // Works セクション内のスクロール制御（プロジェクト間のナビゲーション）
   useEffect(() => {
-    if (currentPage !== 2) return
+    if (currentPage !== 2) {
+      // Worksセクション外に出たらスクロール進行度をリセット
+      worksScrollProgress.current = 0
+      return
+    }
 
     const handleWheel = (e: WheelEvent) => {
       const now = Date.now()
-      // デバウンス: 150ms以内の連続イベントは無視
-      if (now - lastWheelTime.current < 150) {
+      // デバウンス: 50ms以内の連続イベントは無視
+      if (now - lastWheelTime.current < 50) {
         e.preventDefault()
         return
       }
 
-      // 下スクロール: 次のプロジェクトへ
-      if (e.deltaY > 0 && currentProjectIndex < 4) {
-        e.preventDefault()
-        setCurrentProjectIndex(prev => prev + 1)
-        lastWheelTime.current = now
+      e.preventDefault()
+      lastWheelTime.current = now
+
+      // スクロール量を計算（画面高さの一定割合）
+      const scrollThreshold = window.innerHeight * 0.2 // 画面高さの20%で次のプロジェクトへ
+      const scrollDelta = Math.abs(e.deltaY)
+      
+      if (e.deltaY > 0) {
+        // 下スクロール
+        worksScrollProgress.current += scrollDelta
+        
+        // 現在のプロジェクト内の進行度を更新（0-1）
+        const progress = Math.min(worksScrollProgress.current / scrollThreshold, 1)
+        setWorksProjectProgress(progress)
+        
+        // スクロール閾値を超えたら次のプロジェクトへ
+        if (worksScrollProgress.current >= scrollThreshold) {
+          if (currentProjectIndex < 4) {
+            // 次のプロジェクトへ
+            setCurrentProjectIndex(prev => prev + 1)
+            worksScrollProgress.current = 0
+            setWorksProjectProgress(0)
+          } else {
+            // 最後のプロジェクトでスクロール完了 → Contactセクションへ
+            // スクロール進行度をリセットして、ページ遷移を許可
+            worksScrollProgress.current = 0
+            setWorksProjectProgress(0)
+            // 次のセクション（Contact）へスクロール
+            const windowHeight = window.innerHeight
+            const targetScrollY = 3 * windowHeight // Contactはページ3
+            window.scrollTo({
+              top: targetScrollY,
+              behavior: "smooth",
+            })
+          }
+        }
+      } else {
+        // 上スクロール
+        worksScrollProgress.current -= scrollDelta
+        
+        // 現在のプロジェクト内の進行度を更新（0-1）
+        const progress = Math.max(worksScrollProgress.current / scrollThreshold, 0)
+        setWorksProjectProgress(progress)
+        
+        // スクロール閾値を下回ったら前のプロジェクトへ
+        if (worksScrollProgress.current <= -scrollThreshold) {
+          if (currentProjectIndex > 0) {
+            // 前のプロジェクトへ
+            setCurrentProjectIndex(prev => prev - 1)
+            worksScrollProgress.current = 0
+            setWorksProjectProgress(0)
+          } else {
+            // 最初のプロジェクトで上スクロール → Aboutセクションへ
+            worksScrollProgress.current = 0
+            setWorksProjectProgress(0)
+            // 前のセクション（About）へスクロール
+            const windowHeight = window.innerHeight
+            const targetScrollY = 1 * windowHeight // Aboutはページ1
+            window.scrollTo({
+              top: targetScrollY,
+              behavior: "smooth",
+            })
+          }
+        }
       }
-      // 上スクロール: 前のプロジェクトへ
-      else if (e.deltaY < 0 && currentProjectIndex > 0) {
-        e.preventDefault()
-        setCurrentProjectIndex(prev => prev - 1)
-        lastWheelTime.current = now
-      }
-      // 境界では e.preventDefault() しない → 次/前セクションへ遷移
+      
+      // スクロール進行度を0-1の範囲に制限
+      worksScrollProgress.current = Math.max(-scrollThreshold, Math.min(scrollThreshold, worksScrollProgress.current))
     }
 
     window.addEventListener('wheel', handleWheel, { passive: false })
@@ -524,6 +587,14 @@ export default function Home() {
       const direction: 1 | -1 = targetPage > currentPage ? 1 : -1
 
       setScrollDirection(direction)
+
+      // Worksセクションへの遷移時は状態をリセット
+      if (targetPage === 2) {
+        // 上から入る（Aboutから）場合は最初のプロジェクト、下から入る（Contactから）場合は最後のプロジェクト
+        setCurrentProjectIndex(direction === 1 ? 0 : 4)
+        worksScrollProgress.current = 0
+        setWorksProjectProgress(0)
+      }
 
       // refも更新
       lastPage.current = currentPage
@@ -1401,12 +1472,40 @@ export default function Home() {
             </motion.div>
           )}
           <div className="flex flex-row items-center gap-3 bg-black/30 backdrop-blur-sm px-4 py-2 rounded-full">
-            {/* WorksとContactセクションの場合は「Works Contact」の順番で表示 */}
-            {(currentPage === 2 || currentPage === 3) ? (
+            {/* Worksセクションの場合は専用のインジケーターを表示 */}
+            {currentPage === 2 ? (
               <>
-                <span className={`text-sm font-medium ${currentPage === 2 ? "text-white" : "text-white/60"}`}>
-                  Works
-                </span>
+                <span className="text-sm font-medium text-white">Works</span>
+                <div className="flex gap-1.5">
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <motion.div
+                      key={i}
+                      className={cn(
+                        "w-2 h-2 rounded-full transition-all",
+                        currentProjectIndex === i ? "bg-white" : "bg-white/30"
+                      )}
+                      animate={{ 
+                        scale: currentProjectIndex === i ? 1.2 : 1,
+                        opacity: currentProjectIndex === i ? 1 : 0.3
+                      }}
+                      transition={{ duration: 0.2 }}
+                    />
+                  ))}
+                </div>
+                <div className="w-24 h-1.5 bg-white/20 rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-white rounded-full"
+                    style={{
+                      width: `${worksProjectProgress * 100}%`,
+                    }}
+                    transition={{ duration: 0.1 }}
+                  />
+                </div>
+                <span className="text-white/60 text-sm">{currentProjectIndex + 1} / 5</span>
+              </>
+            ) : currentPage === 3 ? (
+              <>
+                <span className="text-sm font-medium text-white/60">Works</span>
                 <div className="w-32 h-1.5 bg-white/20 rounded-full overflow-hidden">
                   <motion.div
                     className="h-full bg-white rounded-full"
@@ -1416,9 +1515,7 @@ export default function Home() {
                     transition={{ duration: 0.1 }}
                   />
                 </div>
-                <span className={`text-sm font-medium ${currentPage === 3 ? "text-white" : "text-white/60"}`}>
-                  Contact
-                </span>
+                <span className="text-sm font-medium text-white">Contact</span>
               </>
             ) : (
               <>
