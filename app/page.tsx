@@ -1103,10 +1103,10 @@ export default function Home() {
                   <div className="relative w-full h-[90vh] overflow-hidden">
                     <motion.div
                       animate={{
-                        y: (worksContainerCenterY || (typeof window !== "undefined" ? window.innerHeight * 0.45 : 0)) - 90 - currentProjectIndex * 180
+                        y: (worksContainerCenterY || (typeof window !== "undefined" ? window.innerHeight * 0.45 : 0)) - 160 - currentProjectIndex * 180
                       }}
                       transition={{ duration: 0.4, ease: [0.4, 0.0, 0.2, 1] }}
-                      className="flex flex-col items-center gap-4"
+                      className="flex flex-col items-center"
                       style={{ willChange: 'transform' }}
                     >
                       {projectDetails.map((project, index) => (
