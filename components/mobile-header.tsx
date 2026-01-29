@@ -57,7 +57,7 @@ export default function MobileHeader({ onNavigate }: MobileHeaderProps) {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.3, delay: 0.7 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed top-4 right-4 z-50 p-2 rounded-lg bg-black/30 backdrop-blur-sm border border-white/10 text-white hover:bg-black/50 transition-colors"
+        className="fixed top-4 right-4 z-50 p-2 rounded-lg bg-transparent border-0 text-white hover:bg-white/5 transition-colors"
         aria-label="メニューを開く"
       >
         {isOpen ? (
@@ -71,23 +71,23 @@ export default function MobileHeader({ onNavigate }: MobileHeaderProps) {
       <AnimatePresence>
         {isOpen && (
           <>
-            {/* 背景オーバーレイ */}
+            {/* 背景オーバーレイ（完全透明・クリックで閉じる用） */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               onClick={() => setIsOpen(false)}
-              className="fixed inset-0 bg-black/80 backdrop-blur-md z-40"
+              className="fixed inset-0 bg-transparent z-40"
             />
             
-            {/* メニューパネル */}
+            {/* メニューパネル（右端から黒がフェードアウトするグラデーション） */}
             <motion.div
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 h-full w-72 bg-black/90 backdrop-blur-lg border-l border-white/20 z-50 shadow-2xl"
+              className="fixed top-0 right-0 h-full w-72 backdrop-blur-lg border-l border-white/10 z-50 shadow-2xl bg-gradient-to-l from-transparent via-black/5 to-black/20"
             >
               <div className="flex flex-col h-full pt-20 px-6">
                 <nav className="flex flex-col gap-3 w-full">
