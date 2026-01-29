@@ -77,7 +77,7 @@ export default function MobileTypingAnimation({ texts, className = "" }: MobileT
   return (
     <div className={`flex items-center justify-center gap-x-1.5 sm:gap-x-2 w-full py-2 sm:py-4 ${className}`}>
       <div className="flex items-center gap-x-1.5 sm:gap-x-2 leading-normal" style={{ lineHeight: '1.9' }}>
-        <span className="text-white flex-shrink-0 text-sm sm:text-base">I am a</span>
+        <span className="text-white flex-shrink-0 text-base sm:text-lg">I am a</span>
         <span className="text-white flex items-center" style={{ minHeight: '1.9em' }}>
           {/* 表示領域（widthでアニメーション） */}
           <span
