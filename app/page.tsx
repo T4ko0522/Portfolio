@@ -632,88 +632,6 @@ export default function Home() {
       {/* メインコンテンツ（ページベースのトランジション） */}
       {/* 縦スクロール可能な領域を確保（4ページ分のスクロール領域） */}
       <div style={{ height: `${totalPages * 100}vh` }} />
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
-        {/* メインセクションのみ「Scroll down to explore」と右矢印を表示 */}
-        {currentPage === 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.7 }}
-            className="flex flex-row items-center gap-2 mb-3 justify-center"
-          >
-            <span className="text-white/80 text-sm font-medium">
-              Scroll down to explore
-            </span>
-            <motion.div
-              animate={{ x: [0, 6, 0] }}
-              transition={{
-                duration: 1.5,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-              className="text-white/80"
-            >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </motion.div>
-          </motion.div>
-        )}
-          <div className="flex flex-row items-center gap-3 bg-black/30 backdrop-blur-sm px-4 py-2 rounded-full">
-            {/* WorksとContactセクションの場合は「Works Contact」の順番で表示 */}
-            {(currentPage === 2 || currentPage === 3) ? (
-              <>
-                <span className={`text-sm font-medium ${currentPage === 2 ? "text-white" : "text-white/60"}`}>
-                  Works
-                </span>
-                <div className="w-32 h-1.5 bg-white/20 rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full bg-white rounded-full"
-                    style={{
-                      width: `${scrollProgress * 100}%`,
-                    }}
-                    transition={{ duration: 0.1 }}
-                  />
-                </div>
-                <span className={`text-sm font-medium ${currentPage === 3 ? "text-white" : "text-white/60"}`}>
-                  Contact
-                </span>
-              </>
-            ) : (
-              <>
-                {/* 現在のセクション名 */}
-                <span className="text-white text-sm font-medium">
-                  {currentPage === 0 && "Home"}
-                  {currentPage === 1 && "About"}
-                </span>
-                {/* プログレスバー */}
-                <div className="w-32 h-1.5 bg-white/20 rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full bg-white rounded-full"
-                    style={{
-                      width: `${scrollProgress * 100}%`,
-                    }}
-                    transition={{ duration: 0.1 }}
-                  />
-                </div>
-                {/* 次のセクション名 */}
-                <span className="text-white/60 text-sm">
-                  {currentPage === 0 && "About"}
-                  {currentPage === 1 && "Works"}
-                </span>
-              </>
-            )}
-          </div>
-      </div>
       
       {/* ページコンテナ（固定・ピン留め） */}
       <div className="fixed inset-0 overflow-hidden bg-black">
@@ -1367,6 +1285,90 @@ export default function Home() {
 
         {/* 固定ナビゲーションヘッダー */}
         <Header onNavigate={scrollToSection} />
+        
+        {/* スクロール進行状況インジケーター（下部） - ページコンテナ内に配置してヘッダーより下に表示 */}
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 pointer-events-none">
+          {/* メインセクションのみ「Scroll down to explore」と右矢印を表示 */}
+          {currentPage === 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.7 }}
+              className="flex flex-row items-center gap-2 mb-3 justify-center"
+            >
+              <span className="text-white/80 text-sm font-medium">
+                Scroll down to explore
+              </span>
+              <motion.div
+                animate={{ x: [0, 6, 0] }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+                className="text-white/80"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </motion.div>
+            </motion.div>
+          )}
+          <div className="flex flex-row items-center gap-3 bg-black/30 backdrop-blur-sm px-4 py-2 rounded-full">
+            {/* WorksとContactセクションの場合は「Works Contact」の順番で表示 */}
+            {(currentPage === 2 || currentPage === 3) ? (
+              <>
+                <span className={`text-sm font-medium ${currentPage === 2 ? "text-white" : "text-white/60"}`}>
+                  Works
+                </span>
+                <div className="w-32 h-1.5 bg-white/20 rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-white rounded-full"
+                    style={{
+                      width: `${scrollProgress * 100}%`,
+                    }}
+                    transition={{ duration: 0.1 }}
+                  />
+                </div>
+                <span className={`text-sm font-medium ${currentPage === 3 ? "text-white" : "text-white/60"}`}>
+                  Contact
+                </span>
+              </>
+            ) : (
+              <>
+                {/* 現在のセクション名 */}
+                <span className="text-white text-sm font-medium">
+                  {currentPage === 0 && "Home"}
+                  {currentPage === 1 && "About"}
+                </span>
+                {/* プログレスバー */}
+                <div className="w-32 h-1.5 bg-white/20 rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-white rounded-full"
+                    style={{
+                      width: `${scrollProgress * 100}%`,
+                    }}
+                    transition={{ duration: 0.1 }}
+                  />
+                </div>
+                {/* 次のセクション名 */}
+                <span className="text-white/60 text-sm">
+                  {currentPage === 0 && "About"}
+                  {currentPage === 1 && "Works"}
+                </span>
+              </>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* ローディング画面（Staggered Curtain Revealアニメーション） */}
