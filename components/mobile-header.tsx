@@ -54,17 +54,13 @@ export default function MobileHeader({ onNavigate }: MobileHeaderProps) {
       {/* ハンバーガーメニューボタン */}
       <motion.button
         initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
+        animate={{ opacity: isOpen ? 0 : 1, scale: 1 }}
         transition={{ duration: 0.3, delay: 0.7 }}
         onClick={() => setIsOpen(!isOpen)}
         className="fixed top-4 right-4 z-50 p-2 rounded-lg bg-transparent border-0 text-white hover:bg-white/5 transition-colors"
         aria-label="メニューを開く"
       >
-        {isOpen ? (
-          <X className="w-6 h-6" />
-        ) : (
-          <Menu className="w-6 h-6" />
-        )}
+        <Menu className="w-6 h-6" />
       </motion.button>
 
       {/* メニューオーバーレイ */}
@@ -87,8 +83,21 @@ export default function MobileHeader({ onNavigate }: MobileHeaderProps) {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 h-full w-72 backdrop-blur-lg border-l border-white/10 z-50 shadow-2xl bg-gradient-to-l from-transparent via-black/5 to-black/20"
+              className="fixed top-0 right-0 h-full w-72 backdrop-blur-lg border-l border-white/10 z-50 shadow-2xl bg-gradient-to-l from-transparent via-black/15 to-black/35"
             >
+              {/* 閉じるボタン（パネル上部） */}
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ delay: 0.1 }}
+                onClick={() => setIsOpen(false)}
+                className="absolute top-4 right-4 z-[60] p-2 rounded-lg bg-transparent border-0 text-white hover:bg-white/5 transition-colors"
+                aria-label="メニューを閉じる"
+              >
+                <X className="w-6 h-6" />
+              </motion.button>
+              
               <div className="flex flex-col h-full pt-20 px-6">
                 <nav className="flex flex-col gap-3 w-full">
                   {navItems.map((item, index) => {
