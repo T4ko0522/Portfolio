@@ -754,14 +754,14 @@ export default function Home() {
                   initial={{ opacity: 0, y: -50 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, type: "spring", bounce: 0.4, delay: 0.15 }}
-                  className={`${pacifico.className} text-6xl md:text-7xl lg:text-8xl font-bold mb-10 flex items-center justify-center gap-4`}
+                  className={`${pacifico.className} ${isMobile ? "text-4xl" : "text-6xl md:text-7xl lg:text-8xl"} font-bold mb-10 flex items-center justify-center gap-4`}
                 >
                   <Image 
                     src="https://raw.githubusercontent.com/ABSphreak/ABSphreak/master/gifs/Hi.gif" 
                     alt="Hi" 
                     width={80}
                     height={80}
-                    className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 inline-block"
+                    className={isMobile ? "w-12 h-12" : "w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 inline-block"}
                     unoptimized
                   />
                   <span className="text-white">Hi there!</span>
