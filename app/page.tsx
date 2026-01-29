@@ -1471,7 +1471,7 @@ export default function Home() {
               </motion.div>
             </motion.div>
           )}
-          <div className="flex flex-row items-center gap-3 bg-black/30 backdrop-blur-sm px-4 py-2 rounded-full">
+          <div className="flex flex-row flex-nowrap items-center gap-3 bg-black/30 backdrop-blur-sm px-4 py-2 rounded-full">
             {/* Worksセクションの場合は専用のインジケーターを表示 */}
             {currentPage === 2 ? (
               <>
