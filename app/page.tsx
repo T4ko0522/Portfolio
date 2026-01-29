@@ -437,7 +437,7 @@ export default function Home() {
     const connectSSE = () => {
       try {
         setIsSpotifyLoading(true)
-        eventSource = new EventSource('/api/spotify-status/stream')
+        eventSource = new EventSource('/api/v1/spotify-status')
 
         eventSource.onmessage = (event) => {
           try {
