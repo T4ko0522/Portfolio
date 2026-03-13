@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent } from "@/card"
 import { Mail } from "lucide-react"
 
 interface MobileContactProps {

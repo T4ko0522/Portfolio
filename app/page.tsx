@@ -9,8 +9,8 @@ import {
   Code,
   Mail,
 } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
-import { cn } from "@/lib/utils"
+import { Card, CardContent } from "@/card"
+import { cn } from "../lib/utils"
 import LoadingScreen from "../components/loading-screen"
 import TypingAnimation from "../components/typing-animation"
 import { useIsMobile } from "../hooks/use-mobile"

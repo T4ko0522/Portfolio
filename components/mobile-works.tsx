@@ -5,7 +5,7 @@ import { motion } from "framer-motion"
 import { ExternalLink } from "lucide-react"
 import Image from "next/image"
 import { ProjectDetail } from "./project-detail-modal"
-import { cn } from "@/lib/utils"
+import { cn } from "../lib/utils"
 
 interface MobileWorksProps {
   projects: ProjectDetail[]
