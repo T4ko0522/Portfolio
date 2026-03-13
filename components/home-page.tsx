@@ -436,7 +436,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
     }
   }
 
-  const scrollToSection = (sectionId: string) => {
+  const navigateToSection = (sectionId: string) => {
     const sections = [
       { id: "main", index: 0 },
       { id: "about", index: 1 },
@@ -445,29 +445,35 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
     ]
 
     const section = sections.find(s => s.id === sectionId)
-    if (section) {
-      const windowHeight = window.innerHeight
-      const targetScrollY = section.index * windowHeight
-      const targetPage = section.index
+    if (!section || section.index === currentPage) return
 
-      const direction: 1 | -1 = targetPage > currentPage ? 1 : -1
+    const targetPage = section.index
+    const direction: 1 | -1 = targetPage > currentPage ? 1 : -1
 
-      setScrollDirection(direction)
-
-      if (targetPage === 2) {
-        setCurrentProjectIndex(direction === 1 ? 0 : 4)
-        worksScrollProgress.current = 0
-        setWorksProjectProgress(0)
-      }
-
-      lastPage.current = currentPage
-      lastScrollY.current = window.scrollY
-
-      window.scrollTo({
-        top: targetScrollY,
-        behavior: "smooth",
-      })
+    // Works セクションへの遷移時はプロジェクト状態をリセット
+    if (targetPage === 2) {
+      setCurrentProjectIndex(direction === 1 ? 0 : 4)
+      worksScrollProgress.current = 0
+      setWorksProjectProgress(0)
     }
+
+    // スナップ処理を一時停止してスクロール位置を即座に同期
+    isSnappingRef.current = true
+    const scrollPerPage = window.innerHeight * 0.8
+    const targetScrollY = targetPage * scrollPerPage
+    window.scrollTo({ top: targetScrollY, behavior: "instant" })
+
+    // state を直接更新して即座にページ遷移
+    setScrollDirection(direction)
+    setCurrentPage(targetPage)
+    setScrollProgress(0)
+    lastPage.current = targetPage
+    lastScrollY.current = targetScrollY
+
+    // スナップ処理のロックを解除
+    setTimeout(() => {
+      isSnappingRef.current = false
+    }, 100)
   }
 
   if (!mounted) return null
@@ -1149,7 +1155,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
         </AnimatePresence>
 
         {/* 固定ナビゲーションヘッダー */}
-        <Header onNavigate={scrollToSection} />
+        <Header onNavigate={navigateToSection} />
 
         {/* スクロール進行状況インジケーター（下部） */}
         <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 pointer-events-none">
