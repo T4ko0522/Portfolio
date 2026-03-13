@@ -119,6 +119,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
   const lastPage = useRef(0)
   const snapTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const isSnappingRef = useRef(false)
+  const skipTransitionRef = useRef(false)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -457,8 +458,10 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
       setWorksProjectProgress(0)
     }
 
-    // スナップ処理を一時停止してスクロール位置を即座に同期
+    // アニメーションをスキップして即座に遷移
+    skipTransitionRef.current = true
     isSnappingRef.current = true
+
     const scrollPerPage = window.innerHeight * 0.8
     const targetScrollY = targetPage * scrollPerPage
     window.scrollTo({ top: targetScrollY, behavior: "instant" })
@@ -470,10 +473,11 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
     lastPage.current = targetPage
     lastScrollY.current = targetScrollY
 
-    // スナップ処理のロックを解除
-    setTimeout(() => {
+    // 次フレームでロック解除
+    requestAnimationFrame(() => {
+      skipTransitionRef.current = false
       isSnappingRef.current = false
-    }, 100)
+    })
   }
 
   if (!mounted) return null
@@ -519,10 +523,10 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
               className="absolute inset-0 w-screen h-screen flex flex-col items-center justify-center pt-32 pb-16 pointer-events-auto"
               custom={scrollDirection}
               variants={pageVariants}
-              initial="enter"
+              initial={skipTransitionRef.current ? false : "enter"}
               animate="center"
               exit="exit"
-              transition={pageTransition}
+              transition={skipTransitionRef.current ? { duration: 0 } : pageTransition}
             >
               {/* 背景画像 */}
               <div
@@ -653,10 +657,10 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
               className="absolute inset-0 w-screen h-screen flex items-center justify-center overflow-hidden pointer-events-auto"
               custom={scrollDirection}
               variants={pageVariants}
-              initial="enter"
+              initial={skipTransitionRef.current ? false : "enter"}
               animate="center"
               exit="exit"
-              transition={pageTransition}
+              transition={skipTransitionRef.current ? { duration: 0 } : pageTransition}
             >
               <BgShader
                 colors={["#f97316", "#fb923c", "#fdba74", "#fda4af", "#fb7185", "#f472b6"]}
@@ -874,10 +878,10 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
               className="absolute inset-0 w-screen h-screen flex items-center justify-center pointer-events-auto"
               custom={scrollDirection}
               variants={pageVariants}
-              initial="enter"
+              initial={skipTransitionRef.current ? false : "enter"}
               animate="center"
               exit="exit"
-              transition={pageTransition}
+              transition={skipTransitionRef.current ? { duration: 0 } : pageTransition}
             >
               <DottedSurface className="absolute inset-0" speed={0.02} >
                 <div
@@ -1013,10 +1017,10 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
               className="absolute inset-0 w-screen h-screen flex items-center justify-center pointer-events-auto"
               custom={scrollDirection}
               variants={pageVariants}
-              initial="enter"
+              initial={skipTransitionRef.current ? false : "enter"}
               animate="center"
               exit="exit"
-              transition={pageTransition}
+              transition={skipTransitionRef.current ? { duration: 0 } : pageTransition}
             >
               <div className="absolute inset-0 pointer-events-none bg-black" style={{ zIndex: 0 }}>
                 <div className="absolute inset-0">
