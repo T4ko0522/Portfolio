@@ -2,11 +2,22 @@
 const nextConfig = {
     reactStrictMode: true,
     images: {
-      unoptimized: true,
       remotePatterns: [
         {
           protocol: 'https',
           hostname: 'raw.githubusercontent.com',
+        },
+        {
+          protocol: 'https',
+          hostname: 'avatars.githubusercontent.com',
+        },
+        {
+          protocol: 'https',
+          hostname: 'cdn.discordapp.com',
+        },
+        {
+          protocol: 'https',
+          hostname: 'i.scdn.co',
         },
       ],
     },
