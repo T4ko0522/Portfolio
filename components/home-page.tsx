@@ -830,14 +830,21 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                                 <Code className="w-5 h-5 text-white mr-2" />
                                 <h4 className="text-lg font-medium text-white">Skills</h4>
                               </div>
-                              <div className="flex justify-center">
-                                <Image
-                                  src="/images/skills.svg"
-                                  alt="Skills"
-                                  width={600}
-                                  height={100}
-                                  className="w-full h-auto"
-                                  unoptimized
+                              <div className="flex flex-col items-center gap-2">
+                                <img
+                                  src="https://skillicons.dev/icons?i=js,ts,go,python,lua,bash,powershell"
+                                  alt="Languages"
+                                  className="h-auto"
+                                />
+                                <img
+                                  src="https://skillicons.dev/icons?i=react,vue,astro,next,nuxt,remix,tailwind,materialui,express,nest,vite,vitest,nodejs,deno,electron"
+                                  alt="Frameworks"
+                                  className="h-auto"
+                                />
+                                <img
+                                  src="https://skillicons.dev/icons?i=linux,gcp,vercel,docker,kubernetes,postgres,mysql"
+                                  alt="Infrastructure"
+                                  className="h-auto"
                                 />
                               </div>
                             </motion.div>
