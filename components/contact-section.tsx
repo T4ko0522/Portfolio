@@ -60,7 +60,7 @@ export default function ContactSection({ onCopyDiscord, discordCopied }: Contact
         <motion.a
           variants={itemVariants}
           href="mailto:tako.work.contact@gmail.com"
-          className="group relative flex flex-col items-center justify-center p-8 rounded-2xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-sm overflow-hidden cursor-pointer"
+          className="group relative flex flex-col items-center justify-center p-8 rounded-2xl border border-white/[0.06] bg-transparent overflow-hidden cursor-pointer"
           onMouseEnter={() => setEmailHovered(true)}
           onMouseLeave={() => setEmailHovered(false)}
           whileHover={{ scale: 1.02 }}
@@ -141,7 +141,7 @@ export default function ContactSection({ onCopyDiscord, discordCopied }: Contact
         {/* Discord Block */}
         <motion.div
           variants={itemVariants}
-          className="group relative flex flex-col items-center justify-center p-8 rounded-2xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-sm overflow-hidden cursor-pointer"
+          className="group relative flex flex-col items-center justify-center p-8 rounded-2xl border border-white/[0.06] bg-transparent overflow-hidden cursor-pointer"
           onClick={onCopyDiscord}
           onMouseEnter={() => setDiscordHovered(true)}
           onMouseLeave={() => setDiscordHovered(false)}

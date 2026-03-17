@@ -53,7 +53,7 @@ export default function MobileContact({ onCopyDiscord, discordCopied }: MobileCo
         <motion.a
           variants={itemVariants}
           href="mailto:tako.work.contact@gmail.com"
-          className="group relative flex items-center gap-4 p-5 rounded-xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-sm overflow-hidden"
+          className="group relative flex items-center gap-4 p-5 rounded-xl border border-white/[0.06] bg-transparent overflow-hidden"
           onTouchStart={() => setEmailActive(true)}
           onTouchEnd={() => setEmailActive(false)}
           whileTap={{ scale: 0.97 }}
@@ -107,7 +107,7 @@ export default function MobileContact({ onCopyDiscord, discordCopied }: MobileCo
         {/* Discord */}
         <motion.div
           variants={itemVariants}
-          className="group relative flex items-center gap-4 p-5 rounded-xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-sm overflow-hidden cursor-pointer"
+          className="group relative flex items-center gap-4 p-5 rounded-xl border border-white/[0.06] bg-transparent overflow-hidden cursor-pointer"
           onClick={onCopyDiscord}
           onTouchStart={() => setDiscordActive(true)}
           onTouchEnd={() => setDiscordActive(false)}
