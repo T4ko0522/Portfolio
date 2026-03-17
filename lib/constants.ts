@@ -112,7 +112,7 @@ export const projectDetails: ProjectDetail[] = [
     longDescription: "このリポジトリには、Windows 11環境でのカスタム設定ファイル集が含まれています。",
     imageUrl: "/images/Terminal.png",
     imageAlt: "dotfiles Configuration",
-    url: "https://github.com/T4ko0522/dotfiles",
+    githubUrl: "https://github.com/T4ko0522/dotfiles",
     technologies: ["PowerShell", "WezTerm","WSL","starship","mise"],
     features: [
       "dotfiles",
