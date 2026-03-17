@@ -1,9 +1,16 @@
 import React, { useEffect, useState, useRef } from "react";
-import styled from "styled-components";
+import styles from "./loading-screen.module.css";
 
 type LoaderProps = {
   onLoadingComplete?: () => void;
 };
+
+const lineTypeClass = {
+  prompt: styles.prompt,
+  command: styles.command,
+  output: styles.output,
+  special: styles.special,
+} as const;
 
 const Loader: React.FC<LoaderProps> = ({ onLoadingComplete }) => {
   const [lines, setLines] = useState<Array<{ type: 'prompt' | 'command' | 'output' | 'special'; text: string }>>([]);
@@ -51,7 +58,7 @@ const Loader: React.FC<LoaderProps> = ({ onLoadingComplete }) => {
     const run = async () => {
       // 初期プロンプト
       addLine('prompt', '~/Project $');
-      
+
       // cd Portfolio
       await typeText("cd Portfolio", 90);
       addLine('command', 'cd Portfolio');
@@ -61,7 +68,7 @@ const Loader: React.FC<LoaderProps> = ({ onLoadingComplete }) => {
       addLine('prompt', '~/Project/Portfolio $');
       await typeText("pnpm start", 90);
       addLine('command', 'pnpm start');
-      
+
       // 起動出力をシミュレート
       await delay(300);
       addLine('output', '> portfolio@1.1.0 start');
@@ -72,7 +79,7 @@ const Loader: React.FC<LoaderProps> = ({ onLoadingComplete }) => {
       await delay(400);
       addLine('output', ' ✓ Starting...');
       await delay(400);
-      
+
       // 実際の経過時間を計算して表示
       const elapsedTime = (Date.now() - startTime) / 1000;
       const formattedTime = elapsedTime.toFixed(1);
@@ -91,188 +98,48 @@ const Loader: React.FC<LoaderProps> = ({ onLoadingComplete }) => {
   }, []); // 依存配列を空にして、一度だけ実行されるようにする
 
   return (
-    <StyledWrapper>
-      <div className="terminal-loader">
-        <div className="terminal-header">
-          <div className="terminal-title">root@t4ko0522: ~</div>
-          <div className="terminal-controls">
-            <div className="control close" />
-            <div className="control minimize" />
-            <div className="control maximize" />
+    <div className={styles.wrapper}>
+      <div className={styles.terminal}>
+        <div className={styles.header}>
+          <div className={styles.title}>root@t4ko0522: ~</div>
+          <div className={styles.controls}>
+            <div className={`${styles.control} ${styles.close}`} />
+            <div className={`${styles.control} ${styles.minimize}`} />
+            <div className={`${styles.control} ${styles.maximize}`} />
           </div>
         </div>
-        <div className="terminal-content" ref={contentRef}>
+        <div className={styles.content} ref={contentRef}>
           {lines.map((line, index) => {
             // チェックマークを含む行の場合、チェックマークをspanで囲む
             if (line.type === 'output' && line.text.includes('✓')) {
               const parts = line.text.split('✓');
               return (
-                <div key={index} className={`line line-${line.type}`}>
+                <div key={index} className={`${styles.line} ${lineTypeClass[line.type]}`}>
                   {parts.map((part, i) => (
                     <React.Fragment key={i}>
                       {part}
-                      {i < parts.length - 1 && <span className="checkmark">✓</span>}
+                      {i < parts.length - 1 && <span className={styles.checkmark}>✓</span>}
                     </React.Fragment>
                   ))}
                 </div>
               );
             }
             return (
-              <div key={index} className={`line line-${line.type}`}>
+              <div key={index} className={`${styles.line} ${lineTypeClass[line.type]}`}>
                 {line.text}
               </div>
             );
           })}
           {currentLine && (
-            <div className="line line-command">
+            <div className={`${styles.line} ${styles.command}`}>
               {currentLine}
-              <span className="cursor">█</span>
+              <span className={styles.cursor}>█</span>
             </div>
           )}
         </div>
       </div>
-    </StyledWrapper>
+    </div>
   );
 };
-
-const StyledWrapper = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #000;
-  z-index: 9999;
-
-  @keyframes blinkCursor {
-    0%, 50% { opacity: 1; }
-    51%, 100% { opacity: 0; }
-  }
-
-  .terminal-loader {
-    border: 0.1em solid #333;
-    background-color: #1a1a1a;
-    color: #0f0;
-    font-family: "Consolas", "Courier New", Courier, monospace;
-    font-size: 1.4em;
-    padding: 0;
-    width: 35em;
-    height: 20em;
-    max-width: 90vw;
-    max-height: 80vh;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
-    border-radius: 8px;
-    position: relative;
-    overflow: hidden;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-  }
-
-  @media (max-width: 600px) {
-    .terminal-loader {
-      font-size: 1em;
-      width: 95vw;
-      height: 18em;
-    }
-    .terminal-header {
-      font-size: 0.9em;
-    }
-    .terminal-content {
-      padding: 0.8em;
-    }
-  }
-
-  .terminal-header {
-    position: absolute; top: 0; left: 0; right: 0; height: 1.5em;
-    background-color: #333;
-    border-top-left-radius: 4px; border-top-right-radius: 4px;
-    padding: 0 0.4em; box-sizing: border-box;
-  }
-
-  .terminal-controls { float: right; }
-  .control {
-    display: inline-block; width: 0.6em; height: 0.6em;
-    margin-left: 0.4em; border-radius: 50%; background-color: #777;
-  }
-  .control.close { background-color: #e33; }
-  .control.minimize { background-color: #ee0; }
-  .control.maximize { background-color: #0b0; }
-  .terminal-title { float: left; line-height: 1.5em; color: #eee; }
-
-  .terminal-content {
-    flex: 1;
-    padding: 1em;
-    overflow-y: auto;
-    overflow-x: hidden;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    margin-top: 1.5em;
-    
-    /* スクロールバーのスタイル */
-    scrollbar-width: thin;
-    scrollbar-color: #555 #1a1a1a;
-    
-    &::-webkit-scrollbar {
-      width: 8px;
-    }
-    
-    &::-webkit-scrollbar-track {
-      background: #1a1a1a;
-    }
-    
-    &::-webkit-scrollbar-thumb {
-      background: #555;
-      border-radius: 4px;
-    }
-    
-    &::-webkit-scrollbar-thumb:hover {
-      background: #666;
-    }
-  }
-
-  .line {
-    font-size: 0.9em;
-    line-height: 1.6;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-  }
-
-  .line-prompt {
-    color: #3b78ff
-  }
-
-  .line-command {
-    color: #d4d4d4; /* 白色のコマンド */
-  }
-
-  .line-output {
-    color: #ffffff; /* 白色の出力 */
-  }
-
-  .checkmark {
-    color: #4ac66b; /* チェックマークの色 */
-  }
-
-  .line-special {
-    color: #ad7fa8
-  }
-
-  .cursor {
-    display: inline-block;
-    background-color: #0f0;
-    width: 0.5em;
-    height: 1em;
-    margin-left: 0.1em;
-    animation: blinkCursor 0.8s step-end infinite;
-    vertical-align: text-bottom;
-  }
-`;
 
 export default Loader;
