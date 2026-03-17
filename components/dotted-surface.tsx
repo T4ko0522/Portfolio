@@ -66,7 +66,7 @@ export function DottedSurface({
 			alpha: true,
 			antialias: true,
 		});
-		renderer.setPixelRatio(window.devicePixelRatio);
+		renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 		renderer.setSize(window.innerWidth, window.innerHeight);
 		renderer.setClearColor(scene.fog.color, 0);
 
