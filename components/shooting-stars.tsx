@@ -1,16 +1,6 @@
 "use client";
 import { cn } from "../lib/utils";
-import React, { useEffect, useState, useRef } from "react";
-
-interface ShootingStar {
-  id: number;
-  x: number;
-  y: number;
-  angle: number;
-  scale: number;
-  speed: number;
-  distance: number;
-}
+import React, { useEffect, useRef, useId } from "react";
 
 interface ShootingStarsProps {
   minSpeed?: number;
@@ -24,10 +14,16 @@ interface ShootingStarsProps {
   className?: string;
 }
 
+interface StarState {
+  x: number;
+  y: number;
+  angle: number;
+  scale: number;
+  speed: number;
+  distance: number;
+}
+
 const getRandomStartPoint = () => {
-  if (typeof window === "undefined") {
-    return { x: 0, y: 0, angle: 45 };
-  }
   const side = Math.floor(Math.random() * 4);
   const offset = Math.random() * window.innerWidth;
 
@@ -44,6 +40,7 @@ const getRandomStartPoint = () => {
       return { x: 0, y: 0, angle: 45 };
   }
 };
+
 export const ShootingStars: React.FC<ShootingStarsProps> = ({
   minSpeed = 10,
   maxSpeed = 30,
@@ -55,14 +52,16 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
   starHeight = 1,
   className,
 }) => {
-  const [star, setStar] = useState<ShootingStar | null>(null);
-  const svgRef = useRef<SVGSVGElement>(null);
+  const rectRef = useRef<SVGRectElement>(null);
+  const starRef = useRef<StarState | null>(null);
+  const rafRef = useRef<number>(0);
+  const spawnTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const gradientId = useId();
 
   useEffect(() => {
-    const createStar = () => {
+    const spawnStar = () => {
       const { x, y, angle } = getRandomStartPoint();
-      const newStar: ShootingStar = {
-        id: Date.now(),
+      starRef.current = {
         x,
         y,
         angle,
@@ -70,73 +69,74 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
         speed: Math.random() * (maxSpeed - minSpeed) + minSpeed,
         distance: 0,
       };
-      setStar(newStar);
-
-      const randomDelay = Math.random() * (maxDelay - minDelay) + minDelay;
-      setTimeout(createStar, randomDelay);
-    };
-
-    createStar();
-
-    return () => {};
-  }, [minSpeed, maxSpeed, minDelay, maxDelay]);
-
-  useEffect(() => {
-    const moveStar = () => {
-      if (star) {
-        setStar((prevStar) => {
-          if (!prevStar) return null;
-          const newX =
-            prevStar.x +
-            prevStar.speed * Math.cos((prevStar.angle * Math.PI) / 180);
-          const newY =
-            prevStar.y +
-            prevStar.speed * Math.sin((prevStar.angle * Math.PI) / 180);
-          const newDistance = prevStar.distance + prevStar.speed;
-          const newScale = 1 + newDistance / 100;
-          if (
-            newX < -20 ||
-            newX > window.innerWidth + 20 ||
-            newY < -20 ||
-            newY > window.innerHeight + 20
-          ) {
-            return null;
-          }
-          return {
-            ...prevStar,
-            x: newX,
-            y: newY,
-            distance: newDistance,
-            scale: newScale,
-          };
-        });
+      if (rectRef.current) {
+        rectRef.current.removeAttribute("display");
       }
     };
 
-    const animationFrame = requestAnimationFrame(moveStar);
-    return () => cancelAnimationFrame(animationFrame);
-  }, [star]);
+    const scheduleSpawn = () => {
+      const delay = Math.random() * (maxDelay - minDelay) + minDelay;
+      spawnTimerRef.current = setTimeout(() => {
+        spawnStar();
+        scheduleSpawn();
+      }, delay);
+    };
+
+    const animate = () => {
+      const star = starRef.current;
+      const rect = rectRef.current;
+
+      if (star && rect) {
+        const rad = (star.angle * Math.PI) / 180;
+        star.x += star.speed * Math.cos(rad);
+        star.y += star.speed * Math.sin(rad);
+        star.distance += star.speed;
+        star.scale = 1 + star.distance / 100;
+
+        if (
+          star.x < -20 ||
+          star.x > window.innerWidth + 20 ||
+          star.y < -20 ||
+          star.y > window.innerHeight + 20
+        ) {
+          starRef.current = null;
+          rect.setAttribute("display", "none");
+        } else {
+          const w = starWidth * star.scale;
+          rect.setAttribute("x", String(star.x));
+          rect.setAttribute("y", String(star.y));
+          rect.setAttribute("width", String(w));
+          rect.setAttribute(
+            "transform",
+            `rotate(${star.angle}, ${star.x + w / 2}, ${star.y + starHeight / 2})`
+          );
+        }
+      }
+
+      rafRef.current = requestAnimationFrame(animate);
+    };
+
+    spawnStar();
+    scheduleSpawn();
+    rafRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      cancelAnimationFrame(rafRef.current);
+      clearTimeout(spawnTimerRef.current);
+    };
+  }, [minSpeed, maxSpeed, minDelay, maxDelay, starWidth, starHeight]);
 
   return (
-    <svg
-      ref={svgRef}
-      className={cn("w-full h-full absolute inset-0", className)}
-    >
-      {star && (
-        <rect
-          key={star.id}
-          x={star.x}
-          y={star.y}
-          width={starWidth * star.scale}
-          height={starHeight}
-          fill="url(#gradient)"
-          transform={`rotate(${star.angle}, ${
-            star.x + (starWidth * star.scale) / 2
-          }, ${star.y + starHeight / 2})`}
-        />
-      )}
+    <svg className={cn("w-full h-full absolute inset-0", className)}>
+      <rect
+        ref={rectRef}
+        width={starWidth}
+        height={starHeight}
+        fill={`url(#${gradientId})`}
+        display="none"
+      />
       <defs>
-        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" style={{ stopColor: trailColor, stopOpacity: 0 }} />
           <stop
             offset="100%"
