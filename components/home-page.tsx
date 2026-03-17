@@ -530,15 +530,22 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
             >
               {/* 背景画像 */}
               <div
-                className="absolute inset-0 w-full h-full bg-cover bg-center"
+                className="absolute inset-0 w-full h-full overflow-hidden -z-1"
                 style={{
-                  backgroundImage: `url('${sectionBackgrounds[0].image}')`,
-                  backgroundPosition: sectionBackgrounds[0].position || "center",
                   filter: sectionBackgrounds[0].filter || "none",
                   transform: "scale(1.3) translateZ(0px)",
-                  zIndex: -1,
                 }}
-              />
+              >
+                <Image
+                  src={sectionBackgrounds[0].image}
+                  alt=""
+                  fill
+                  sizes="100vw"
+                  className="object-cover"
+                  style={{ objectPosition: sectionBackgrounds[0].position || "center" }}
+                  priority
+                />
+              </div>
               <motion.div
                 className="relative z-10 w-full h-full flex flex-col items-center justify-center"
               >
