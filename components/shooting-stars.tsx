@@ -55,7 +55,7 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
   const rectRef = useRef<SVGRectElement>(null);
   const starRef = useRef<StarState | null>(null);
   const rafRef = useRef<number>(0);
-  const spawnTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const spawnTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const gradientId = useId();
 
   useEffect(() => {
@@ -122,7 +122,7 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
 
     return () => {
       cancelAnimationFrame(rafRef.current);
-      clearTimeout(spawnTimerRef.current);
+      if (spawnTimerRef.current) clearTimeout(spawnTimerRef.current);
     };
   }, [minSpeed, maxSpeed, minDelay, maxDelay, starWidth, starHeight]);
 
