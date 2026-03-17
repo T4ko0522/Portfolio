@@ -54,14 +54,22 @@ export function BgShader({
   useEffect(() => {
     setMounted(true)
     setUseFallback(!isWebGLUsable())
-    const update = () =>
-      setDimensions({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      })
-    update()
-    window.addEventListener("resize", update)
-    return () => window.removeEventListener("resize", update)
+    let timer: ReturnType<typeof setTimeout>
+    const onResize = () => {
+      clearTimeout(timer)
+      timer = setTimeout(() => {
+        setDimensions({
+          width: window.innerWidth,
+          height: window.innerHeight,
+        })
+      }, 150)
+    }
+    setDimensions({ width: window.innerWidth, height: window.innerHeight })
+    window.addEventListener("resize", onResize)
+    return () => {
+      window.removeEventListener("resize", onResize)
+      clearTimeout(timer)
+    }
   }, [])
 
   return (
