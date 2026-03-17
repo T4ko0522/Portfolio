@@ -11,6 +11,7 @@ interface ShootingStarsProps {
   trailColor?: string;
   starWidth?: number;
   starHeight?: number;
+  maxStars?: number;
   className?: string;
 }
 
@@ -21,6 +22,7 @@ interface StarState {
   scale: number;
   speed: number;
   distance: number;
+  rect: SVGRectElement;
 }
 
 const getRandomStartPoint = () => {
@@ -50,28 +52,38 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
   trailColor = "#2EB9DF",
   starWidth = 10,
   starHeight = 1,
+  maxStars = 5,
   className,
 }) => {
-  const rectRef = useRef<SVGRectElement>(null);
-  const starRef = useRef<StarState | null>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+  const starsRef = useRef<StarState[]>([]);
   const rafRef = useRef<number>(0);
   const spawnTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const gradientId = useId();
 
   useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+
     const spawnStar = () => {
+      if (starsRef.current.length >= maxStars) return;
+
       const { x, y, angle } = getRandomStartPoint();
-      starRef.current = {
+      const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      rect.setAttribute("width", String(starWidth));
+      rect.setAttribute("height", String(starHeight));
+      rect.setAttribute("fill", `url(#${gradientId})`);
+      svg.appendChild(rect);
+
+      starsRef.current.push({
         x,
         y,
         angle,
         scale: 1,
         speed: Math.random() * (maxSpeed - minSpeed) + minSpeed,
         distance: 0,
-      };
-      if (rectRef.current) {
-        rectRef.current.removeAttribute("display");
-      }
+        rect,
+      });
     };
 
     const scheduleSpawn = () => {
@@ -83,10 +95,10 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
     };
 
     const animate = () => {
-      const star = starRef.current;
-      const rect = rectRef.current;
+      const toRemove: number[] = [];
 
-      if (star && rect) {
+      for (let i = 0; i < starsRef.current.length; i++) {
+        const star = starsRef.current[i];
         const rad = (star.angle * Math.PI) / 180;
         star.x += star.speed * Math.cos(rad);
         star.y += star.speed * Math.sin(rad);
@@ -99,18 +111,25 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
           star.y < -20 ||
           star.y > window.innerHeight + 20
         ) {
-          starRef.current = null;
-          rect.setAttribute("display", "none");
+          toRemove.push(i);
         } else {
           const w = starWidth * star.scale;
-          rect.setAttribute("x", String(star.x));
-          rect.setAttribute("y", String(star.y));
-          rect.setAttribute("width", String(w));
-          rect.setAttribute(
+          star.rect.setAttribute("x", String(star.x));
+          star.rect.setAttribute("y", String(star.y));
+          star.rect.setAttribute("width", String(w));
+          star.rect.setAttribute(
             "transform",
             `rotate(${star.angle}, ${star.x + w / 2}, ${star.y + starHeight / 2})`
           );
         }
+      }
+
+      // Remove off-screen stars (iterate in reverse to preserve indices)
+      for (let i = toRemove.length - 1; i >= 0; i--) {
+        const idx = toRemove[i];
+        const star = starsRef.current[idx];
+        star.rect.remove();
+        starsRef.current.splice(idx, 1);
       }
 
       rafRef.current = requestAnimationFrame(animate);
@@ -123,18 +142,16 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
     return () => {
       cancelAnimationFrame(rafRef.current);
       if (spawnTimerRef.current) clearTimeout(spawnTimerRef.current);
+      // Clean up all rect elements
+      for (const star of starsRef.current) {
+        star.rect.remove();
+      }
+      starsRef.current = [];
     };
-  }, [minSpeed, maxSpeed, minDelay, maxDelay, starWidth, starHeight]);
+  }, [minSpeed, maxSpeed, minDelay, maxDelay, starWidth, starHeight, maxStars, gradientId]);
 
   return (
-    <svg className={cn("w-full h-full absolute inset-0", className)}>
-      <rect
-        ref={rectRef}
-        width={starWidth}
-        height={starHeight}
-        fill={`url(#${gradientId})`}
-        display="none"
-      />
+    <svg ref={svgRef} className={cn("w-full h-full absolute inset-0", className)}>
       <defs>
         <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" style={{ stopColor: trailColor, stopOpacity: 0 }} />
