@@ -300,13 +300,15 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
     const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
     const timeUntilMidnight = tomorrow.getTime() - now.getTime()
 
+    let dailyInterval: ReturnType<typeof setInterval>
     const midnightTimer = setTimeout(() => {
       updateCountdown()
-      setInterval(updateCountdown, 24 * 60 * 60 * 1000)
+      dailyInterval = setInterval(updateCountdown, 24 * 60 * 60 * 1000)
     }, timeUntilMidnight)
 
     return () => {
       clearTimeout(midnightTimer)
+      clearInterval(dailyInterval)
     }
   }, [])
 
