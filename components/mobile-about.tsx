@@ -110,7 +110,7 @@ export default function MobileAbout({ daysUntilBirthday, discordStatus }: Mobile
         <CardContent className="p-4 sm:p-6">
           <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4 sm:mb-6 text-cyan-300">💻 About Me</h3>
           <p className="mb-3 sm:mb-4 text-white text-base sm:text-lg">
-            <span className="font-bold">🎓CS Japanese Student | Full Stack Engineer</span>
+            <span className="font-bold">Full-Stack Engineer | Software Developer</span>
           </p>
           <p className="mb-4 sm:mb-6 text-white text-sm sm:text-base">
             2008年大阪生まれ。現在はWeb開発を中心に学習しており、バックエンドとフロントエンドの両方を扱えるフルスタックエンジニアです！2025年10月からmuclaseという会社でエンジニアとしてインターンで働いております！

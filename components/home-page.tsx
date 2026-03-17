@@ -792,7 +792,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                         <CardContent className="p-6">
                           <h3 className="text-2xl lg:text-3xl font-bold mb-6 text-cyan-300">💻 About Me</h3>
                           <p className="mb-4 text-white text-lg">
-                            <span className="font-bold">🎓CS Japanese Student | Full Stack Engineer</span>
+                            <span className="font-bold">Full-Stack Engineer | Software Developer</span>
                           </p>
                           <p className="mb-6 text-white">
                             2008年大阪生まれ。現在はWeb開発を中心に学習しており、バックエンドとフロントエンドの両方を扱えるフルスタックエンジニアです！2025年10月からmuclaseという会社でエンジニアとしてインターンで働いております！
