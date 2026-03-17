@@ -6,9 +6,8 @@ export const TOTAL_PAGES = 4
 
 export const introTexts = [
   "VRChatter.",
-  "Gamer geek.",
-  "Full Stack Engineer.",
-  "CS Japanese Student.",
+  "Full-Stack Engineer.",
+  "Software Developer.",
   "\"Araiguma\" community founder.",
 ]
 
@@ -59,22 +58,6 @@ export const itemVariants = {
 
 export const projectDetails: ProjectDetail[] = [
   {
-    title: "Connectix2",
-    description: "VRChatのステータスをリアルタイムで更新できるSNSプロフィールサービスです。",
-    longDescription: "Connectix2は、VRChatユーザー向けのSNSプロフィールサービスです。VRChatのステータス（オンライン/オフライン、ワールド情報など）をリアルタイムで取得し、プロフィールページに表示します。ユーザーは自分のプロフィールをカスタマイズでき、他のユーザーと繋がることができます。",
-    imageUrl: "/images/Connectix2.png",
-    imageAlt: "Connectix2 Screenshot",
-    url: "https://cntx.in",
-    githubUrl: "https://github.com/T4ko0522/Connectix2",
-    technologies: ["Next.js", "TypeScript", "React", "Tailwind CSS", "Vercel"],
-    features: [
-      "VRChat APIとの連携によるリアルタイムステータス表示",
-      "カスタマイズ可能なプロフィールページ",
-      "ユーザー間のフォロー機能",
-      "レスポンシブデザイン対応",
-    ],
-  },
-  {
     title: "better-tab",
     description: "カスタマイズ可能なブラウザの新規タブページです。",
     longDescription: "better-tabは、カスタマイズ可能な新しいタブページ。時計、天気、カレンダー、トレンド記事を一つのページに集約した、モダンで使いやすい新しいタブ用のページです。",
@@ -82,7 +65,7 @@ export const projectDetails: ProjectDetail[] = [
     imageAlt: "better-tab Screenshot",
     url: "https://better-tab.vercel.app",
     githubUrl: "https://github.com/T4ko0522/better-tab",
-    technologies: ["React", "TypeScript", "Chrome Extension API", "Tailwind CSS"],
+    technologies: ["Next.js", "TypeScript", "Chrome Extension", "Tailwind CSS"],
     features: [
       "カスタマイズ可能な新規タブページ",
       "クイックアクセスリンク",
@@ -99,7 +82,7 @@ export const projectDetails: ProjectDetail[] = [
     imageAlt: "contributions-status Screenshot",
     url: "https://contributions-status.vercel.app",
     githubUrl: "https://github.com/T4ko0522/contributions-status",
-    technologies: ["Next.js", "TypeScript", "React", "Tailwind CSS", "Vercel"],
+    technologies: ["Next.js", "TypeScript", "Tailwind CSS", "Vercel"],
     features: [
       "GitHub, GitLabのコントリビューションを統合してグラフとして返す",
       "png形式での出力",
@@ -113,8 +96,8 @@ export const projectDetails: ProjectDetail[] = [
     longDescription: "このポートフォリオサイトは、Next.js、TypeScript、Tailwind CSS、Framer Motionを使用して構築されています。アニメーション効果やレスポンシブデザインを実装し、プロジェクトの詳細情報をモーダルで表示する機能など、モダンなWeb開発のベストプラクティスを取り入れています。",
     imageUrl: "/images/Portfolio.png",
     imageAlt: "Portfolio Screenshot",
-    githubUrl: "https://github.com/T4ko0522/Portfolio",
-    technologies: ["Next.js", "TypeScript", "React", "Tailwind CSS", "shadcn/ui", "Framer Motion"],
+    url: "https://t4ko.vercel.app",
+    technologies: ["Next.js", "TypeScript", "Tailwind CSS", "shadcn/ui", "Framer Motion"],
     features: [
       "レスポンシブデザイン",
       "Framer Motionによるアニメーション",
@@ -124,20 +107,31 @@ export const projectDetails: ProjectDetail[] = [
     ],
   },
   {
-    title: "Terminal",
-    description: "Windows環境でのWezTermとPowerShellの設定ファイル集です。",
-    longDescription: "このリポジトリには、Windows 11環境でのWezTermの設定とPowerShell 7のカスタムプロファイル設定が含まれています。WezTermの設定はmozumasu様の記事を参考にWindows用に使いやすいように改変したものです。タブ操作、ペイン操作、コマンドパレットなどの便利なキーバインドを設定し、効率的なターミナル操作を実現します。",
+    title: "dotfiles",
+    description: "Windows環境でのカスタム設定ファイル集です。",
+    longDescription: "このリポジトリには、Windows 11環境でのカスタム設定ファイル集が含まれています。",
     imageUrl: "/images/Terminal.png",
-    imageAlt: "Terminal Configuration",
-    githubUrl: "https://github.com/T4ko0522/Terminal",
-    technologies: ["Lua", "PowerShell", "WezTerm"],
+    imageAlt: "dotfiles Configuration",
+    url: "https://github.com/T4ko0522/dotfiles",
+    technologies: ["PowerShell", "WezTerm","WSL","starship","mise"],
     features: [
-      "WezTermのカスタム設定（wezterm.lua, keybinds.lua）",
-      "PowerShell 7のカスタムプロファイル設定",
-      "タブ操作のキーバインド（Shift+Tab, Shift+tなど）",
-      "ペイン操作のキーバインド（Alt+q + d/r/xなど）",
-      "コマンドパレット（Ctrl+j）",
-      "ghq、peco、Terminal-Iconsとの連携",
+      "dotfiles",
     ],
   },
+  {
+    title: "Connectix2",
+    description: "VRChatのステータスをリアルタイムで更新できるSNSプロフィールサービスです。",
+    longDescription: "Connectix2は、VRChatユーザー向けのSNSプロフィールサービスです。VRChatのステータス（オンライン/オフライン、ワールド情報など）をリアルタイムで取得し、プロフィールページに表示します。ユーザーは自分のプロフィールをカスタマイズでき、他のユーザーと繋がることができます。",
+    imageUrl: "/images/Connectix2.png",
+    imageAlt: "Connectix2 Screenshot",
+    url: "https://cntx.in",
+    githubUrl: "https://github.com/T4ko0522/Connectix2",
+    technologies: ["Next.js", "TypeScript", "React", "Tailwind CSS", "Vercel"],
+    features: [
+      "VRChat APIとの連携によるリアルタイムステータス表示",
+      "カスタマイズ可能なプロフィールページ",
+      "ユーザー間のフォロー機能",
+      "レスポンシブデザイン対応",
+    ],
+  }
 ]
