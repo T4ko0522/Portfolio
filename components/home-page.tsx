@@ -33,10 +33,22 @@ import ProjectDetailModal, { type ProjectDetail } from "./project-detail-modal"
 import StaggeredCurtainReveal from "./staggered-curtain-reveal"
 import Header from "./header"
 import SpotifyNowPlaying from "./spotify-now-playing"
-import { BgShader } from "./bg-shader"
-import { DottedSurface } from "./dotted-surface"
-import { ShootingStars } from "./shooting-stars"
 import dynamic from "next/dynamic"
+
+const BgShader = dynamic(
+  () => import("./bg-shader").then((m) => ({ default: m.BgShader })),
+  { ssr: false }
+)
+
+const DottedSurface = dynamic(
+  () => import("./dotted-surface").then((m) => ({ default: m.DottedSurface })),
+  { ssr: false }
+)
+
+const ShootingStars = dynamic(
+  () => import("./shooting-stars").then((m) => ({ default: m.ShootingStars })),
+  { ssr: false }
+)
 
 const MobileTypingAnimation = dynamic<{
   texts: string[]
