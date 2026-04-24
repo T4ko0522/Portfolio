@@ -14,23 +14,6 @@
 | ホスティング      | Vercel                                |
 | パッケージ管理    | pnpm                                  |
 
-# 🚀 クイックスタート
-```bash
-git clone clone https://github.com/T4ko0522/Portfolio.git
-cd portfolio
-
-pnpm install
-
-pnpm run dev
-```
-  
-[localhost:3000](http://localhost:3000)を開いて結果を確認。  
-`app/page.tsx`を修正することでページの編集を開始できます。ファイルを編集すると、ページは自動的に更新されます。  
-
-## 🤝 Contributions
-バグ報告や機能提案は[Issues](https://github.com/T4ko0522/Portfolio/issues)へお気軽にどうぞ。  
-プルリクも歓迎です。  
-
 ## 📄 LICENSE
 Apache License 2.0  
 詳細は[LICENSE](https://github.com/T4ko0522/Portfolio/blob/master/LICENSE)を参照してください。 
