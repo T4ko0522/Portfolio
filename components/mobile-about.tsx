@@ -124,7 +124,7 @@ export default function MobileAbout({ daysUntilBirthday, discordStatus }: Mobile
             {/* 誕生日 */}
             <motion.div
               whileHover={{ scale: 1.05 }}
-              className="bg-transparent backdrop-blur-sm border border-white/10 hover:border-purple-500/50 transition-all duration-300 rounded-2xl p-4 sm:p-5 shadow-lg text-white"
+              className="bg-transparent backdrop-blur-sm border border-white/10 transition-all duration-300 rounded-2xl p-4 sm:p-5 shadow-lg text-white"
             >
               <div className="flex items-center mb-2">
                 <Gift className="w-5 h-5 text-white mr-2" />
@@ -143,7 +143,7 @@ export default function MobileAbout({ daysUntilBirthday, discordStatus }: Mobile
             {/* Skills */}
             <motion.div
               whileHover={{ scale: 1.05 }}
-              className="bg-transparent backdrop-blur-sm border border-white/10 hover:border-cyan-500/50 transition-all duration-300 rounded-2xl p-4 sm:p-5 shadow-lg text-white"
+              className="bg-transparent backdrop-blur-sm border border-white/10 transition-all duration-300 rounded-2xl p-4 sm:p-5 shadow-lg text-white"
             >
               <div className="flex items-center mb-4">
                 <Code className="w-5 h-5 text-white mr-2" />

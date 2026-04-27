@@ -38,7 +38,7 @@ export default function SpotifyNowPlaying({
       >
         <motion.div
           whileHover={{ scale: 1.02 }}
-          className="bg-transparent backdrop-blur-sm border border-white/10 hover:border-green-500/50 transition-all duration-300 rounded-2xl p-5 shadow-lg"
+          className="bg-transparent backdrop-blur-sm border border-white/10 transition-all duration-300 rounded-2xl p-5 shadow-lg"
         >
           <div className="flex items-center gap-2">
             {/* Spotifyロゴ */} 
@@ -68,7 +68,7 @@ export default function SpotifyNowPlaying({
       >
         <motion.div
           whileHover={{ scale: 1.02 }}
-          className="bg-transparent backdrop-blur-sm border border-white/10 hover:border-green-500/50 transition-all duration-300 rounded-2xl p-5 shadow-lg"
+          className="bg-transparent backdrop-blur-sm border border-white/10 transition-all duration-300 rounded-2xl p-5 shadow-lg"
         >
           <div className="flex items-center gap-2">
             {/* Spotifyロゴ */}
@@ -119,7 +119,7 @@ export default function SpotifyNowPlaying({
     >
       <motion.div
         whileHover={{ scale: 1.02 }}
-        className="bg-transparent backdrop-blur-sm border border-white/10 hover:border-green-500/50 transition-all duration-300 rounded-2xl p-5 shadow-lg"
+        className="bg-transparent backdrop-blur-sm border border-white/10 transition-all duration-300 rounded-2xl p-5 shadow-lg"
       >
         <div className="flex items-center gap-4">
           {/* アルバムアート */}
