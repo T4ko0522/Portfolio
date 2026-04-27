@@ -129,6 +129,13 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
   const sectionScrollRefs = useRef<Map<number, HTMLDivElement | null>>(new Map())
   const TRANSITION_DURATION = 800
 
+  // Contact セクションのページ離脱は累積閾値で判定して感度を緩める
+  const contactWheelAccumRef = useRef(0)
+  const contactWheelResetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const CONTACT_WHEEL_THRESHOLD_DOWN = 250 // contact → 次（実質なし、保険）
+  const CONTACT_WHEEL_THRESHOLD_UP = 250 // contact → works（戻る方向の猶予を多めに）
+  const CONTACT_WHEEL_RESET_MS = 220
+
   // セクション内スクロールのプログレス更新
   const handleSectionScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const el = e.currentTarget
@@ -143,6 +150,11 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
     if (target === currentPage) return
 
     isTransitioningRef.current = true
+    contactWheelAccumRef.current = 0
+    if (contactWheelResetTimerRef.current) {
+      clearTimeout(contactWheelResetTimerRef.current)
+      contactWheelResetTimerRef.current = null
+    }
     setScrollDirection(direction)
     setCurrentPage(target)
     setScrollProgress(0)
@@ -172,12 +184,30 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
       const atTop = sec.scrollTop <= 0
       const atBottom = sec.scrollTop + sec.clientHeight >= sec.scrollHeight - 1
 
+      const tryMove = (delta: number, dir: 1 | -1) => {
+        e.preventDefault()
+        contactWheelAccumRef.current += delta
+        if (contactWheelResetTimerRef.current) clearTimeout(contactWheelResetTimerRef.current)
+        contactWheelResetTimerRef.current = setTimeout(() => {
+          contactWheelAccumRef.current = 0
+        }, CONTACT_WHEEL_RESET_MS)
+        const threshold = dir === 1 ? CONTACT_WHEEL_THRESHOLD_DOWN : CONTACT_WHEEL_THRESHOLD_UP
+        if (
+          (dir === 1 && contactWheelAccumRef.current >= threshold) ||
+          (dir === -1 && contactWheelAccumRef.current <= -threshold)
+        ) {
+          contactWheelAccumRef.current = 0
+          moveToPage(currentPage + dir, dir)
+        }
+      }
+
       if (e.deltaY > 0 && atBottom && currentPage < TOTAL_PAGES - 1) {
-        e.preventDefault()
-        moveToPage(currentPage + 1, 1)
+        tryMove(e.deltaY, 1)
       } else if (e.deltaY < 0 && atTop && currentPage > 0) {
-        e.preventDefault()
-        moveToPage(currentPage - 1, -1)
+        tryMove(e.deltaY, -1)
+      } else {
+        // 端に達していない時は内部スクロールなので累積をリセット
+        contactWheelAccumRef.current = 0
       }
       // 端に達していない場合はブラウザ標準の内部スクロールに任せる
     }
@@ -235,6 +265,25 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
       window.removeEventListener("touchend", handleTouchEnd)
       window.removeEventListener("keydown", handleKeyDown)
     }
+  }, [currentPage]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // セクション移動時、進入方向に応じて新セクションのスクロール位置とインジケーターを同期
+  useEffect(() => {
+    let rafId = 0
+    const sync = () => {
+      const sec = sectionScrollRefs.current.get(currentPage)
+      if (!sec) {
+        // 新セクションがまだ mount されていない場合は次フレームで再試行
+        rafId = requestAnimationFrame(sync)
+        return
+      }
+      const max = sec.scrollHeight - sec.clientHeight
+      // 戻り方向で進入した場合は末尾（その方向の継続感）、進み方向は先頭から
+      sec.scrollTop = scrollDirection === -1 && max > 0 ? max : 0
+      setScrollProgress(max > 0 ? Math.max(0, Math.min(1, sec.scrollTop / max)) : 0)
+    }
+    rafId = requestAnimationFrame(sync)
+    return () => cancelAnimationFrame(rafId)
   }, [currentPage]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // works セクションに入ったときに方向に応じてスクロール位置を初期化
@@ -494,7 +543,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                 onScroll={handleSectionScroll}
                 className="relative z-10 w-full h-full overflow-y-auto"
               >
-                <div className="min-h-full w-full flex flex-col items-center justify-center pt-32 pb-16">
+                <div className="sticky top-0 h-screen w-full flex flex-col items-center justify-center pt-32 pb-16">
                 {/* タイトル */}
               <div className="w-full text-center mb-20 px-4">
                 <motion.div
@@ -598,6 +647,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                   </motion.a>
                 </motion.div>
                 </div>
+                <div aria-hidden="true" className="w-full h-[80vh] pointer-events-none" />
               </div>
             </motion.section>
           )}
@@ -629,7 +679,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                 onScroll={handleSectionScroll}
                 className="relative z-10 w-full h-full overflow-y-auto"
               >
-                <div className="container mx-auto px-4 max-w-6xl min-h-full flex items-center justify-center py-16">
+                <div className="sticky top-0 h-screen container mx-auto px-4 max-w-6xl flex items-center justify-center py-16">
                 {isMobile ? (
                   <MobileAbout daysUntilBirthday={daysUntilBirthday} discordStatus={discordStatus} />
                 ) : (
@@ -831,6 +881,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                   </div>
                 )}
                 </div>
+                <div aria-hidden="true" className="w-full h-[80vh] pointer-events-none" />
               </div>
             </motion.section>
           )}
