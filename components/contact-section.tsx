@@ -113,7 +113,6 @@ export default function ContactSection({ onCopyDiscord, discordCopied }: Contact
             {discordCopied ? <span className="text-emerald-300/80">copied</span> : "tako._.v"}
           </span>
           <span className="text-[10px] tracking-[0.3em] uppercase text-white/20 font-light">
-            {discordCopied ? "" : "click to copy"}
           </span>
         </button>
       </motion.div>
