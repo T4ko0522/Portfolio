@@ -1,4 +1,4 @@
-import type { ProjectDetail } from "../components/project-detail-modal"
+import type { ProjectDetail } from "../types/project"
 
 export const BIRTH_MONTH = 5
 export const BIRTH_DAY = 22
@@ -133,5 +133,70 @@ export const projectDetails: ProjectDetail[] = [
       "ユーザー間のフォロー機能",
       "レスポンシブデザイン対応",
     ],
-  }
+  },
+  {
+    title: "Spotify-CLI",
+    description: "ターミナルからSpotifyを操作できるCLI/TUIツールです。",
+    longDescription: "Spotify-CLIは、Goで実装されたターミナル向けのSpotifyクライアントです。Now PlayingのTUI表示、アルバムアートのインライン描画、LRCLIB連携による同期歌詞、再生コントロール、音量調整、デバイス切り替えなどをコマンド一つで完結できます。",
+    imageUrl: "https://raw.githubusercontent.com/T4ko0522/Spotify-CLI/main/assets/readme.png",
+    imageAlt: "Spotify-CLI Screenshot",
+    githubUrl: "https://github.com/T4ko0522/Spotify-CLI",
+    technologies: ["Go", "Bubble Tea", "Spotify API", "LRCLIB", "WezTerm"],
+    features: [
+      "Now Playing TUIによるリアルタイム表示",
+      "LRCLIB連携の同期歌詞表示",
+      "再生コントロール（play/stop/next/back）",
+      "音量コントロール（TUIスライダー / 直接指定）",
+      "デバイス一覧と切り替え",
+      "アルバムアートのサイズプリセット",
+    ],
+  },
+  {
+    title: "CodexRabbit",
+    description: "Codex CLIによる自動コードレビューを行うAIアシスタントです。",
+    longDescription: "CodexRabbitは、GitHubのpush / pull_request / issues / issue_comment を契機にCodex CLIでコードレビューを実行し、GitHub（PR/コミットコメント、重大度に応じたIssue自動起票）とDiscord（スレッドでの対話型レビュー）の両方にフィードバックを返すAI Review Assistantです。",
+    imageUrl: "https://raw.githubusercontent.com/T4ko0522/CodexRabbit/main/assets/readme.png",
+    imageAlt: "CodexRabbit Screenshot",
+    githubUrl: "https://github.com/T4ko0522/CodexRabbit",
+    technologies: ["TypeScript", "Codex CLI", "GitHub App", "Discord.js", "Docker"],
+    features: [
+      "push / PR / Issue / コメントを契機とした自動レビュー",
+      "PRレビューコメント・コミットコメントの自動投稿",
+      "重大度Critical/Highでの自動Issue起票",
+      "Discordスレッドでの対話型レビュー",
+      "HMAC-SHA256によるWebhook検証",
+    ],
+  },
+  {
+    title: "music-share",
+    description: "音楽URLからSpotify / YouTube Musicの双方向リンクを返すDiscord Botです。",
+    longDescription: "music-shareは、Discord上でBotへのメンションと音楽URLを受け取り、対象曲を特定してSpotifyとYouTube Musicのリンクを整形して返信するBotです。サービス間の楽曲共有を1メッセージで完結させ、メタデータ照合と結果キャッシュにより安定した変換を提供します。",
+    imageUrl: "https://raw.githubusercontent.com/T4ko0522/music-share/master/assets/example.png",
+    imageAlt: "music-share Screenshot",
+    githubUrl: "https://github.com/T4ko0522/music-share",
+    technologies: ["TypeScript", "Node.js", "Discord.js", "Spotify API", "YouTube Music"],
+    features: [
+      "Spotify ⇔ YouTube Music の双方向リンク変換",
+      "メンション + URL のシンプルなインターフェース",
+      "URLパースとサービス自動判定",
+      "メタデータ照合とスコアリングによるマッチング",
+      "TTLキャッシュによるレスポンス最適化",
+    ],
+  },
+  {
+    title: "Custom-Readme",
+    description: "GitHubプロフィール向けのREADMEをカスタマイズして生成できるWebサービスです。",
+    longDescription: "Custom-Readmeは、GitHubプロフィール用のREADMEをブラウザ上でカスタマイズして生成できるWebサービスです。Next.jsで構築されたUIから設定を組み立て、プレビューしながら自分好みのREADMEを作成できます。",
+    imageUrl: "https://raw.githubusercontent.com/T4ko0522/Custom-Readme/main/assets/readme.png",
+    imageAlt: "Custom-Readme Screenshot",
+    url: "https://custom-readme.vercel.app",
+    githubUrl: "https://github.com/T4ko0522/Custom-Readme",
+    technologies: ["Next.js", "TypeScript", "Tailwind CSS", "Vercel"],
+    features: [
+      "ブラウザ上でのREADMEカスタマイズ",
+      "リアルタイムプレビュー",
+      "GitHubプロフィール向けのテンプレート",
+      "レスポンシブデザイン対応",
+    ],
+  },
 ]

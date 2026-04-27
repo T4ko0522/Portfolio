@@ -1,9 +1,8 @@
 "use client"
 
 import { useEffect, useState, useRef } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence, useMotionValue } from "framer-motion"
 import {
-  ExternalLink,
   Calendar,
   Gift,
   Code,
@@ -28,7 +27,7 @@ import LoadingScreen from "./loading-screen"
 import TypingAnimation from "./typing-animation"
 import { useIsMobile } from "../hooks/use-mobile"
 import Image from "next/image"
-import ProjectDetailModal, { type ProjectDetail } from "./project-detail-modal"
+import type { ProjectDetail } from "../types/project"
 import StaggeredCurtainReveal from "./staggered-curtain-reveal"
 import Header from "./header"
 import SpotifyNowPlaying from "./spotify-now-playing"
@@ -70,11 +69,18 @@ const MobileAbout = dynamic<{
 
 const MobileWorks = dynamic<{
   projects: ProjectDetail[]
-  onProjectClick: (project: ProjectDetail) => void
-  currentProjectIndex: number
-  onProjectIndexChange: (index: number) => void
-  containerCenterY?: number
 }>(() => import("./mobile-works"), {
+  ssr: false,
+})
+
+const WorksCarousel = dynamic<{
+  projects: ProjectDetail[]
+  position: ReturnType<typeof useMotionValue<number>>
+  activeIndex: number
+  onActiveIndexChange: (index: number) => void
+  minIndex: number
+  maxIndex: number
+}>(() => import("./works-carousel"), {
   ssr: false,
 })
 
@@ -95,12 +101,18 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
   const [mounted, setMounted] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [daysUntilBirthday, setDaysUntilBirthday] = useState<number>(initialDaysUntilBirthday)
-  const [selectedProject, setSelectedProject] = useState<ProjectDetail | null>(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
   const [spotifyTrack, setSpotifyTrack] = useState<SpotifyTrack | null>(null)
   const [isSpotifyLoading, setIsSpotifyLoading] = useState(false)
   const [discordStatus, setDiscordStatus] = useState<'online' | 'idle' | 'dnd' | 'offline' | null>(null)
   const [discordCopied, setDiscordCopied] = useState(false)
+
+  // Works カルーセル用の状態
+  const worksMinIndex = 0
+  const worksMaxIndex = Math.max(0, projectDetails.length - 1)
+  const worksSteps = worksMaxIndex - worksMinIndex
+  const WORKS_PADDING = 0.4 // viewport 単位（最初/最後の猶予領域）
+  const [worksActiveIndex, setWorksActiveIndex] = useState(worksMinIndex)
+  const worksPosition = useMotionValue(0)
 
   // スクロール駆動アニメーション用のref
   const mainSectionRef = useRef<HTMLElement>(null)
@@ -111,193 +123,135 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
   const [scrollDirection, setScrollDirection] = useState<1 | -1>(1)
   const [scrollProgress, setScrollProgress] = useState(0)
 
-  // Works セクション用の状態
-  const [currentProjectIndex, setCurrentProjectIndex] = useState(0)
-  const lastWheelTime = useRef(0)
-  const previousPage = useRef(0)
-  const worksScrollProgress = useRef(0)
-  const [worksProjectProgress, setWorksProjectProgress] = useState(0)
-  const [worksContainerCenterY, setWorksContainerCenterY] = useState(0)
-  useEffect(() => {
-    if (!mounted) return
-    const update = () => setWorksContainerCenterY(window.innerHeight * 0.45)
-    update()
-    window.addEventListener("resize", update)
-    return () => window.removeEventListener("resize", update)
-  }, [mounted])
-
-  // スクロール位置とページ状態を追跡するref
-  const lastScrollY = useRef(0)
-  const lastPage = useRef(0)
-  const snapTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const isSnappingRef = useRef(false)
+  // ページ遷移とセクション内スクロール用のref
   const skipTransitionRef = useRef(false)
+  const isTransitioningRef = useRef(false)
+  const sectionScrollRefs = useRef<Map<number, HTMLDivElement | null>>(new Map())
+  const TRANSITION_DURATION = 800
+
+  // セクション内スクロールのプログレス更新
+  const handleSectionScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const el = e.currentTarget
+    const max = el.scrollHeight - el.clientHeight
+    setScrollProgress(max > 0 ? Math.max(0, Math.min(1, el.scrollTop / max)) : 0)
+  }
+
+  // ページ間移動
+  const moveToPage = (target: number, direction: 1 | -1) => {
+    if (isTransitioningRef.current) return
+    if (target < 0 || target >= TOTAL_PAGES) return
+    if (target === currentPage) return
+
+    isTransitioningRef.current = true
+    setScrollDirection(direction)
+    setCurrentPage(target)
+    setScrollProgress(0)
+
+    setTimeout(() => {
+      isTransitioningRef.current = false
+    }, TRANSITION_DURATION)
+  }
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (isSnappingRef.current) {
-        return
-      }
-
-      const scrollY = window.scrollY
-      const windowHeight = window.innerHeight
-      const scrollPerPage = windowHeight * 0.8
-
-      const calculatedPage = Math.min(
-        Math.floor(scrollY / scrollPerPage),
-        TOTAL_PAGES - 1
-      )
-
-      const currentPageStart = calculatedPage * scrollPerPage
-      const currentPageEnd = Math.min((calculatedPage + 1) * scrollPerPage, TOTAL_PAGES * scrollPerPage)
-      const progressInPage = Math.max(0, Math.min(1, (scrollY - currentPageStart) / (currentPageEnd - currentPageStart)))
-      setScrollProgress(progressInPage)
-
-      if (calculatedPage !== lastPage.current) {
-        const prevPage = lastPage.current
-        const direction: 1 | -1 = calculatedPage > prevPage ? 1 : -1
-
-        setScrollDirection(direction)
-        setCurrentPage(calculatedPage)
-
-        if (calculatedPage === 2) {
-          setCurrentProjectIndex(direction === 1 ? 0 : 4)
-          worksScrollProgress.current = 0
-          setWorksProjectProgress(0)
-        }
-        previousPage.current = prevPage
-
-        lastPage.current = calculatedPage
-        lastScrollY.current = scrollY
-      } else {
-        lastScrollY.current = scrollY
-      }
-
-      if (snapTimeoutRef.current) {
-        clearTimeout(snapTimeoutRef.current)
-      }
-
-      snapTimeoutRef.current = setTimeout(() => {
-        const currentScrollY = window.scrollY
-        const nearestPage = Math.round(currentScrollY / scrollPerPage)
-        const targetScrollY = nearestPage * scrollPerPage
-
-        if (Math.abs(currentScrollY - targetScrollY) > 50) {
-          isSnappingRef.current = true
-          window.scrollTo({
-            top: targetScrollY,
-            behavior: "smooth",
-          })
-          setTimeout(() => {
-            isSnappingRef.current = false
-          }, 600)
-        }
-      }, 150)
-    }
-
-    lastScrollY.current = window.scrollY
-    lastPage.current = currentPage
-
-    window.addEventListener("scroll", handleScroll, { passive: true })
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll)
-      if (snapTimeoutRef.current) {
-        clearTimeout(snapTimeoutRef.current)
-      }
-    }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Works セクション内のスクロール制御
-  useEffect(() => {
-    if (currentPage !== 2) {
-      worksScrollProgress.current = 0
-      return
-    }
+    const getActiveSectionEl = () => sectionScrollRefs.current.get(currentPage) ?? null
 
     const handleWheel = (e: WheelEvent) => {
-      const now = Date.now()
-      if (now - lastWheelTime.current < 50) {
+      if (isTransitioningRef.current) {
         e.preventDefault()
         return
       }
 
-      e.preventDefault()
-      lastWheelTime.current = now
-
-      const scrollThreshold = window.innerHeight * 0.2
-      const scrollDelta = Math.abs(e.deltaY)
-
-      if (e.deltaY > 0) {
-        worksScrollProgress.current += scrollDelta
-
-        const progress = Math.min(worksScrollProgress.current / scrollThreshold, 1)
-        setWorksProjectProgress(progress)
-
-        if (worksScrollProgress.current >= scrollThreshold) {
-          if (currentProjectIndex < 4) {
-            setCurrentProjectIndex(prev => prev + 1)
-            worksScrollProgress.current = 0
-            setWorksProjectProgress(0)
-          } else {
-            worksScrollProgress.current = 0
-            setWorksProjectProgress(0)
-            const windowHeight = window.innerHeight
-            const targetScrollY = 3 * windowHeight
-            window.scrollTo({
-              top: targetScrollY,
-              behavior: "smooth",
-            })
-          }
-        }
-      } else {
-        worksScrollProgress.current -= scrollDelta
-
-        const progress = Math.max(worksScrollProgress.current / scrollThreshold, 0)
-        setWorksProjectProgress(progress)
-
-        if (worksScrollProgress.current <= -scrollThreshold) {
-          if (currentProjectIndex > 0) {
-            setCurrentProjectIndex(prev => prev - 1)
-            worksScrollProgress.current = 0
-            setWorksProjectProgress(0)
-          } else {
-            worksScrollProgress.current = 0
-            setWorksProjectProgress(0)
-            const windowHeight = window.innerHeight
-            const targetScrollY = 1 * windowHeight
-            window.scrollTo({
-              top: targetScrollY,
-              behavior: "smooth",
-            })
-          }
-        }
+      const sec = getActiveSectionEl()
+      if (!sec) {
+        e.preventDefault()
+        if (e.deltaY > 0) moveToPage(currentPage + 1, 1)
+        else if (e.deltaY < 0) moveToPage(currentPage - 1, -1)
+        return
       }
 
-      worksScrollProgress.current = Math.max(-scrollThreshold, Math.min(scrollThreshold, worksScrollProgress.current))
+      const atTop = sec.scrollTop <= 0
+      const atBottom = sec.scrollTop + sec.clientHeight >= sec.scrollHeight - 1
+
+      if (e.deltaY > 0 && atBottom && currentPage < TOTAL_PAGES - 1) {
+        e.preventDefault()
+        moveToPage(currentPage + 1, 1)
+      } else if (e.deltaY < 0 && atTop && currentPage > 0) {
+        e.preventDefault()
+        moveToPage(currentPage - 1, -1)
+      }
+      // 端に達していない場合はブラウザ標準の内部スクロールに任せる
     }
 
-    window.addEventListener('wheel', handleWheel, { passive: false })
-    return () => window.removeEventListener('wheel', handleWheel)
-  }, [currentPage, currentProjectIndex])
+    let touchStartY = 0
 
-  // Works セクション内のキーボードナビゲーション
-  useEffect(() => {
-    if (currentPage !== 2) return
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartY = e.touches[0].clientY
+    }
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (isTransitioningRef.current) return
+
+      const sec = getActiveSectionEl()
+      if (!sec) return
+
+      const touchEndY = e.changedTouches[0].clientY
+      const deltaY = touchStartY - touchEndY
+
+      if (Math.abs(deltaY) < 50) return
+
+      const atTop = sec.scrollTop <= 0
+      const atBottom = sec.scrollTop + sec.clientHeight >= sec.scrollHeight - 1
+
+      if (deltaY > 0 && atBottom && currentPage < TOTAL_PAGES - 1) {
+        moveToPage(currentPage + 1, 1)
+      } else if (deltaY < 0 && atTop && currentPage > 0) {
+        moveToPage(currentPage - 1, -1)
+      }
+    }
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowDown' && currentProjectIndex < 4) {
+      if (isTransitioningRef.current) return
+      const sec = getActiveSectionEl()
+      const atTop = sec ? sec.scrollTop <= 0 : true
+      const atBottom = sec ? sec.scrollTop + sec.clientHeight >= sec.scrollHeight - 1 : true
+
+      if ((e.key === "ArrowDown" || e.key === "PageDown") && atBottom && currentPage < TOTAL_PAGES - 1) {
         e.preventDefault()
-        setCurrentProjectIndex(prev => prev + 1)
-      } else if (e.key === 'ArrowUp' && currentProjectIndex > 0) {
+        moveToPage(currentPage + 1, 1)
+      } else if ((e.key === "ArrowUp" || e.key === "PageUp") && atTop && currentPage > 0) {
         e.preventDefault()
-        setCurrentProjectIndex(prev => prev - 1)
+        moveToPage(currentPage - 1, -1)
       }
     }
 
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [currentPage, currentProjectIndex])
+    window.addEventListener("wheel", handleWheel, { passive: false })
+    window.addEventListener("touchstart", handleTouchStart, { passive: true })
+    window.addEventListener("touchend", handleTouchEnd, { passive: true })
+    window.addEventListener("keydown", handleKeyDown)
+
+    return () => {
+      window.removeEventListener("wheel", handleWheel)
+      window.removeEventListener("touchstart", handleTouchStart)
+      window.removeEventListener("touchend", handleTouchEnd)
+      window.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [currentPage]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // works セクションに入ったときに方向に応じてスクロール位置を初期化
+  useEffect(() => {
+    if (currentPage !== 2 || isMobile) return
+    const sec = sectionScrollRefs.current.get(2)
+    if (!sec) return
+    const padPx = WORKS_PADDING * sec.clientHeight
+    const targetTop =
+      scrollDirection === -1
+        ? padPx + worksSteps * sec.clientHeight
+        : padPx
+    sec.scrollTop = targetTop
+    const idx = scrollDirection === -1 ? worksMaxIndex : worksMinIndex
+    setWorksActiveIndex(idx)
+    worksPosition.set(idx - worksMinIndex)
+  }, [currentPage, scrollDirection, isMobile, worksMinIndex, worksMaxIndex, worksSteps, worksPosition])
 
   // クライアントサイドレンダリングのためのマウント確認と年齢・カウントダウン計算
   useEffect(() => {
@@ -430,16 +384,6 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
     setIsLoading(false)
   }
 
-  const handleProjectClick = (project: ProjectDetail) => {
-    setSelectedProject(project)
-    setIsModalOpen(true)
-  }
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false)
-    setSelectedProject(null)
-  }
-
   const handleCopyDiscord = async () => {
     const discordUsername = "tako._.v"
     try {
@@ -465,32 +409,19 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
     const targetPage = section.index
     const direction: 1 | -1 = targetPage > currentPage ? 1 : -1
 
-    // Works セクションへの遷移時はプロジェクト状態をリセット
-    if (targetPage === 2) {
-      setCurrentProjectIndex(direction === 1 ? 0 : 4)
-      worksScrollProgress.current = 0
-      setWorksProjectProgress(0)
-    }
-
     // アニメーションをスキップして即座に遷移
     skipTransitionRef.current = true
-    isSnappingRef.current = true
+    isTransitioningRef.current = true
 
-    const scrollPerPage = window.innerHeight * 0.8
-    const targetScrollY = targetPage * scrollPerPage
-    window.scrollTo({ top: targetScrollY, behavior: "instant" })
-
-    // state を直接更新して即座にページ遷移
     setScrollDirection(direction)
     setCurrentPage(targetPage)
     setScrollProgress(0)
-    lastPage.current = targetPage
-    lastScrollY.current = targetScrollY
 
-    // 次フレームでロック解除
     requestAnimationFrame(() => {
       skipTransitionRef.current = false
-      isSnappingRef.current = false
+      isTransitioningRef.current = false
+      const newSec = sectionScrollRefs.current.get(targetPage)
+      if (newSec) newSec.scrollTop = 0
     })
   }
 
@@ -520,11 +451,9 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
           width={128}
           height={128}
           priority
+          unoptimized
         />
       </div>
-      {/* 縦スクロール可能な領域を確保（4ページ分のスクロール領域） */}
-      <div style={{ height: `${TOTAL_PAGES * 100}vh` }} />
-
       {/* ページコンテナ（固定・ピン留め） */}
       <div className="fixed inset-0 overflow-hidden bg-black">
         <AnimatePresence mode="sync" custom={scrollDirection}>
@@ -534,7 +463,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
               key="main"
               ref={mainSectionRef}
               id="main"
-              className="absolute inset-0 w-screen h-screen flex flex-col items-center justify-center pt-32 pb-16 pointer-events-auto"
+              className="absolute inset-0 w-screen h-screen pointer-events-auto"
               custom={scrollDirection}
               variants={pageVariants}
               initial={skipTransitionRef.current ? false : "enter"}
@@ -560,9 +489,12 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                   priority
                 />
               </div>
-              <motion.div
-                className="relative z-10 w-full h-full flex flex-col items-center justify-center"
+              <div
+                ref={(el) => { sectionScrollRefs.current.set(0, el) }}
+                onScroll={handleSectionScroll}
+                className="relative z-10 w-full h-full overflow-y-auto"
               >
+                <div className="min-h-full w-full flex flex-col items-center justify-center pt-32 pb-16">
                 {/* タイトル */}
               <div className="w-full text-center mb-20 px-4">
                 <motion.div
@@ -665,7 +597,8 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                   </svg>
                   </motion.a>
                 </motion.div>
-              </motion.div>
+                </div>
+              </div>
             </motion.section>
           )}
 
@@ -675,7 +608,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
               key="about"
               ref={aboutSectionRef}
               id="about"
-              className="absolute inset-0 w-screen h-screen flex items-center justify-center overflow-hidden pointer-events-auto"
+              className="absolute inset-0 w-screen h-screen overflow-hidden pointer-events-auto"
               custom={scrollDirection}
               variants={pageVariants}
               initial={skipTransitionRef.current ? false : "enter"}
@@ -691,9 +624,12 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                 offsetX={0.08}
                 veilOpacity="bg-black/20"
               />
-              <motion.div
-                className="container mx-auto px-4 max-w-6xl w-full h-full relative z-10 flex items-center justify-center"
+              <div
+                ref={(el) => { sectionScrollRefs.current.set(1, el) }}
+                onScroll={handleSectionScroll}
+                className="relative z-10 w-full h-full overflow-y-auto"
               >
+                <div className="container mx-auto px-4 max-w-6xl min-h-full flex items-center justify-center py-16">
                 {isMobile ? (
                   <MobileAbout daysUntilBirthday={daysUntilBirthday} discordStatus={discordStatus} />
                 ) : (
@@ -714,6 +650,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                           className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50"
                           style={{ width: '248px', height: '248px' }}
                           draggable="false"
+                          unoptimized
                         />
                         {discordStatus && (
                           <div
@@ -893,7 +830,8 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                     </motion.div>
                   </div>
                 )}
-              </motion.div>
+                </div>
+              </div>
             </motion.section>
           )}
 
@@ -903,7 +841,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
               key="works"
               ref={worksSectionRef}
               id="works"
-              className="absolute inset-0 w-screen h-screen flex items-center justify-center pointer-events-auto"
+              className="absolute inset-0 w-screen h-screen pointer-events-auto"
               custom={scrollDirection}
               variants={pageVariants}
               initial={skipTransitionRef.current ? false : "enter"}
@@ -921,118 +859,56 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                   )}
                 />
               </DottedSurface>
-              <motion.div
-                className="container mx-auto px-4 max-w-4xl w-full relative z-10"
+              <div
+                ref={(el) => { sectionScrollRefs.current.set(2, el) }}
+                onScroll={(e) => {
+                  const el = e.currentTarget
+                  const max = el.scrollHeight - el.clientHeight
+                  setScrollProgress(max > 0 ? Math.max(0, Math.min(1, el.scrollTop / max)) : 0)
+                  if (!isMobile && el.clientHeight > 0) {
+                    const padPx = WORKS_PADDING * el.clientHeight
+                    const effective = el.scrollTop - padPx
+                    const rawPos = effective / el.clientHeight
+                    const clamped = Math.max(0, Math.min(worksSteps, rawPos))
+                    worksPosition.set(clamped)
+                    const next = worksMinIndex + Math.round(clamped)
+                    setWorksActiveIndex((prev) => (prev === next ? prev : next))
+                  }
+                }}
+                className="relative z-10 w-full h-full overflow-y-auto"
               >
                 {isMobile ? (
-                  <MobileWorks
-                    projects={projectDetails}
-                    onProjectClick={handleProjectClick}
-                    currentProjectIndex={currentProjectIndex}
-                    onProjectIndexChange={setCurrentProjectIndex}
-                    containerCenterY={worksContainerCenterY}
-                  />
+                  <div className="min-h-full w-full flex items-center justify-center py-16">
+                    <MobileWorks projects={projectDetails} />
+                  </div>
                 ) : (
-                  <div className="relative w-full h-[90vh] overflow-hidden">
-                    <motion.div
-                      animate={{
-                        y: (worksContainerCenterY || (typeof window !== "undefined" ? window.innerHeight * 0.45 : 0)) - 160 - currentProjectIndex * 180
-                      }}
-                      transition={{ duration: 0.4, ease: [0.4, 0.0, 0.2, 1] }}
-                      className="flex flex-col items-center"
-                      style={{ willChange: 'transform' }}
-                    >
-                      {projectDetails.map((project, index) => (
-                        <motion.div
-                          key={project.title}
-                          animate={{
-                            scale: currentProjectIndex === index ? 1.2 : 0.85,
-                            opacity: currentProjectIndex === index ? 1.0 : 0.5,
-                          }}
-                          transition={{ duration: 0.4, ease: [0.4, 0.0, 0.2, 1] }}
-                          onClick={(e) => {
-                            const target = e.target as HTMLElement
-                            if (target.closest('a')) {
-                              return
-                            }
-                            handleProjectClick(project)
-                          }}
-                          className={cn(
-                            "w-full max-w-2xl border rounded-lg p-6 cursor-pointer transition-all duration-300",
-                            currentProjectIndex === index
-                              ? "border-blue-500/50 shadow-2xl bg-gray-800/70"
-                              : "border-gray-700/30 bg-gray-800/30"
-                          )}
-                          style={{ willChange: 'transform, opacity', minHeight: '160px' }}
-                        >
-                          <div className="flex items-start justify-between mb-3">
-                            {project.url ? (
-                              <a
-                                href={project.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={(e) => e.stopPropagation()}
-                                className="text-lg font-bold text-white hover:text-blue-400 transition-colors cursor-pointer"
-                              >
-                                <h4>{project.title}</h4>
-                              </a>
-                            ) : (
-                              <h4 className="text-lg font-bold text-white">{project.title}</h4>
-                            )}
-                            <div className="flex gap-2">
-                              {project.url && (
-                                <a
-                                  href={project.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="text-blue-400 hover:text-blue-300 transition-colors"
-                                  aria-label={`Visit ${project.title}`}
-                                >
-                                  <ExternalLink className="w-5 h-5" />
-                                </a>
-                              )}
-                              {project.githubUrl && (
-                                <a
-                                  href={project.githubUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="text-gray-400 hover:text-gray-300 transition-colors"
-                                  aria-label={`View ${project.title} on GitHub`}
-                                >
-                                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                                  </svg>
-                                </a>
-                              )}
-                            </div>
-                          </div>
-                          <p className="text-gray-300 text-sm mb-3">
-                            {project.description}
-                          </p>
-                          {project.imageUrl && currentProjectIndex === index && (
-                            <motion.div
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: 'auto' }}
-                              exit={{ opacity: 0, height: 0 }}
-                              className="mb-2 rounded-lg overflow-hidden bg-gray-900 flex items-center justify-center"
-                            >
-                              <Image
-                                src={project.imageUrl}
-                                alt={project.imageAlt}
-                                width={600}
-                                height={300}
-                                className="w-full h-auto object-contain max-h-72"
-                              />
-                            </motion.div>
-                          )}
-                        </motion.div>
-                      ))}
-                    </motion.div>
+                  <div
+                    className="relative w-full"
+                    style={{ height: `${(worksSteps + 1 + 2 * WORKS_PADDING) * 100}vh` }}
+                  >
+                    <div className="sticky top-0 h-screen w-full flex items-center justify-center">
+                      <WorksCarousel
+                        projects={projectDetails}
+                        position={worksPosition}
+                        activeIndex={worksActiveIndex}
+                        onActiveIndexChange={(idx) => {
+                          setWorksActiveIndex(idx)
+                          const sec = sectionScrollRefs.current.get(2)
+                          if (sec && sec.clientHeight > 0) {
+                            const padPx = WORKS_PADDING * sec.clientHeight
+                            sec.scrollTo({
+                              top: padPx + (idx - worksMinIndex) * sec.clientHeight,
+                              behavior: "smooth",
+                            })
+                          }
+                        }}
+                        minIndex={worksMinIndex}
+                        maxIndex={worksMaxIndex}
+                      />
+                    </div>
                   </div>
                 )}
-              </motion.div>
+              </div>
             </motion.section>
           )}
 
@@ -1042,7 +918,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
               key="contact"
               ref={contactSectionRef}
               id="contact"
-              className="absolute inset-0 w-screen h-screen flex items-center justify-center pointer-events-auto"
+              className="absolute inset-0 w-screen h-screen pointer-events-auto"
               custom={scrollDirection}
               variants={pageVariants}
               initial={skipTransitionRef.current ? false : "enter"}
@@ -1057,8 +933,8 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                 </div>
 
                 <ShootingStars
-                  starColor="#9E00FF"
-                  trailColor="#2EB9DF"
+                  starColor="#FFFFFF"
+                  trailColor="#FFFFFF"
                   minSpeed={15}
                   maxSpeed={35}
                   minDelay={400}
@@ -1066,8 +942,8 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                   maxStars={8}
                 />
                 <ShootingStars
-                  starColor="#FF0099"
-                  trailColor="#FFB800"
+                  starColor="#FFFFFF"
+                  trailColor="#FFFFFF"
                   minSpeed={10}
                   maxSpeed={25}
                   minDelay={600}
@@ -1075,8 +951,8 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                   maxStars={6}
                 />
                 <ShootingStars
-                  starColor="#00FF9E"
-                  trailColor="#00B8FF"
+                  starColor="#FFFFFF"
+                  trailColor="#FFFFFF"
                   minSpeed={20}
                   maxSpeed={40}
                   minDelay={500}
@@ -1085,31 +961,31 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                 />
               </div>
 
-              <motion.div
-                className="container mx-auto px-4 max-w-4xl w-full relative z-10 flex items-center justify-center"
+              <div
+                ref={(el) => { sectionScrollRefs.current.set(3, el) }}
+                onScroll={handleSectionScroll}
+                className="relative z-10 w-full h-full overflow-y-auto"
               >
-                {isMobile ? (
-                  <MobileContact onCopyDiscord={handleCopyDiscord} discordCopied={discordCopied} />
-                ) : (
-                  <ContactSection onCopyDiscord={handleCopyDiscord} discordCopied={discordCopied} />
-                )}
-              </motion.div>
-
-              {/* フッター（Contactセクションのみ） */}
-              {currentPage === 3 && (
-                <motion.footer
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.3 }}
-                  className="absolute bottom-20 left-0 right-0 py-6 text-center z-20"
-                >
-                  <div className="container mx-auto px-4">
+                <div className="min-h-full w-full flex flex-col">
+                  <div className="flex-1 flex items-center justify-center px-4 py-16 lg:py-20">
+                    {isMobile ? (
+                      <MobileContact onCopyDiscord={handleCopyDiscord} discordCopied={discordCopied} />
+                    ) : (
+                      <ContactSection onCopyDiscord={handleCopyDiscord} discordCopied={discordCopied} />
+                    )}
+                  </div>
+                  <motion.footer
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.3 }}
+                    className="py-6 text-center"
+                  >
                     <p className="text-gray-400 text-sm">
                       © {new Date().getFullYear()} T4ko0522. All rights reserved.
                     </p>
-                  </div>
-                </motion.footer>
-              )}
+                  </motion.footer>
+                </div>
+              </div>
             </motion.section>
           )}
         </AnimatePresence>
@@ -1154,37 +1030,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
             </motion.div>
           )}
           <div className="flex flex-row flex-nowrap items-center gap-3 bg-black/30 backdrop-blur-sm px-4 py-2 rounded-full">
-            {currentPage === 2 ? (
-              <>
-                <span className="text-sm font-medium text-white">Works</span>
-                <div className="flex gap-1.5">
-                  {[0, 1, 2, 3, 4].map((i) => (
-                    <motion.div
-                      key={i}
-                      className={cn(
-                        "w-2 h-2 rounded-full transition-all",
-                        currentProjectIndex === i ? "bg-white" : "bg-white/30"
-                      )}
-                      animate={{
-                        scale: currentProjectIndex === i ? 1.2 : 1,
-                        opacity: currentProjectIndex === i ? 1 : 0.3
-                      }}
-                      transition={{ duration: 0.2 }}
-                    />
-                  ))}
-                </div>
-                <div className="w-24 h-1.5 bg-white/20 rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full bg-white rounded-full"
-                    style={{
-                      width: `${worksProjectProgress * 100}%`,
-                    }}
-                    transition={{ duration: 0.1 }}
-                  />
-                </div>
-                <span className="text-white/60 text-sm">{currentProjectIndex + 1} / 5</span>
-              </>
-            ) : currentPage === 3 ? (
+            {currentPage === 3 ? (
               <>
                 <span className="text-sm font-medium text-white/60">Works</span>
                 <div className="w-32 h-1.5 bg-white/20 rounded-full overflow-hidden">
@@ -1203,6 +1049,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                 <span className="text-white text-sm font-medium">
                   {currentPage === 0 && "Home"}
                   {currentPage === 1 && "About"}
+                  {currentPage === 2 && "Works"}
                 </span>
                 <div className="w-32 h-1.5 bg-white/20 rounded-full overflow-hidden">
                   <motion.div
@@ -1216,6 +1063,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                 <span className="text-white/60 text-sm">
                   {currentPage === 0 && "About"}
                   {currentPage === 1 && "Works"}
+                  {currentPage === 2 && "Contact"}
                 </span>
               </>
             )}
@@ -1227,12 +1075,6 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
       <StaggeredCurtainReveal isVisible={isLoading}>
         <LoadingScreen key="loading" onLoadingComplete={handleLoadingComplete} />
       </StaggeredCurtainReveal>
-      {/* プロジェクト詳細モーダル */}
-      <ProjectDetailModal
-        project={selectedProject}
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-      />
     </>
   )
 }
