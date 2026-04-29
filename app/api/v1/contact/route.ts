@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Resend } from 'resend'
 import { z } from 'zod'
 
 export const runtime = 'nodejs'
@@ -26,6 +25,8 @@ const ContactSchema = z.object({
 const RATE_LIMIT_WINDOW_MS = 60_000
 const RATE_LIMIT_MAX_ENTRIES = 1000
 const rateLimitStore = new Map<string, number>()
+
+const DISCORD_EMBED_COLOR = 0x5865f2
 
 function getClientIp(req: NextRequest): string {
   const forwarded = req.headers.get('x-forwarded-for')
@@ -66,6 +67,33 @@ async function verifyTurnstile(token: string, ip: string): Promise<boolean> {
     return data.success === true
   } catch {
     return false
+  }
+}
+
+interface ContactPayload {
+  name: string
+  email: string
+  subject: string
+  message: string
+  ip: string
+}
+
+function buildDiscordPayload({ name, email, subject, message, ip }: ContactPayload) {
+  return {
+    username: 'Portfolio Contact',
+    embeds: [
+      {
+        title: `[Portfolio] ${subject}`.slice(0, 256),
+        color: DISCORD_EMBED_COLOR,
+        timestamp: new Date().toISOString(),
+        fields: [
+          { name: 'Name', value: name.slice(0, 1024), inline: true },
+          { name: 'Email', value: email.slice(0, 1024), inline: true },
+          { name: 'IP', value: ip.slice(0, 1024), inline: true },
+          { name: 'Message', value: message.slice(0, 1024) },
+        ],
+      },
+    ],
   }
 }
 
@@ -114,39 +142,34 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const apiKey = process.env.RESEND_API_KEY
-  if (!apiKey) {
-    console.error('RESEND_API_KEY is not configured')
+  const webhookUrl = process.env.CONTACT_DISCORD_WEBHOOK_URL
+  if (!webhookUrl) {
+    console.error('CONTACT_DISCORD_WEBHOOK_URL is not configured')
     return NextResponse.json(
-      { error: 'メール送信機能が設定されていません。' },
+      { error: 'お問い合わせ送信機能が設定されていません。' },
       { status: 503 },
     )
   }
 
-  const toEmail = process.env.CONTACT_TO_EMAIL ?? 'tako.work.contact@gmail.com'
-  const fromEmail = process.env.CONTACT_FROM_EMAIL ?? 'Portfolio Contact <onboarding@resend.dev>'
+  try {
+    const res = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(buildDiscordPayload({ name, email, subject, message, ip })),
+    })
 
-  const resend = new Resend(apiKey)
-  const { error } = await resend.emails.send({
-    from: fromEmail,
-    to: toEmail,
-    replyTo: email,
-    subject: `[Portfolio] ${subject}`,
-    text: [
-      `Name:    ${name}`,
-      `Email:   ${email}`,
-      `Subject: ${subject}`,
-      `IP:      ${ip}`,
-      '',
-      '--- Message ---',
-      message,
-    ].join('\n'),
-  })
-
-  if (error) {
-    console.error('Resend send error:', error)
+    if (!res.ok) {
+      const detail = await res.text().catch(() => '')
+      console.error('Discord webhook error:', res.status, detail)
+      return NextResponse.json(
+        { error: '送信に失敗しました。時間をおいて再度お試しください。' },
+        { status: 502 },
+      )
+    }
+  } catch (err) {
+    console.error('Discord webhook request failed:', err)
     return NextResponse.json(
-      { error: 'メール送信に失敗しました。時間をおいて再度お試しください。' },
+      { error: '送信に失敗しました。時間をおいて再度お試しください。' },
       { status: 502 },
     )
   }
