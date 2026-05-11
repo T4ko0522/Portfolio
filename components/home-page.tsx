@@ -481,7 +481,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
       {/* 優先読み込み用の非表示画像 */}
       <div className="hidden">
         <Image
-          src="https://avatars.githubusercontent.com/u/108514947?v="
+          src="/icon.png"
           alt=""
           width={128}
           height={128}
@@ -735,7 +735,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                         >
                           <div className="relative w-full h-full rounded-full overflow-hidden">
                             <Image
-                              src="https://avatars.githubusercontent.com/u/108514947?v="
+                              src="/icon.png"
                               alt="Tako"
                               fill
                               sizes="(max-width: 1024px) 208px, 256px"

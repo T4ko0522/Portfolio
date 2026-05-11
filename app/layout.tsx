@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     siteName: "T4ko0522",
     images: [
       {
-        url: "https://avatars.githubusercontent.com/u/108514947?v=",
+        url: "/icon.png",
         width: 512,
         height: 512,
         alt: "T4ko0522 Profile Picture",
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     title: "T4ko0522",
     description:
       "About T4ko0522",
-    images: ["https://avatars.githubusercontent.com/u/108514947?v="],
+    images: ["/icon.png"],
     creator: "@T4ko0522",
   },
   robots: {
@@ -60,7 +60,6 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-  icons: "/favicon.ico",
   manifest: "/site.webmanifest",
 }
 

@@ -67,7 +67,7 @@ export default function MobileAbout({ daysUntilBirthday, discordStatus }: Mobile
           >
             <div className="relative w-full h-full rounded-full overflow-hidden">
               <Image
-                src="https://avatars.githubusercontent.com/u/108514947?v="
+                src="/icon.png"
                 alt="Tako"
                 fill
                 sizes="(max-width: 640px) 160px, 192px"

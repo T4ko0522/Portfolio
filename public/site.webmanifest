@@ -5,12 +5,12 @@
   "display": "standalone",
   "icons": [
     {
-      "src": "https://avatars.githubusercontent.com/u/108514947?v=",
+      "src": "/icon.png",
       "sizes": "512x512",
       "type": "image/png"
     },
     {
-      "src": "https://avatars.githubusercontent.com/u/108514947?v=",
+      "src": "/icon.png",
       "sizes": "512x512",
       "type": "image/png"
     }
