@@ -23,7 +23,7 @@ export default function MobileAbout({ daysUntilBirthday, discordStatus }: Mobile
         <div className="relative w-[200px] h-[160px] sm:w-[250px] sm:h-[200px] flex items-center justify-center">
           {/* 装飾画像（Discordデコレーション） */}
           <Image
-            src="https://cdn.discordapp.com/avatar-decoration-presets/a_48b8411feb1e80a69048fc65b3275b75.png?size=256&passthrough=true"
+            src="https://cdn.discordapp.com/media/v1/collectibles-shop/1232071712695386162/animated"
             alt="Decoration"
             width={256}
             height={256}
@@ -87,7 +87,7 @@ export default function MobileAbout({ daysUntilBirthday, discordStatus }: Mobile
             <h2 className="text-2xl sm:text-3xl font-bold text-white" style={{ fontFamily: 'Discord, sans-serif' }}>T4ko</h2>
             <div className="flex items-center gap-1.5 border border-white/30 rounded px-2 py-0.5">
               <Image
-                src="https://cdn.discordapp.com/clan-badges/1399359679473254492/df39482e5db7ebbeff7f6d9a832a6144.png?size=16"
+                src="https://cdn.discordapp.com/media/v1/collectibles-shop/1232071712695386162/animated"
                 alt="Clan Badge"
                 width={16}
                 height={16}

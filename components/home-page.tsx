@@ -495,7 +495,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
           priority
         />
         <Image
-          src="https://cdn.discordapp.com/avatar-decoration-presets/a_8552f9857793aed0cf816f370e2df3be.png?size=96&passthrough=true"
+          src="https://cdn.discordapp.com/media/v1/collectibles-shop/1232071712695386162/animated"
           alt=""
           width={128}
           height={128}
@@ -693,7 +693,8 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                     >
                       <div className="relative w-[300px] h-[240px] lg:w-[400px] lg:h-[320px] flex items-center justify-center">
                         <Image
-                          src="https://cdn.discordapp.com/avatar-decoration-presets/a_48b8411feb1e80a69048fc65b3275b75.png?size=256&passthrough=true"
+                          // src="https://cdn.discordapp.com/avatar-decoration-presets/a_48b8411feb1e80a69048fc65b3275b75.png?size=256&passthrough=true"
+                          src="https://cdn.discordapp.com/media/v1/collectibles-shop/1232071712695386162/animated"
                           alt="Decoration"
                           width={256}
                           height={256}
@@ -754,7 +755,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                           <h2 className="text-4xl lg:text-5xl font-bold text-white" style={{ fontFamily: 'Discord, sans-serif' }}>T4ko</h2>
                           <div className="flex items-center gap-1.5 border border-white/30 rounded px-2 py-0.5">
                             <Image
-                              src="https://cdn.discordapp.com/clan-badges/1399359679473254492/df39482e5db7ebbeff7f6d9a832a6144.png?size=16"
+                              src="https://cdn.discordapp.com/media/v1/collectibles-shop/1232071712695386162/animated"
                               alt="Clan Badge"
                               width={16}
                               height={16}
