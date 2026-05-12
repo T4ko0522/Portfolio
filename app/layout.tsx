@@ -61,6 +61,9 @@ export const metadata: Metadata = {
     },
   },
   manifest: "/site.webmanifest",
+  icons: {
+    icon: "/icon.png",
+  },
 }
 
 export const viewport: Viewport = {
