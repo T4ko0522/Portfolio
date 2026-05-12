@@ -30,7 +30,7 @@ export const pageVariants = {
     x: 0,
   },
   exit: (direction: 1 | -1) => ({
-    opacity: 0.3,
+    opacity: 0,
     x: direction === 1 ? "-100%" : "100%",
   }),
 }
