@@ -92,11 +92,14 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
   const CONTACT_WHEEL_THRESHOLD_UP = 250 // contact → works（戻る方向の猶予を多めに）
   const CONTACT_WHEEL_RESET_MS = 220
 
-  // セクション内スクロールのプログレス更新
-  const handleSectionScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const el = e.currentTarget
+  // セクション内スクロールのプログレス更新（スクロール位置に比例）
+  const computeScrollProgress = (el: HTMLElement) => {
     const max = el.scrollHeight - el.clientHeight
-    setScrollProgress(max > 0 ? Math.max(0, Math.min(1, el.scrollTop / max)) : 0)
+    return max > 0 ? Math.max(0, Math.min(1, el.scrollTop / max)) : 0
+  }
+
+  const handleSectionScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    setScrollProgress(computeScrollProgress(e.currentTarget))
   }
 
   // ページ間移動
@@ -236,7 +239,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
       const max = sec.scrollHeight - sec.clientHeight
       // 戻り方向で進入した場合は末尾（その方向の継続感）、進み方向は先頭から
       sec.scrollTop = scrollDirection === -1 && max > 0 ? max : 0
-      setScrollProgress(max > 0 ? Math.max(0, Math.min(1, sec.scrollTop / max)) : 0)
+      setScrollProgress(computeScrollProgress(sec))
     }
     rafId = requestAnimationFrame(sync)
     return () => cancelAnimationFrame(rafId)
@@ -527,7 +530,6 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                   spotifyTrack={spotifyTrack}
                   isSpotifyLoading={isSpotifyLoading}
                 />
-                <div aria-hidden="true" className="w-full h-[80vh] pointer-events-none" />
               </div>
             </motion.section>
           )}
@@ -560,8 +562,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                 ref={(el) => { sectionScrollRefs.current.set(2, el) }}
                 onScroll={(e) => {
                   const el = e.currentTarget
-                  const max = el.scrollHeight - el.clientHeight
-                  setScrollProgress(max > 0 ? Math.max(0, Math.min(1, el.scrollTop / max)) : 0)
+                  setScrollProgress(computeScrollProgress(el))
                   if (!isMobile && el.clientHeight > 0) {
                     const padPx = WORKS_PADDING * el.clientHeight
                     const effective = el.scrollTop - padPx
@@ -723,9 +724,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                 <div className="w-32 h-1.5 bg-white/20 rounded-full overflow-hidden">
                   <motion.div
                     className="h-full bg-white rounded-full"
-                    style={{
-                      width: `${scrollProgress * 100}%`,
-                    }}
+                    style={{ width: `${scrollProgress * 100}%` }}
                     transition={{ duration: 0.1 }}
                   />
                 </div>
@@ -741,9 +740,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                 <div className="w-32 h-1.5 bg-white/20 rounded-full overflow-hidden">
                   <motion.div
                     className="h-full bg-white rounded-full"
-                    style={{
-                      width: `${scrollProgress * 100}%`,
-                    }}
+                    style={{ width: `${scrollProgress * 100}%` }}
                     transition={{ duration: 0.1 }}
                   />
                 </div>

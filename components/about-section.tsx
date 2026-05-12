@@ -31,14 +31,14 @@ export default function AboutSection({
 }: AboutSectionProps) {
   if (isMobile) {
     return (
-      <div className="sticky top-0 h-screen container mx-auto px-4 max-w-6xl flex items-center justify-center py-16">
+      <div className="min-h-screen container mx-auto px-4 max-w-6xl flex items-center justify-center py-16">
         <MobileAbout daysUntilBirthday={daysUntilBirthday} discordStatus={discordStatus} />
       </div>
     )
   }
 
   return (
-    <div className="sticky top-0 h-screen container mx-auto px-4 max-w-6xl flex items-center justify-center py-16">
+    <div className="min-h-screen container mx-auto px-4 max-w-6xl flex items-center justify-center py-16">
       <div className="flex flex-row items-center gap-8 lg:gap-12 w-full">
         {/* 左側: アイコン */}
         <motion.div
