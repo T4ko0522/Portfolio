@@ -3,13 +3,13 @@
 import { useEffect, useState, useRef } from "react"
 import { motion, AnimatePresence, useMotionValue } from "framer-motion"
 import {
-  Calendar,
   Gift,
   Code,
 } from "lucide-react"
 import { Card, CardContent } from "@/card"
 import { cn } from "../lib/utils"
 import { getDaysUntilBirthday } from "../lib/utils"
+import { BirthdayCountdown, BirthdayCelebration } from "./birthday-countdown"
 import {
   introTexts,
   sectionBackgrounds,
@@ -840,42 +840,11 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
 
                           {/* 誕生日カウントダウン */}
                           {daysUntilBirthday <= 30 && daysUntilBirthday > 0 && (
-                            <motion.div
-                              initial={{ opacity: 0, y: 20 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 p-4 rounded-lg mt-4 border border-purple-500/30"
-                            >
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center">
-                                  <Calendar className="w-5 h-5 text-purple-400 mr-2" />
-                                  <h4 className="font-medium text-purple-300">Birthday Countdown</h4>
-                                </div>
-                                <div className="text-xl font-bold text-white bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500">
-                                  {daysUntilBirthday} {daysUntilBirthday === 1 ? "day" : "days"}
-                                </div>
-                              </div>
-                              <div className="mt-2 w-full bg-gray-700 rounded-full h-2.5">
-                                <motion.div
-                                  className="bg-gradient-to-r from-purple-500 to-pink-500 h-2.5 rounded-full"
-                                  initial={{ width: "0%" }}
-                                  animate={{ width: `${100 - (daysUntilBirthday / 30) * 100}%` }}
-                                  transition={{ duration: 1, delay: 0.5 }}
-                                />
-                              </div>
-                            </motion.div>
+                            <BirthdayCountdown daysUntilBirthday={daysUntilBirthday} />
                           )}
 
                           {/* 誕生日アニメーション */}
-                          {daysUntilBirthday === 0 && (
-                            <motion.div
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              className="relative bg-gradient-to-r from-purple-600/30 to-pink-600/30 p-6 rounded-lg mt-4 border border-pink-500/50 overflow-hidden"
-                            >
-                              <h4 className="text-xl font-bold text-center mb-2 text-white">🎉 Happy Birthday! 🎂</h4>
-                              <p className="text-center text-gray-300 mb-4">May all your wishes come true!</p>
-                            </motion.div>
-                          )}
+                          {daysUntilBirthday === 0 && <BirthdayCelebration />}
                         </CardContent>
                       </Card>
                     </motion.div>
