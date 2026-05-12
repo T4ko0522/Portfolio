@@ -42,7 +42,7 @@ export default function WorksSection({
 }: WorksSectionProps) {
   if (isMobile) {
     return (
-      <div className="min-h-full w-full flex items-center justify-center py-16">
+      <div className="w-full px-4 py-16">
         <MobileWorks projects={projects} />
       </div>
     )
