@@ -2,36 +2,27 @@
 
 import { useEffect, useState, useRef } from "react"
 import { motion, AnimatePresence, useMotionValue } from "framer-motion"
-import {
-  Gift,
-  Code,
-} from "lucide-react"
-import { Card, CardContent } from "@/card"
 import { cn } from "../lib/utils"
 import { getDaysUntilBirthday } from "../lib/utils"
-import { BirthdayCountdown, BirthdayCelebration } from "./birthday-countdown"
 import {
-  introTexts,
   sectionBackgrounds,
   projectDetails,
   pageVariants,
   pageTransition,
-  containerVariants,
-  itemVariants,
   BIRTH_MONTH,
   BIRTH_DAY,
   TOTAL_PAGES,
 } from "../lib/constants"
 import type { SpotifyTrack, SpotifyApiResponse } from "../types/spotify"
 import LoadingScreen from "./loading-screen"
-import TypingAnimation from "./typing-animation"
 import { useIsMobile } from "../hooks/use-mobile"
 import Image from "next/image"
-import type { ProjectDetail } from "../types/project"
 import StaggeredCurtainReveal from "./staggered-curtain-reveal"
 import Header from "./header"
-import SpotifyNowPlaying from "./spotify-now-playing"
 import ContactSection from "./contact-section"
+import MainSection from "./main-section"
+import AboutSection from "./about-section"
+import WorksSection from "./works-section"
 import dynamic from "next/dynamic"
 
 const BgShader = dynamic(
@@ -48,41 +39,6 @@ const ShootingStars = dynamic(
   () => import("./shooting-stars").then((m) => ({ default: m.ShootingStars })),
   { ssr: false }
 )
-
-const MobileTypingAnimation = dynamic<{
-  texts: string[]
-  className?: string
-}>(() => import("./mobile-typing-animation"), {
-  ssr: false,
-})
-
-const MobileTitle = dynamic(() => import("./mobile-title"), {
-  ssr: false,
-})
-
-const MobileAbout = dynamic<{
-  daysUntilBirthday: number
-  discordStatus?: string | null
-}>(() => import("./mobile-about"), {
-  ssr: false,
-})
-
-const MobileWorks = dynamic<{
-  projects: ProjectDetail[]
-}>(() => import("./mobile-works"), {
-  ssr: false,
-})
-
-const WorksCarousel = dynamic<{
-  projects: ProjectDetail[]
-  position: ReturnType<typeof useMotionValue<number>>
-  activeIndex: number
-  onActiveIndexChange: (index: number) => void
-  minIndex: number
-  maxIndex: number
-}>(() => import("./works-carousel"), {
-  ssr: false,
-})
 
 const MobileContact = dynamic<{
   onCopyDiscord: () => void
@@ -480,20 +436,8 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
     <>
       {/* 優先読み込み用の非表示画像 */}
       <div className="hidden">
-        <Image
-          src="/icon.png"
-          alt=""
-          width={128}
-          height={128}
-          priority
-        />
-        <Image
-          src="/images/Background1.png"
-          alt=""
-          width={1920}
-          height={1080}
-          priority
-        />
+        <Image src="/icon.png" alt="" width={128} height={128} priority />
+        <Image src="/images/Background1.png" alt="" width={1920} height={1080} priority />
         <Image
           src="https://cdn.discordapp.com/media/v1/collectibles-shop/1232071712695386162/animated"
           alt=""
@@ -543,110 +487,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                 onScroll={handleSectionScroll}
                 className="relative z-10 w-full h-full overflow-y-auto"
               >
-                <div className="sticky top-0 h-screen w-full flex flex-col items-center justify-center pt-32 pb-16">
-                {/* タイトル */}
-              <div className="w-full text-center mb-20 px-4">
-                <motion.div
-                  initial={{ opacity: 0, y: -50 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, type: "spring", bounce: 0.4, delay: 0.15 }}
-                  className={`${pacificoClassName} ${isMobile ? "text-4xl" : "text-6xl md:text-7xl lg:text-8xl"} font-bold mb-10 flex items-center justify-center gap-4`}
-                >
-                  <Image
-                    src="https://raw.githubusercontent.com/ABSphreak/ABSphreak/master/gifs/Hi.gif"
-                    alt="Hi"
-                    width={80}
-                    height={80}
-                    className={isMobile ? "w-12 h-12" : "w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 inline-block"}
-                    unoptimized
-                  />
-                  <span className="text-white">Hi there!</span>
-                </motion.div>
-                <MobileTitle />
-              </div>
-
-              <div className="container mx-auto px-4 max-w-4xl text-center">
-              </div>
-
-              {/* タイピングアニメーション（introText） */}
-              <motion.div
-                initial={{ opacity: 0, y: -50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, type: "spring", bounce: 0.4, delay: 0.3 }}
-                className="w-full mt-25 flex justify-center items-center px-4"
-              >
-                {isMobile ? (
-                  <MobileTypingAnimation
-                    texts={introTexts}
-                    className={`${pacificoClassName} text-xl sm:text-4xl md:text-5xl lg:text-6xl`}
-                  />
-                ) : (
-                  <TypingAnimation
-                    texts={introTexts}
-                    className={`${pacificoClassName} text-4xl md:text-5xl lg:text-6xl`}
-                  />
-                )}
-              </motion.div>
-
-              {/* SNSリンク */}
-              <motion.div
-                initial={{ opacity: 0, y: -50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, type: "spring", bounce: 0.4, delay: 0.5 }}
-                className="flex justify-center space-x-6 mb-16 pointer-events-auto"
-              >
-                <motion.a
-                  href="https://github.com/T4ko0522"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="relative p-4 rounded-full bg-transparent"
-                  aria-label="GitHub"
-                  whileHover={{ scale: 1.3, rotate: 7 }}
-                >
-                  <svg
-                    className="w-10 h-10 text-white relative z-10"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                  </svg>
-                </motion.a>
-
-                <motion.a
-                  href="https://www.youtube.com/@%E3%82%BF%E3%82%B3%E3%81%95%E3%82%93%E3%81%A7%E3%81%99"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="relative p-4 rounded-full bg-transparent"
-                  aria-label="YouTube"
-                  whileHover={{ scale: 1.3, rotate: 7 }}
-                >
-                  <svg
-                    className="w-10 h-10 text-white relative z-10"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                  </svg>
-                </motion.a>
-
-                <motion.a
-                  href="https://x.com/_A1m3r"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="relative p-4 rounded-full bg-transparent"
-                  aria-label="Twitter"
-                  whileHover={{ scale: 1.3, rotate: 7 }}
-                >
-                  <svg
-                    className="w-10 h-10 text-white relative z-10"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                  </svg>
-                  </motion.a>
-                </motion.div>
-                </div>
+                <MainSection pacificoClassName={pacificoClassName} isMobile={isMobile} />
                 <div aria-hidden="true" className="w-full h-[80vh] pointer-events-none" />
               </div>
             </motion.section>
@@ -679,178 +520,13 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                 onScroll={handleSectionScroll}
                 className="relative z-10 w-full h-full overflow-y-auto"
               >
-                <div className="sticky top-0 h-screen container mx-auto px-4 max-w-6xl flex items-center justify-center py-16">
-                {isMobile ? (
-                  <MobileAbout daysUntilBirthday={daysUntilBirthday} discordStatus={discordStatus} />
-                ) : (
-                  <div className="flex flex-row items-center gap-8 lg:gap-12 w-full">
-                    {/* 左側: アイコン */}
-                    <motion.div
-                      initial={{ opacity: 0, x: -50 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.8, type: "spring", bounce: 0.4, delay: 0.1 }}
-                      className="flex-shrink-0 flex flex-col items-center"
-                    >
-                      <div className="relative w-[300px] h-[240px] lg:w-[400px] lg:h-[320px] flex items-center justify-center">
-                        <Image
-                          // src="https://cdn.discordapp.com/avatar-decoration-presets/a_48b8411feb1e80a69048fc65b3275b75.png?size=256&passthrough=true"
-                          src="https://cdn.discordapp.com/media/v1/collectibles-shop/1232071712695386162/animated"
-                          alt="Decoration"
-                          width={256}
-                          height={256}
-                          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50"
-                          style={{ width: '248px', height: '248px' }}
-                          draggable="false"
-                          unoptimized
-                        />
-                        {discordStatus && (
-                          <div
-                            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-52 h-52 lg:w-64 lg:h-64 pointer-events-none z-[60]"
-                            aria-hidden
-                          >
-                            <div className="absolute bottom-0 right-2" style={{ width: '28px', height: '28px', filter: 'drop-shadow(0 0 0 3px #1a1a1a)' }}>
-                              {discordStatus === 'online' ? (
-                                <svg width="28" height="28" viewBox="0 0 12 12" className="w-full h-full">
-                                  <circle cx="6" cy="6" r="6" fill="rgb(69, 163, 102)" />
-                                </svg>
-                              ) : discordStatus === 'idle' ? (
-                                <svg width="28" height="28" viewBox="2 2 20 20" className="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <path d="M3 17C10.952 18.6176 16.6829 8.75775 11 3C16.0007 3.13144 20 7.11149 20 12C20 16.9715 16.1188 21 11 21C7.77111 21 4.65938 19.4319 3 17Z" fill="#ffc04e" stroke="#ffc04e" strokeWidth="1.5" strokeLinejoin="round" />
-                                </svg>
-                              ) : discordStatus === 'dnd' ? (
-                                <svg width="28" height="28" viewBox="0 0 12 12" className="w-full h-full">
-                                  <circle cx="6" cy="6" r="6" fill="rgb(237, 66, 69)" />
-                                  <rect x="2" y="5" width="8" height="2" fill="black" rx="1" />
-                                </svg>
-                              ) : (
-                                <svg width="28" height="28" viewBox="0 0 12 12" className="w-full h-full">
-                                  <circle cx="6" cy="6" r="6" fill="rgb(116, 127, 141)" />
-                                  <circle cx="6" cy="6" r="4" fill="rgb(79, 84, 92)" />
-                                </svg>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                        <motion.div
-                          className="w-52 h-52 lg:w-64 lg:h-64 rounded-full overflow-visible relative z-40"
-                        >
-                          <div className="relative w-full h-full rounded-full overflow-hidden">
-                            <Image
-                              src="/icon.png"
-                              alt="Tako"
-                              fill
-                              sizes="(max-width: 1024px) 208px, 256px"
-                              className="object-cover"
-                            />
-                          </div>
-                        </motion.div>
-                      </div>
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.4 }}
-                        className="mt-6 text-center"
-                      >
-                        <div className="flex items-center justify-center gap-2 mb-2">
-                          <h2 className="text-4xl lg:text-5xl font-bold text-white" style={{ fontFamily: 'Discord, sans-serif' }}>T4ko</h2>
-                          <div className="flex items-center gap-1.5 border border-white/30 rounded px-2 py-0.5">
-                            <Image
-                              src="https://cdn.discordapp.com/clan-badges/1399359679473254492/df39482e5db7ebbeff7f6d9a832a6144.png?size=16"
-                              alt="Clan Badge"
-                              width={16}
-                              height={16}
-                              className="w-4 h-4"
-                            />
-                            <span className="text-xs lg:text-sm font-bold text-white">OP81</span>
-                          </div>
-                        </div>
-                        <p className="text-base lg:text-lg text-gray-300 mb-1">tako._.v<span className="font-bold">・</span>17yo He/Him</p>
-                      </motion.div>
-                      <SpotifyNowPlaying track={spotifyTrack || undefined} isLoading={isSpotifyLoading} />
-                    </motion.div>
-
-                    {/* 右側: About Me */}
-                    <motion.div
-                      initial={{ opacity: 0, x: 50 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.8, type: "spring", bounce: 0.4, delay: 0.2 }}
-                      className="flex-1"
-                    >
-                      <Card className="bg-transparent border-transparent">
-                        <CardContent className="p-6">
-                          <h3 className="text-2xl lg:text-3xl font-bold mb-6 text-cyan-300">💻 About Me</h3>
-                          <p className="mb-4 text-white text-lg">
-                            <span className="font-bold">Full-Stack Engineer | Software Developer</span>
-                          </p>
-                          <p className="mb-6 text-white">
-                            2008年大阪生まれ。現在はWeb開発を中心に学習しており、バックエンドとフロントエンドの両方を扱えるフルスタックエンジニアです！2025年10月からmuclaseという会社でエンジニアとしてインターンで働いております！
-                            <br />
-                            <span className="block text-sm italic text-gray-200 mt-2">
-                              Born in Osaka in 2008. Currently studying web development and is a full-stack engineer capable of both back-end and front-end development. Starting in October 2025, I have been working as an intern at a company called muclase!
-                            </span>
-                          </p>
-                          <div className="grid grid-cols-1 gap-4">
-                            {/* 誕生日 */}
-                            <motion.div
-                              whileHover={{ scale: 1.05 }}
-                              className="bg-transparent backdrop-blur-sm border border-white/10 transition-all duration-300 rounded-2xl p-5 shadow-lg text-white"
-                            >
-                              <div className="flex items-center mb-2">
-                                <Gift className="w-5 h-5 text-white mr-2" />
-                                <h4 className="text-lg font-medium text-white">Birthday</h4>
-                              </div>
-                              <div className="flex items-baseline">
-                                <span className="text-xl font-bold text-gray-200">May 22nd</span>
-                                {daysUntilBirthday > 0 && (
-                                  <span className="ml-2 text-sm text-gray-200">({daysUntilBirthday} days left)</span>
-                                )}
-                                {daysUntilBirthday === 0 && (
-                                  <span className="ml-2 text-sm text-green-400 font-bold animate-pulse">Today! 🎉</span>
-                                )}
-                              </div>
-                            </motion.div>
-                            {/* Skills */}
-                            <motion.div
-                              whileHover={{ scale: 1.05 }}
-                              className="bg-transparent backdrop-blur-sm border border-white/10 transition-all duration-300 rounded-2xl p-5 shadow-lg text-white"
-                            >
-                              <div className="flex items-center mb-4">
-                                <Code className="w-5 h-5 text-white mr-2" />
-                                <h4 className="text-lg font-medium text-white">Skills</h4>
-                              </div>
-                              <div className="flex flex-col items-center gap-2">
-                                <img
-                                  src="https://skillicons.dev/icons?i=js,ts,go,python,lua,bash,powershell"
-                                  alt="Languages"
-                                  className="h-auto"
-                                />
-                                <img
-                                  src="https://skillicons.dev/icons?i=react,vue,astro,next,nuxt,remix,tailwind,materialui,express,nest,vite,vitest,nodejs,deno,electron"
-                                  alt="Frameworks"
-                                  className="h-auto"
-                                />
-                                <img
-                                  src="https://skillicons.dev/icons?i=linux,gcp,vercel,docker,kubernetes,postgres,mysql"
-                                  alt="Infrastructure"
-                                  className="h-auto"
-                                />
-                              </div>
-                            </motion.div>
-                          </div>
-
-                          {/* 誕生日カウントダウン */}
-                          {daysUntilBirthday <= 30 && daysUntilBirthday > 0 && (
-                            <BirthdayCountdown daysUntilBirthday={daysUntilBirthday} />
-                          )}
-
-                          {/* 誕生日アニメーション */}
-                          {daysUntilBirthday === 0 && <BirthdayCelebration />}
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  </div>
-                )}
-                </div>
+                <AboutSection
+                  isMobile={isMobile}
+                  daysUntilBirthday={daysUntilBirthday}
+                  discordStatus={discordStatus}
+                  spotifyTrack={spotifyTrack}
+                  isSpotifyLoading={isSpotifyLoading}
+                />
                 <div aria-hidden="true" className="w-full h-[80vh] pointer-events-none" />
               </div>
             </motion.section>
@@ -870,7 +546,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
               exit="exit"
               transition={skipTransitionRef.current ? { duration: 0 } : pageTransition}
             >
-              <DottedSurface className="absolute inset-0" speed={0.02} >
+              <DottedSurface className="absolute inset-0" speed={0.02}>
                 <div
                   aria-hidden="true"
                   className={cn(
@@ -898,37 +574,27 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                 }}
                 className="relative z-10 w-full h-full overflow-y-auto"
               >
-                {isMobile ? (
-                  <div className="min-h-full w-full flex items-center justify-center py-16">
-                    <MobileWorks projects={projectDetails} />
-                  </div>
-                ) : (
-                  <div
-                    className="relative w-full"
-                    style={{ height: `${(worksSteps + 1 + 2 * WORKS_PADDING) * 100}vh` }}
-                  >
-                    <div className="sticky top-0 h-screen w-full flex items-center justify-center">
-                      <WorksCarousel
-                        projects={projectDetails}
-                        position={worksPosition}
-                        activeIndex={worksActiveIndex}
-                        onActiveIndexChange={(idx) => {
-                          setWorksActiveIndex(idx)
-                          const sec = sectionScrollRefs.current.get(2)
-                          if (sec && sec.clientHeight > 0) {
-                            const padPx = WORKS_PADDING * sec.clientHeight
-                            sec.scrollTo({
-                              top: padPx + (idx - worksMinIndex) * sec.clientHeight,
-                              behavior: "smooth",
-                            })
-                          }
-                        }}
-                        minIndex={worksMinIndex}
-                        maxIndex={worksMaxIndex}
-                      />
-                    </div>
-                  </div>
-                )}
+                <WorksSection
+                  isMobile={isMobile}
+                  projects={projectDetails}
+                  position={worksPosition}
+                  activeIndex={worksActiveIndex}
+                  onActiveIndexChange={(idx) => {
+                    setWorksActiveIndex(idx)
+                    const sec = sectionScrollRefs.current.get(2)
+                    if (sec && sec.clientHeight > 0) {
+                      const padPx = WORKS_PADDING * sec.clientHeight
+                      sec.scrollTo({
+                        top: padPx + (idx - worksMinIndex) * sec.clientHeight,
+                        behavior: "smooth",
+                      })
+                    }
+                  }}
+                  minIndex={worksMinIndex}
+                  maxIndex={worksMaxIndex}
+                  worksSteps={worksSteps}
+                  worksPadding={WORKS_PADDING}
+                />
               </div>
             </motion.section>
           )}
