@@ -6,7 +6,7 @@ import dynamic from "next/dynamic"
 import TypingAnimation from "./typing-animation"
 import { introTexts } from "../lib/constants"
 
-const MobileTitle = dynamic(() => import("./mobile-title"), { ssr: false })
+const OutlineTitle = dynamic(() => import("./outline-title"), { ssr: false })
 
 const MobileTypingAnimation = dynamic<{
   texts: string[]
@@ -39,7 +39,7 @@ export default function MainSection({ pacificoClassName, isMobile }: MainSection
           />
           <span className="text-white">Hi there!</span>
         </motion.div>
-        <MobileTitle />
+        <OutlineTitle />
       </div>
 
       <div className="container mx-auto px-4 max-w-4xl text-center"></div>

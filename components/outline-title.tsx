@@ -9,7 +9,7 @@ const rockSalt = Rock_Salt({
   display: "swap",
 })
 
-export default function MobileTitle() {
+export default function OutlineTitle() {
   return (
     <motion.h1
       initial={{ opacity: 0, y: -50 }}
