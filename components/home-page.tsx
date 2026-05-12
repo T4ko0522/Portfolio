@@ -43,7 +43,7 @@ const ShootingStars = dynamic(
 const MobileContact = dynamic<{
   onCopyDiscord: () => void
   discordCopied: boolean
-}>(() => import("./mobile-contact"), {
+}>(() => import("./mobile/contact"), {
   ssr: false,
 })
 

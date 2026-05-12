@@ -6,15 +6,15 @@ import { Home, User, Briefcase, Mail, Menu, X } from "lucide-react"
 import localFont from "next/font/local"
 
 const huninn = localFont({
-  src: "../public/Huninn-Regular.ttf",
+  src: "../../public/Huninn-Regular.ttf",
   display: "swap",
 })
 
-interface MobileHeaderProps {
+interface HeaderProps {
   onNavigate: (sectionId: string) => void
 }
 
-export default function MobileHeader({ onNavigate }: MobileHeaderProps) {
+export default function Header({ onNavigate }: HeaderProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   const navItems = [

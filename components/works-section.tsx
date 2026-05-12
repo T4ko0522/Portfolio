@@ -6,7 +6,7 @@ import type { ProjectDetail } from "../types/project"
 
 const MobileWorks = dynamic<{
   projects: ProjectDetail[]
-}>(() => import("./mobile-works"), { ssr: false })
+}>(() => import("./mobile/works"), { ssr: false })
 
 const WorksCarousel = dynamic<{
   projects: ProjectDetail[]

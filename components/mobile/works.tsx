@@ -4,16 +4,16 @@ import { useEffect, useRef, useState } from "react"
 import { motion, useMotionValue, animate, type PanInfo } from "framer-motion"
 import { ExternalLink } from "lucide-react"
 import Image from "next/image"
-import type { ProjectDetail } from "../types/project"
+import type { ProjectDetail } from "../../types/project"
 
-interface MobileWorksProps {
+interface WorksProps {
   projects: ProjectDetail[]
 }
 
 const SNAP_RATIO = 0.2
 const VELOCITY_THRESHOLD = 400
 
-export default function MobileWorks({ projects }: MobileWorksProps) {
+export default function Works({ projects }: WorksProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [containerWidth, setContainerWidth] = useState(0)
   const [activeIndex, setActiveIndex] = useState(0)

@@ -2,12 +2,12 @@
 
 import { useEffect, useState, useRef } from "react"
 
-interface MobileTypingAnimationProps {
+interface TypingAnimationProps {
   texts: string[]
   className?: string
 }
 
-export default function MobileTypingAnimation({ texts, className = "" }: MobileTypingAnimationProps) {
+export default function TypingAnimation({ texts, className = "" }: TypingAnimationProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isDeleting, setIsDeleting] = useState(false)
   const [width, setWidth] = useState(0)

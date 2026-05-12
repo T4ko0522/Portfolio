@@ -12,7 +12,7 @@ import type { SpotifyTrack } from "../types/spotify"
 const MobileAbout = dynamic<{
   daysUntilBirthday: number
   discordStatus?: string | null
-}>(() => import("./mobile-about"), { ssr: false })
+}>(() => import("./mobile/about"), { ssr: false })
 
 interface AboutSectionProps {
   isMobile: boolean

@@ -4,14 +4,14 @@ import { motion } from "framer-motion"
 import { Card, CardContent } from "@/card"
 import { Gift, Code } from "lucide-react"
 import Image from "next/image"
-import { BirthdayCountdown, BirthdayCelebration } from "./birthday-countdown"
+import { BirthdayCountdown, BirthdayCelebration } from "../birthday-countdown"
 
-interface MobileAboutProps {
+interface AboutProps {
   daysUntilBirthday: number
   discordStatus?: string | null
 }
 
-export default function MobileAbout({ daysUntilBirthday, discordStatus }: MobileAboutProps) {
+export default function About({ daysUntilBirthday, discordStatus }: AboutProps) {
   return (
     <div className="w-full flex flex-col items-center gap-1">
       {/* アイコンのみ（上に表示） */}

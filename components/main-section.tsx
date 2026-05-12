@@ -11,7 +11,7 @@ const OutlineTitle = dynamic(() => import("./outline-title"), { ssr: false })
 const MobileTypingAnimation = dynamic<{
   texts: string[]
   className?: string
-}>(() => import("./mobile-typing-animation"), { ssr: false })
+}>(() => import("./mobile/typing-animation"), { ssr: false })
 
 interface MainSectionProps {
   pacificoClassName: string

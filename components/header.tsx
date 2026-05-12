@@ -5,7 +5,7 @@ import { motion } from "framer-motion"
 import { Home, User, Briefcase, Mail } from "lucide-react"
 import localFont from "next/font/local"
 import { useIsMobile } from "../hooks/use-mobile"
-import MobileHeader from "./mobile-header"
+import MobileHeader from "./mobile/header"
 
 const huninn = localFont({
   src: "../public/Huninn-Regular.ttf",

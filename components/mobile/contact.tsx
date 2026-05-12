@@ -1,9 +1,9 @@
 "use client"
 
 import { motion } from "framer-motion"
-import ContactForm from "./contact-form"
+import ContactForm from "../contact-form"
 
-interface MobileContactProps {
+interface ContactProps {
   onCopyDiscord: () => void
   discordCopied: boolean
 }
@@ -21,7 +21,7 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] } },
 }
 
-export default function MobileContact({ onCopyDiscord, discordCopied }: MobileContactProps) {
+export default function Contact({ onCopyDiscord, discordCopied }: ContactProps) {
   return (
     <motion.div
       variants={containerVariants}
