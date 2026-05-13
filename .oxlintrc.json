@@ -1,0 +1,26 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
+  "plugins": ["react", "typescript", "unicorn", "jsx-a11y"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn",
+    "perf": "warn"
+  },
+  "env": {
+    "browser": true,
+    "node": true,
+    "es2024": true
+  },
+  "ignorePatterns": [
+    ".next",
+    "node_modules",
+    "out",
+    "build",
+    "public",
+    "next-env.d.ts"
+  ],
+  "rules": {
+    "no-console": "off",
+    "react/no-unescaped-entities": "off"
+  }
+}

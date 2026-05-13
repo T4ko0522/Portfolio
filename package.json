@@ -6,7 +6,11 @@
         "dev": "next dev",
         "build": "next build",
         "start": "next start",
-        "lint": "next lint"
+        "preview": "next start",
+        "lint": "next lint",
+        "format": "vp fmt",
+        "typecheck": "tsc --noEmit",
+        "check": "vp check"
     },
     "dependencies": {
         "@marsidev/react-turnstile": "^1.5.1",

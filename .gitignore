@@ -29,4 +29,12 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Vite+ / Oxlint / Oxfmt
+.oxlintcache
+.vite
+.vite-plus
+
+# mise
+.mise.local.toml
+
 .cursorrules
