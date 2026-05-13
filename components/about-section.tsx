@@ -31,7 +31,7 @@ export default function AboutSection({
 }: AboutSectionProps) {
   if (isMobile) {
     return (
-      <div className="min-h-screen container mx-auto px-4 max-w-6xl flex items-center justify-center py-16">
+      <div className="min-h-screen container mx-auto px-4 max-w-6xl flex items-start justify-center pt-20 pb-28">
         <MobileAbout daysUntilBirthday={daysUntilBirthday} discordStatus={discordStatus} />
       </div>
     )
