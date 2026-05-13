@@ -21,15 +21,14 @@ export default function About({ daysUntilBirthday, discordStatus }: AboutProps) 
         transition={{ duration: 0.8, type: "spring", bounce: 0.4, delay: 0.1 }}
         className="flex-shrink-0 flex flex-col items-center"
       >
-        <div className="relative w-[200px] h-[160px] sm:w-[250px] sm:h-[200px] flex items-center justify-center">
+        <div className="relative w-[200px] h-[200px] sm:w-[240px] sm:h-[240px] flex items-center justify-center">
           {/* 装飾画像（Discordデコレーション） */}
           <Image
             src="https://cdn.discordapp.com/media/v1/collectibles-shop/1232071712695386162/animated"
             alt="Decoration"
             width={256}
             height={256}
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50"
-            style={{ width: '180px', height: '180px' }}
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50 w-[190px] h-[190px] sm:w-[240px] sm:h-[240px]"
             draggable="false"
             unoptimized
           />
