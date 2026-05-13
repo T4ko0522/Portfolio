@@ -154,6 +154,7 @@ export default function SpotifyNowPlaying({
               <p className="text-xs text-gray-400 font-medium">Now playing</p>
             </div>
             <a
+              href={currentTrack.spotifyUrl ?? "https://open.spotify.com"}
               target="_blank"
               rel="noopener noreferrer"
               className="block group"
