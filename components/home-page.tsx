@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState, useRef } from "react"
-import { motion, AnimatePresence, useMotionValue } from "framer-motion"
+import { motion, AnimatePresence, useMotionValue, type AnimationDefinition } from "framer-motion"
 import { cn } from "../lib/utils"
 import { getDaysUntilBirthday } from "../lib/utils"
 import {
@@ -83,7 +83,13 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
   const skipTransitionRef = useRef(false)
   const isTransitioningRef = useRef(false)
   const sectionScrollRefs = useRef<Map<number, HTMLDivElement | null>>(new Map())
-  const TRANSITION_DURATION = 800
+
+  // framer-motion の enter→center 完了でセクション遷移ロックを解除する
+  const handlePageAnimationComplete = (definition: AnimationDefinition) => {
+    if (definition === "center") {
+      isTransitioningRef.current = false
+    }
+  }
 
   // Contact セクションのページ離脱は累積閾値で判定して感度を緩める
   const contactWheelAccumRef = useRef(0)
@@ -117,10 +123,6 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
     setScrollDirection(direction)
     setCurrentPage(target)
     setScrollProgress(0)
-
-    setTimeout(() => {
-      isTransitioningRef.current = false
-    }, TRANSITION_DURATION)
   }
 
   useEffect(() => {
@@ -466,6 +468,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
               animate="center"
               exit="exit"
               transition={skipTransitionRef.current ? { duration: 0 } : pageTransition}
+              onAnimationComplete={handlePageAnimationComplete}
             >
               {/* 背景画像 */}
               <div
@@ -486,7 +489,10 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                 />
               </div>
               <div
-                ref={(el) => { sectionScrollRefs.current.set(0, el) }}
+                ref={(el) => {
+                  if (el) sectionScrollRefs.current.set(0, el)
+                  else sectionScrollRefs.current.delete(0)
+                }}
                 onScroll={handleSectionScroll}
                 className="relative z-10 w-full h-full overflow-y-auto"
               >
@@ -509,6 +515,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
               animate="center"
               exit="exit"
               transition={skipTransitionRef.current ? { duration: 0 } : pageTransition}
+              onAnimationComplete={handlePageAnimationComplete}
             >
               <BgShader
                 colors={["#f97316", "#fb923c", "#fdba74", "#fda4af", "#fb7185", "#f472b6"]}
@@ -519,7 +526,10 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                 veilOpacity="bg-black/20"
               />
               <div
-                ref={(el) => { sectionScrollRefs.current.set(1, el) }}
+                ref={(el) => {
+                  if (el) sectionScrollRefs.current.set(1, el)
+                  else sectionScrollRefs.current.delete(1)
+                }}
                 onScroll={handleSectionScroll}
                 className="relative z-10 w-full h-full overflow-y-auto"
               >
@@ -547,6 +557,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
               animate="center"
               exit="exit"
               transition={skipTransitionRef.current ? { duration: 0 } : pageTransition}
+              onAnimationComplete={handlePageAnimationComplete}
             >
               <DottedSurface className="absolute inset-0" speed={0.02}>
                 <div
@@ -559,7 +570,10 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                 />
               </DottedSurface>
               <div
-                ref={(el) => { sectionScrollRefs.current.set(2, el) }}
+                ref={(el) => {
+                  if (el) sectionScrollRefs.current.set(2, el)
+                  else sectionScrollRefs.current.delete(2)
+                }}
                 onScroll={(e) => {
                   const el = e.currentTarget
                   setScrollProgress(computeScrollProgress(el))
@@ -613,6 +627,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
               animate="center"
               exit="exit"
               transition={skipTransitionRef.current ? { duration: 0 } : pageTransition}
+              onAnimationComplete={handlePageAnimationComplete}
             >
               <div className="absolute inset-0 pointer-events-none bg-black" style={{ zIndex: 0 }}>
                 <div className="absolute inset-0">
@@ -650,7 +665,10 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
               </div>
 
               <div
-                ref={(el) => { sectionScrollRefs.current.set(3, el) }}
+                ref={(el) => {
+                  if (el) sectionScrollRefs.current.set(3, el)
+                  else sectionScrollRefs.current.delete(3)
+                }}
                 onScroll={handleSectionScroll}
                 className="relative z-10 w-full h-full overflow-y-auto"
               >
