@@ -45,14 +45,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Lint (next lint)
+      - name: Lint (vp lint / oxlint)
         run: just lint
 
-      - name: Typecheck
+      - name: Typecheck (tsc --noEmit)
         run: just typecheck
-
-      - name: Vite+ check (oxlint + oxfmt + typecheck)
-        run: just check
 
       - name: Build (next build)
         run: just build
