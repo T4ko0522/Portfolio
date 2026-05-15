@@ -24,7 +24,7 @@ export default function About({ daysUntilBirthday, discordStatus }: AboutProps) 
         <div className="relative w-[200px] h-[200px] sm:w-[240px] sm:h-[240px] flex items-center justify-center">
           {/* 装飾画像（Discordデコレーション） */}
           <Image
-            src="https://cdn.discordapp.com/media/v1/collectibles-shop/1232071712695386162/animated"
+            src="https://cdn.discordapp.com/media/v1/collectibles-shop/1306330663070334996/animated"
             alt="Decoration"
             width={256}
             height={256}
@@ -38,7 +38,7 @@ export default function About({ daysUntilBirthday, discordStatus }: AboutProps) 
               className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 sm:w-48 sm:h-48 pointer-events-none z-[60]"
               aria-hidden
             >
-              <div className="absolute bottom-0 right-2" style={{ width: '20px', height: '20px', filter: 'drop-shadow(0 0 0 3px #1a1a1a)' }}>
+              <div className="absolute bottom-2 right-6" style={{ width: '20px', height: '20px', filter: 'drop-shadow(0 0 0 3px #1a1a1a)' }}>
                 {discordStatus === 'online' ? (
                   <svg width="20" height="20" viewBox="0 0 12 12" className="w-full h-full">
                     <circle cx="6" cy="6" r="6" fill="rgb(69, 163, 102)" />
@@ -83,19 +83,24 @@ export default function About({ daysUntilBirthday, discordStatus }: AboutProps) 
           transition={{ duration: 0.5, delay: 0.4 }}
           className="mt-6 text-center"
         >
-          <div className="flex items-center justify-center gap-2 mb-2">
+          <a
+            href="https://discord.gg/JP7uwGDv5T"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 mb-2 transition-transform duration-200 ease-out hover:scale-105 active:scale-95 cursor-pointer"
+          >
             <h2 className="text-2xl sm:text-3xl font-bold text-white" style={{ fontFamily: 'Discord, sans-serif' }}>T4ko</h2>
             <div className="flex items-center gap-1.5 border border-white/30 rounded px-2 py-0.5">
               <Image
-                src="https://cdn.discordapp.com/clan-badges/1399359679473254492/df39482e5db7ebbeff7f6d9a832a6144.png?size=16"
+                src="https://cdn.discordapp.com/clan-badges/911128328000405504/84412606536488d76915487613779361.png"
                 alt="Clan Badge"
                 width={16}
                 height={16}
                 className="w-4 h-4"
               />
-              <span className="text-xs sm:text-sm font-bold text-white">OP81</span>
+              <span className="text-xs sm:text-sm font-bold text-white">F1</span>
             </div>
-          </div>
+          </a>
           <p className="text-sm sm:text-base text-gray-300 mb-4">tako._.v<span className="font-bold">・</span>17yo He/Him</p>
         </motion.div>
       </motion.div>

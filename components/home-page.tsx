@@ -444,7 +444,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
         <Image src="/icon.png" alt="" width={128} height={128} priority />
         <Image src="/images/Background1.png" alt="" width={1920} height={1080} priority />
         <Image
-          src="https://cdn.discordapp.com/media/v1/collectibles-shop/1232071712695386162/animated"
+          src="https://cdn.discordapp.com/media/v1/collectibles-shop/1306330663070334996/animated"
           alt=""
           width={128}
           height={128}

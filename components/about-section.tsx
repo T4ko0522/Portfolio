@@ -49,7 +49,7 @@ export default function AboutSection({
         >
           <div className="relative w-[300px] h-[240px] lg:w-[400px] lg:h-[320px] flex items-center justify-center">
             <Image
-              src="https://cdn.discordapp.com/media/v1/collectibles-shop/1232071712695386162/animated"
+              src="https://cdn.discordapp.com/media/v1/collectibles-shop/1306330663070334996/animated"
               alt="Decoration"
               width={256}
               height={256}
@@ -64,7 +64,7 @@ export default function AboutSection({
                 aria-hidden
               >
                 <div
-                  className="absolute bottom-0 right-2"
+                  className="absolute bottom-3 right-7"
                   style={{ width: "28px", height: "28px", filter: "drop-shadow(0 0 0 3px #1a1a1a)" }}
                 >
                   {discordStatus === "online" ? (
@@ -120,7 +120,12 @@ export default function AboutSection({
             transition={{ duration: 0.5, delay: 0.4 }}
             className="mt-6 text-center"
           >
-            <div className="flex items-center justify-center gap-2 mb-2">
+            <a
+              href="https://discord.gg/JP7uwGDv5T"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 mb-2 transition-transform duration-200 ease-out hover:scale-105 cursor-pointer"
+            >
               <h2
                 className="text-4xl lg:text-5xl font-bold text-white"
                 style={{ fontFamily: "Discord, sans-serif" }}
@@ -129,15 +134,15 @@ export default function AboutSection({
               </h2>
               <div className="flex items-center gap-1.5 border border-white/30 rounded px-2 py-0.5">
                 <Image
-                  src="https://cdn.discordapp.com/clan-badges/1399359679473254492/df39482e5db7ebbeff7f6d9a832a6144.png?size=16"
+                  src="https://cdn.discordapp.com/clan-badges/911128328000405504/84412606536488d76915487613779361.png"
                   alt="Clan Badge"
                   width={16}
                   height={16}
                   className="w-4 h-4"
                 />
-                <span className="text-xs lg:text-sm font-bold text-white">OP81</span>
+                <span className="text-xs lg:text-sm font-bold text-white">F1</span>
               </div>
-            </div>
+            </a>
             <p className="text-base lg:text-lg text-gray-300 mb-1">
               tako._.v<span className="font-bold">・</span>17yo He/Him
             </p>
