@@ -712,7 +712,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                 Scroll down to explore
               </span>
               <motion.div
-                animate={{ x: [0, 6, 0] }}
+                animate={{ y: [0, 6, 0] }}
                 transition={{
                   duration: 1.5,
                   repeat: Infinity,
