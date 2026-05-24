@@ -96,6 +96,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
   const contactWheelResetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const CONTACT_WHEEL_THRESHOLD_DOWN = 250 // contact → 次（実質なし、保険）
   const CONTACT_WHEEL_THRESHOLD_UP = 250 // contact → works（戻る方向の猶予を多めに）
+  const NOSCROLL_WHEEL_THRESHOLD = 600 // 内部スクロール領域がない時の遷移閾値（例: about のカウントダウン非表示時）
   const CONTACT_WHEEL_RESET_MS = 220
 
   // セクション内スクロールのプログレス更新（スクロール位置に比例）
@@ -142,6 +143,8 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
         return
       }
 
+      const max = sec.scrollHeight - sec.clientHeight
+      const noScroll = max <= 0
       const atTop = sec.scrollTop <= 0
       const atBottom = sec.scrollTop + sec.clientHeight >= sec.scrollHeight - 1
 
@@ -152,7 +155,8 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
         contactWheelResetTimerRef.current = setTimeout(() => {
           contactWheelAccumRef.current = 0
         }, CONTACT_WHEEL_RESET_MS)
-        const threshold = dir === 1 ? CONTACT_WHEEL_THRESHOLD_DOWN : CONTACT_WHEEL_THRESHOLD_UP
+        const baseThreshold = dir === 1 ? CONTACT_WHEEL_THRESHOLD_DOWN : CONTACT_WHEEL_THRESHOLD_UP
+        const threshold = noScroll ? NOSCROLL_WHEEL_THRESHOLD : baseThreshold
         if (
           (dir === 1 && contactWheelAccumRef.current >= threshold) ||
           (dir === -1 && contactWheelAccumRef.current <= -threshold)
@@ -421,10 +425,8 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
 
   return (
     <>
-      {/* 優先読み込み用の非表示画像 */}
+      {/* Discord デコレーション (unoptimized で実描画と URL が一致するため preload が効く) */}
       <div className="hidden">
-        <Image src="/icon.png" alt="" width={128} height={128} priority />
-        <Image src="/images/background.webp" alt="" width={1920} height={1280} priority />
         <Image
           src="https://cdn.discordapp.com/media/v1/collectibles-shop/1306330663070334996/animated"
           alt=""
@@ -436,6 +438,27 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
       </div>
       {/* ページコンテナ（固定・ピン留め） */}
       <div className="fixed inset-0 overflow-hidden bg-black">
+        {/* main 背景画像を常駐させ、再マウントによる初回ロードフラッシュを防ぐ。
+            home 以外では opacity 0 にして他セクションの背景に透けないようにする。 */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none transition-opacity duration-[600ms] ease-[cubic-bezier(0.4,0,0.2,1)]"
+          style={{
+            filter: sectionBackgrounds[0].filter || "none",
+            transform: "scale(1.3) translateZ(0px)",
+            opacity: currentPage === 0 ? 1 : 0,
+          }}
+        >
+          <Image
+            src={sectionBackgrounds[0].image}
+            alt=""
+            fill
+            sizes="100vw"
+            className="object-cover"
+            style={{ objectPosition: sectionBackgrounds[0].position || "center" }}
+            priority
+          />
+        </div>
         <AnimatePresence mode="sync" custom={scrollDirection}>
           {/* メインセクション（ページ0） */}
           {currentPage === 0 && (
@@ -452,24 +475,6 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
               transition={skipTransitionRef.current ? { duration: 0 } : pageTransition}
               onAnimationComplete={handlePageAnimationComplete}
             >
-              {/* 背景画像 */}
-              <div
-                className="absolute inset-0 w-full h-full overflow-hidden -z-1"
-                style={{
-                  filter: sectionBackgrounds[0].filter || "none",
-                  transform: "scale(1.3) translateZ(0px)",
-                }}
-              >
-                <Image
-                  src={sectionBackgrounds[0].image}
-                  alt=""
-                  fill
-                  sizes="100vw"
-                  className="object-cover"
-                  style={{ objectPosition: sectionBackgrounds[0].position || "center" }}
-                  priority
-                />
-              </div>
               <div
                 ref={(el) => {
                   if (el) sectionScrollRefs.current.set(0, el)
