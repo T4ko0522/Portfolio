@@ -288,105 +288,87 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
     }
   }, [])
 
-  // Spotifyデータを取得（SSE使用）
+  // Spotifyデータを取得（Cloudflare Workers 互換の polling）
   useEffect(() => {
-    let eventSource: EventSource | null = null
-    let reconnectTimeout: NodeJS.Timeout | null = null
+    let cancelled = false
+    let abortController: AbortController | null = null
 
-    const connectSSE = () => {
-      try {
-        setIsSpotifyLoading(true)
-        eventSource = new EventSource('/api/v1/spotify-status')
+    const applyData = (data: SpotifyApiResponse) => {
+      const spotifyActivity = data.discord?.activities?.find(
+        (activity) => activity.name === 'Spotify'
+      )
 
-        eventSource.onmessage = (event) => {
-          try {
-            const data: SpotifyApiResponse = JSON.parse(event.data)
+      if (spotifyActivity) {
+        const startTime = spotifyActivity.timestamps?.start || 0
+        const endTime = spotifyActivity.timestamps?.end || 0
+        const now = Date.now()
+        const currentPosition = Math.max(0, now - startTime)
+        const duration = endTime > startTime ? endTime - startTime : 0
 
-            if (data.error) {
-              console.error('SSE error:', data.error)
-              setIsSpotifyLoading(false)
-              return
-            }
+        setSpotifyTrack({
+          name: spotifyActivity.details || '',
+          artist: spotifyActivity.state || '',
+          album: spotifyActivity.assets?.largeText || '',
+          albumArtUrl: spotifyActivity.assets?.largeImage || '',
+          isPlaying: true,
+          currentTime: Math.floor(currentPosition / 1000),
+          duration: Math.floor(duration / 1000),
+        })
+      } else if (data.spotify && data.spotify.isPlaying) {
+        setSpotifyTrack({
+          name: data.spotify.trackName,
+          artist: data.spotify.artistName,
+          album: data.spotify.albumName,
+          albumArtUrl: data.spotify.albumArt,
+          isPlaying: data.spotify.isPlaying,
+          currentTime: Math.floor(data.spotify.position / 1000),
+          duration: Math.floor(data.spotify.duration / 1000),
+        })
+      } else {
+        setSpotifyTrack(null)
+      }
 
-            const spotifyActivity = data.discord?.activities?.find(
-              (activity) => activity.name === 'Spotify'
-            )
-
-            if (spotifyActivity) {
-              const startTime = spotifyActivity.timestamps?.start || 0
-              const endTime = spotifyActivity.timestamps?.end || 0
-              const now = Date.now()
-              const currentPosition = Math.max(0, now - startTime)
-              const duration = endTime > startTime ? endTime - startTime : 0
-
-              setSpotifyTrack({
-                name: spotifyActivity.details || '',
-                artist: spotifyActivity.state || '',
-                album: spotifyActivity.assets?.largeText || '',
-                albumArtUrl: spotifyActivity.assets?.largeImage || '',
-                isPlaying: true,
-                currentTime: Math.floor(currentPosition / 1000),
-                duration: Math.floor(duration / 1000),
-              })
-            } else {
-              if (data.spotify && data.spotify.isPlaying) {
-                setSpotifyTrack({
-                  name: data.spotify.trackName,
-                  artist: data.spotify.artistName,
-                  album: data.spotify.albumName,
-                  albumArtUrl: data.spotify.albumArt,
-                  isPlaying: data.spotify.isPlaying,
-                  currentTime: Math.floor(data.spotify.position / 1000),
-                  duration: Math.floor(data.spotify.duration / 1000),
-                })
-              } else {
-                setSpotifyTrack(null)
-              }
-            }
-
-            if (data.discord) {
-              setDiscordStatus(data.discord.status)
-            }
-
-            setIsSpotifyLoading(false)
-          } catch (error) {
-            console.error('Error parsing SSE data:', error)
-            setIsSpotifyLoading(false)
-          }
-        }
-
-        eventSource.onerror = (error) => {
-          console.error('SSE connection error:', error)
-          setIsSpotifyLoading(false)
-
-          if (eventSource) {
-            eventSource.close()
-            eventSource = null
-          }
-
-          reconnectTimeout = setTimeout(() => {
-            connectSSE()
-          }, 3000)
-        }
-      } catch (error) {
-        console.error('Error setting up SSE:', error)
-        setIsSpotifyLoading(false)
-
-        reconnectTimeout = setTimeout(() => {
-          connectSSE()
-        }, 3000)
+      if (data.discord) {
+        setDiscordStatus(data.discord.status)
       }
     }
 
-    connectSSE()
+    const fetchStatus = async () => {
+      abortController?.abort()
+      abortController = new AbortController()
+
+      try {
+        const res = await fetch('/api/v1/spotify-status', {
+          signal: abortController.signal,
+          cache: 'no-store',
+        })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+
+        const data: SpotifyApiResponse = await res.json()
+        if (cancelled) return
+
+        if (data.error) {
+          console.error('Spotify status error:', data.error)
+        } else {
+          applyData(data)
+        }
+      } catch (error) {
+        if (cancelled) return
+        if (error instanceof DOMException && error.name === 'AbortError') return
+        console.error('Error fetching spotify status:', error)
+      } finally {
+        if (!cancelled) setIsSpotifyLoading(false)
+      }
+    }
+
+    setIsSpotifyLoading(true)
+    fetchStatus()
+    const intervalId = setInterval(fetchStatus, 5000)
 
     return () => {
-      if (eventSource) {
-        eventSource.close()
-      }
-      if (reconnectTimeout) {
-        clearTimeout(reconnectTimeout)
-      }
+      cancelled = true
+      abortController?.abort()
+      clearInterval(intervalId)
     }
   }, [])
 
