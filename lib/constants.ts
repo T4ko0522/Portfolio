@@ -14,7 +14,7 @@ export const introTexts = [
 export const sectionBackgrounds = [
   {
     type: "image" as const,
-    image: "/images/Background1.png",
+    image: "/images/background.webp",
     position: "center 95%",
     filter: "grayscale(0.0) blur(3px)",
   },

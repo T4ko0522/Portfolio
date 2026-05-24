@@ -442,7 +442,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
       {/* 優先読み込み用の非表示画像 */}
       <div className="hidden">
         <Image src="/icon.png" alt="" width={128} height={128} priority />
-        <Image src="/images/Background1.png" alt="" width={1920} height={1080} priority />
+        <Image src="/images/background.webp" alt="" width={1920} height={1280} priority />
         <Image
           src="https://cdn.discordapp.com/media/v1/collectibles-shop/1306330663070334996/animated"
           alt=""
