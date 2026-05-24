@@ -2,8 +2,6 @@ import type React from "react"
 import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import { Analytics } from "@vercel/analytics/next"
-import { SpeedInsights } from "@vercel/speed-insights/next"
 import { ThemeProvider } from "../components/theme-provider"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -20,7 +18,7 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "T4ko0522" }],
   creator: "T4ko0522",
-  metadataBase: new URL("https://t4ko.vercel.app"),
+  metadataBase: new URL("https://t4ko.pet"),
   alternates: {
     canonical: "/",
   },
@@ -28,7 +26,7 @@ export const metadata: Metadata = {
     title: "T4ko0522",
     description:
       "About T4ko0522",
-    url: "https://t4ko.vercel.app",
+    url: "https://t4ko.pet",
     siteName: "T4ko0522",
     images: [
       {
@@ -82,8 +80,6 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           {children}
         </ThemeProvider>
-        <Analytics />
-        <SpeedInsights />
       </body>
     </html>
   )

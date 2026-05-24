@@ -1,6 +1,6 @@
 # Portfolio
 
-[サイトはこちらから](https://t4ko.vercel.app)  
+[サイトはこちらから](https://t4ko.pet)  
 個人開発のポートフォリオです。  
 
 ## 🛠 技術スタック
@@ -11,7 +11,7 @@
 | 言語              | TypeScript                            |
 | UI／スタイリング  | Tailwind CSS, shadcn/ui, Radix UI     |
 | Lint／Format      | ESLint, Prettier                      |
-| ホスティング      | Vercel                                |
+| ホスティング      | Cloudflare Workers (OpenNext)         |
 | パッケージ管理    | pnpm                                  |
 
 ## 📄 LICENSE

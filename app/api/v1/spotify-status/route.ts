@@ -1,6 +1,5 @@
 import { NextRequest } from 'next/server'
 
-export const runtime = 'edge'
 export const dynamic = 'force-dynamic'
 
 // 外部APIからSpotifyデータを取得する関数
