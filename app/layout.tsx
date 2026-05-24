@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "T4ko0522" }],
   creator: "T4ko0522",
-  metadataBase: new URL("https://t4ko.vercel.app"),
+  metadataBase: new URL("https://t4ko.pet"),
   alternates: {
     canonical: "/",
   },
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     title: "T4ko0522",
     description:
       "About T4ko0522",
-    url: "https://t4ko.vercel.app",
+    url: "https://t4ko.pet",
     siteName: "T4ko0522",
     images: [
       {

@@ -80,7 +80,7 @@ export const projectDetails: ProjectDetail[] = [
     longDescription: "このポートフォリオサイトは、Next.js、TypeScript、Tailwind CSS、Framer Motionを使用して構築されています。アニメーション効果やレスポンシブデザインを実装し、プロジェクトの詳細情報をモーダルで表示する機能など、モダンなWeb開発のベストプラクティスを取り入れています。",
     imageUrl: "/images/Portfolio.png",
     imageAlt: "Portfolio Screenshot",
-    url: "https://t4ko.vercel.app",
+    url: "https://t4ko.pet",
     technologies: ["Next.js", "TypeScript", "Tailwind CSS", "shadcn/ui", "Framer Motion"],
     features: [
       "レスポンシブデザイン",
