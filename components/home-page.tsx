@@ -150,10 +150,9 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
   // layoutEffect: false で useEffect 段階に遅らせる。
   const { scrollYProgress } = useScroll({ container: scrollContainerRef, layoutEffect: false })
 
-  // contact の inner overflow-y-auto (フォーム本体スクロール領域)
+  // 各セクションの inner overflow-y-auto (本体スクロール領域)
+  const aboutInnerRef = useRef<HTMLDivElement | null>(null)
   const contactInnerRef = useRef<HTMLDivElement | null>(null)
-  // touchmove で方向を判定するため、直前の touch Y を覚えておく。
-  const lastTouchYRef = useRef<number | null>(null)
 
   // 現在表示中のセクション
   const [currentSection, setCurrentSection] = useState<SectionKey>("main")
@@ -212,74 +211,86 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
     setSectionProgress(localProgress)
   })
 
-  // 遷移ロック中は window 全体の wheel/touch を preventDefault して
-  // 連続スクロール容器のネイティブスクロール自体を止める (= 0.6s の「カチッ」感)。
+  // 仮想スクロール (master `getCombinedScrollState` + `nextVirtual` 配分の移植)。
+  //
+  // wheel を常時 preventDefault してネイティブスクロールを完全に止め、delta を
+  // 「現在 section の inner → 共通 outer」の順に手動配分する。これでブラウザの
+  // overscroll chain が境目で 1 フレーム delta を捨てる「引っ掛かり」が消える。
+  // master と同じく、上方向は outer → inner の順 (inner は最大まで満たした状態を維持)。
+  //
+  // touch は input 等の native タッチ操作 (フォーカス・キャレット移動) と競合するため
+  // window レベルでは虚スクロールに置き換えず、遷移ロック中の preventDefault のみ残す。
+  // (タッチでは native scroll の方が UX が自然なので handover は overscroll-behavior に任せる)
   useEffect(() => {
-    const blockWheel = (e: WheelEvent) => {
+    const outer = scrollContainerRef.current
+    if (!outer) return
+
+    const getInner = (key: SectionKey): HTMLDivElement | null => {
+      if (key === "about") return aboutInnerRef.current
+      if (key === "contact") return contactInnerRef.current
+      return null
+    }
+
+    const distributeDelta = (rawDelta: number) => {
+      if (rawDelta === 0) return
+      const cur = currentSectionRef.current
+      const inner = getInner(cur)
+      const innerMax = inner ? Math.max(0, inner.scrollHeight - inner.clientHeight) : 0
+      const innerTop = inner ? inner.scrollTop : 0
+      const outerMax = Math.max(0, outer.scrollHeight - outer.clientHeight)
+      const outerTop = outer.scrollTop
+
+      let delta = rawDelta
+      if (delta > 0) {
+        // 下方向: inner を先に満たす
+        if (inner && innerTop < innerMax) {
+          const take = Math.min(delta, innerMax - innerTop)
+          inner.scrollTop = innerTop + take
+          delta -= take
+        }
+        // 残りを outer に流す
+        if (delta > 0 && outerTop < outerMax) {
+          outer.scrollTop = Math.min(outerMax, outerTop + delta)
+        }
+      } else {
+        // 上方向: outer を先に減らす (master と同じ — inner は満たしたままで離脱しやすい)
+        if (outerTop > 0) {
+          const take = Math.min(-delta, outerTop)
+          outer.scrollTop = outerTop - take
+          delta += take
+        }
+        // 残りを inner から減らす
+        if (delta < 0 && inner && innerTop > 0) {
+          const take = Math.min(-delta, innerTop)
+          inner.scrollTop = innerTop - take
+        }
+      }
+    }
+
+    const onWheel = (e: WheelEvent) => {
+      if (isTransitioningRef.current) {
+        e.preventDefault()
+        return
+      }
+      e.preventDefault()
+      distributeDelta(e.deltaY)
+    }
+
+    const onTouchMoveDuringLock = (e: TouchEvent) => {
       if (isTransitioningRef.current) e.preventDefault()
     }
-    const blockTouch = (e: TouchEvent) => {
-      if (isTransitioningRef.current) e.preventDefault()
-    }
-    window.addEventListener("wheel", blockWheel, { passive: false })
-    window.addEventListener("touchmove", blockTouch, { passive: false })
+
+    window.addEventListener("wheel", onWheel, { passive: false })
+    window.addEventListener("touchmove", onTouchMoveDuringLock, { passive: false })
     return () => {
-      window.removeEventListener("wheel", blockWheel)
-      window.removeEventListener("touchmove", blockTouch)
+      window.removeEventListener("wheel", onWheel)
+      window.removeEventListener("touchmove", onTouchMoveDuringLock)
       if (transitionTimeoutRef.current !== null) {
         window.clearTimeout(transitionTimeoutRef.current)
         transitionTimeoutRef.current = null
       }
     }
   }, [])
-
-  // contact の inner-bottom 到達後の「empty scroll への chain」を止める。
-  // contact は最後の section で、inner を読み切ったあと outer に流れ込んでも
-  // sticky のため視覚変化が起きず "引っ掛かり" として知覚される。
-  // 下方向 (deltaY > 0) のみ inner-bottom で preventDefault し、上方向は
-  // 前 section に戻るために残す。currentSection === "contact" の間だけ有効。
-  useEffect(() => {
-    if (currentSection !== "contact") {
-      lastTouchYRef.current = null
-      return
-    }
-    const inner = contactInnerRef.current
-    if (!inner) return
-
-    const isAtBottom = () => {
-      const max = inner.scrollHeight - inner.clientHeight
-      return max <= 0 || inner.scrollTop >= max - 1
-    }
-
-    const onWheel = (e: WheelEvent) => {
-      if (e.deltaY > 0 && isAtBottom()) {
-        e.preventDefault()
-      }
-    }
-    const onTouchStart = (e: TouchEvent) => {
-      lastTouchYRef.current = e.touches[0]?.clientY ?? null
-    }
-    const onTouchMove = (e: TouchEvent) => {
-      const prev = lastTouchYRef.current
-      const cur = e.touches[0]?.clientY
-      if (prev == null || cur == null) return
-      lastTouchYRef.current = cur
-      // 指を上に動かす = ページを下にスクロール (deltaY > 0 相当)
-      const deltaY = prev - cur
-      if (deltaY > 0 && isAtBottom()) {
-        e.preventDefault()
-      }
-    }
-
-    inner.addEventListener("wheel", onWheel, { passive: false })
-    inner.addEventListener("touchstart", onTouchStart, { passive: true })
-    inner.addEventListener("touchmove", onTouchMove, { passive: false })
-    return () => {
-      inner.removeEventListener("wheel", onWheel)
-      inner.removeEventListener("touchstart", onTouchStart)
-      inner.removeEventListener("touchmove", onTouchMove)
-    }
-  }, [currentSection])
 
   // works カルーセル: works section 内の進捗を 0..projects.length-1 にマップ
   const worksLocalSpan = SECTION_RANGES.works[1] - SECTION_RANGES.works[0]
@@ -547,7 +558,10 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                 offsetX={0.08}
                 veilOpacity="bg-black/20"
               />
-              <div className="relative z-10 w-full h-full overflow-y-auto no-scrollbar">
+              <div
+                ref={aboutInnerRef}
+                className="relative z-10 w-full h-full overflow-y-auto no-scrollbar"
+              >
                 <AboutSection
                   isMobile={isMobile}
                   daysUntilBirthday={daysUntilBirthday}
