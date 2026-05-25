@@ -2,7 +2,6 @@ import type { ProjectDetail } from "../types/project"
 
 export const BIRTH_MONTH = 5
 export const BIRTH_DAY = 22
-export const TOTAL_PAGES = 4
 
 export const introTexts = [
   "VRChatter.",
@@ -19,42 +18,6 @@ export const sectionBackgrounds = [
     filter: "grayscale(0.0) blur(3px)",
   },
 ]
-
-export const pageVariants = {
-  enter: (direction: 1 | -1) => ({
-    opacity: 0,
-    x: direction === 1 ? "100%" : "-100%",
-  }),
-  center: {
-    opacity: 1,
-    x: 0,
-  },
-  exit: (direction: 1 | -1) => ({
-    opacity: 0,
-    x: direction === 1 ? "-100%" : "100%",
-  }),
-}
-
-export const pageTransition = {
-  duration: 0.6,
-  ease: [0.4, 0.0, 0.2, 1],
-}
-
-export const containerVariants = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.3,
-    },
-  },
-}
-
-export const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } },
-}
 
 export const projectDetails: ProjectDetail[] = [
   {
