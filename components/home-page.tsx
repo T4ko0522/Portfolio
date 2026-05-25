@@ -43,23 +43,27 @@ const ShootingStars = dynamic(
   { ssr: false }
 )
 
-const WorksCarousel = dynamic<{
+type WorksCarouselProps = {
   projects: typeof projectDetails
   position: MotionValue<number>
   activeIndex: number
   onActiveIndexChange: (index: number) => void
   minIndex: number
   maxIndex: number
-}>(() => import("./works-carousel"), { ssr: false })
+}
+const WorksCarousel = dynamic<WorksCarouselProps>(
+  () => import("./works-carousel"),
+  { ssr: false }
+)
 
-const MobileWorks = dynamic<{
-  projects: typeof projectDetails
-}>(() => import("./mobile/works"), { ssr: false })
+type MobileWorksProps = { projects: typeof projectDetails }
+const MobileWorks = dynamic<MobileWorksProps>(() => import("./mobile/works"), { ssr: false })
 
-const MobileContact = dynamic<{
+type MobileContactProps = {
   onCopyDiscord: () => void
   discordCopied: boolean
-}>(() => import("./mobile/contact"), {
+}
+const MobileContact = dynamic<MobileContactProps>(() => import("./mobile/contact"), {
   ssr: false,
 })
 
@@ -132,7 +136,9 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
 
   // スクロール容器
   const scrollContainerRef = useRef<HTMLDivElement | null>(null)
-  const { scrollYProgress } = useScroll({ container: scrollContainerRef })
+  // mounted ガードで初回 render では null を返すため、layoutEffect 段階だと container ref が未設定で警告が出る。
+  // layoutEffect: false で useEffect 段階に遅らせる。
+  const { scrollYProgress } = useScroll({ container: scrollContainerRef, layoutEffect: false })
 
   // 現在表示中のセクション (インジケーター用)
   const [currentSection, setCurrentSection] = useState<SectionKey>("main")
@@ -346,8 +352,6 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
     return labels[currentSection]
   }, [currentSection])
 
-  if (!mounted) return null
-
   return (
     <>
       {/* Discord デコレーション (priority preload) */}
@@ -362,7 +366,10 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
         />
       </div>
 
-      {/* スクロール容器: ここだけが overflow-y-auto。スクロール量の真実の情報源 */}
+      {/* スクロール容器: ここだけが overflow-y-auto。スクロール量の真実の情報源。
+          mounted ガードの外に置く理由: useScroll({container}) は初回 render 時に
+          ref を読むため、container 要素自身は常に DOM に存在させる必要がある。
+          (中身は mounted で gate して isMobile flash を回避) */}
       <div
         ref={scrollContainerRef}
         className="fixed inset-0 overflow-y-auto overflow-x-hidden bg-black no-scrollbar"
@@ -371,6 +378,9 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
         <div className="relative w-full" style={{ height: `${TOTAL_VH}vh` }}>
           {/* 表示は 1 つの sticky 領域に集約 (全セクションが absolute で重なる) */}
           <div className="sticky top-0 h-screen w-full overflow-hidden">
+            {mounted && (
+            <>
+            {/* === sections === */}
             {/* ===== Main ===== */}
             <motion.div
               className="absolute inset-0"
@@ -517,12 +527,14 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                 </div>
               </div>
             </motion.div>
+            </>
+            )}
           </div>
         </div>
       </div>
 
       {/* 固定ナビゲーションヘッダー */}
-      <Header onNavigate={navigateToSection} />
+      {mounted && <Header onNavigate={navigateToSection} />}
 
       {/* スクロール進行状況インジケーター（下部） */}
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 pointer-events-none">
