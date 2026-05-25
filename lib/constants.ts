@@ -19,6 +19,26 @@ export const sectionBackgrounds = [
   },
 ]
 
+export const pageVariants = {
+  enter: (direction: 1 | -1) => ({
+    opacity: 0,
+    x: direction === 1 ? "100%" : "-100%",
+  }),
+  center: {
+    opacity: 1,
+    x: 0,
+  },
+  exit: (direction: 1 | -1) => ({
+    opacity: 0,
+    x: direction === 1 ? "-100%" : "100%",
+  }),
+}
+
+export const pageTransition = {
+  duration: 0.6,
+  ease: [0.4, 0.0, 0.2, 1],
+}
+
 export const projectDetails: ProjectDetail[] = [
   {
     title: "better-tab",

@@ -14,6 +14,7 @@ import { getDaysUntilBirthday } from "../lib/utils"
 import {
   sectionBackgrounds,
   projectDetails,
+  pageTransition,
   BIRTH_MONTH,
   BIRTH_DAY,
 } from "../lib/constants"
@@ -72,15 +73,19 @@ interface HomePageProps {
   initialDaysUntilBirthday: number
 }
 
-// ---------- 案 A: 単一スクロール容器 + per-section sticky + useScroll ----------
+// ---------- 案 A': 単一スクロール容器 + per-section 常時 mount + 離散 animate ----------
 //
-// スクロール容器は scrollContainerRef の overflow-y-auto 1 つだけ。
-// 内側は (sectionHeights の総和) vh の空間。その先頭に置いた sticky 要素
-// 1 つの中に、4 セクションが absolute で重なり opacity / pointerEvents で切替。
+// スクロール容器は scrollContainerRef の overflow-y-auto 1 つだけ (= 連続スクロールの真実値)。
+// セクションは全 mount。x/opacity は scrollYProgress に scrub 連動させず、
+// 「currentSection が誰か」だけを離散判定し、各 motion.div の animate prop に
+// "me vs cur" で決まる x/opacity を渡して 0.6s ease で discrete に動かす。
 //
-// セクションの「進捗範囲」は SECTION_RANGES に正規化済 (0-1)。useScroll の
-// scrollYProgress を useTransform で各セクションの opacity / works のカルーセル
-// position にマップする。状態の真実の情報源は scrollYProgress 1 つだけ。
+// これでマスター t4ko.pet と同じ「スクロールに対してカチッとスナップして
+// 0.6s スライド」の挙動を、連続スクロール構造の上で再現する。
+//
+// 過去版 (97d62bf) は useTransform で 0.02 幅 (~3.6vh) の極小窓に opacity/x を
+// スクラブ連動させていたが、通常速度のスクロールでは一瞬で過ぎてしまい
+// 「アニメーションが消えた」と感じる原因になっていた。
 
 const WORKS_PADDING = 0.4 // works セクションの前後余白 (viewport 単位)
 const SECTION_HEIGHTS_VH = {
@@ -111,8 +116,13 @@ const SECTION_RANGES = (() => {
   return map
 })()
 
-// セクション間クロスフェードのオーバーラップ幅 (進捗単位)
-const FADE = 0.015
+// 境界 hysteresis: 進捗 0.005 (~3.6vh) のデッドバンドを設けて、
+// wheel 微振動で currentSection が flip しないようにする。
+const HYSTERESIS = 0.005
+
+// 遷移ロック時間 (pageTransition.duration の ms 換算)。
+// 期間中は wheel/touch を preventDefault してマスター挙動の「カチッ」感を出す。
+const TRANSITION_LOCK_MS = 600
 
 type SectionKey = "main" | "about" | "works" | "contact"
 
@@ -140,83 +150,136 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
   // layoutEffect: false で useEffect 段階に遅らせる。
   const { scrollYProgress } = useScroll({ container: scrollContainerRef, layoutEffect: false })
 
-  // 現在表示中のセクション (インジケーター用)
+  // contact の inner overflow-y-auto (フォーム本体スクロール領域)
+  const contactInnerRef = useRef<HTMLDivElement | null>(null)
+  // touchmove で方向を判定するため、直前の touch Y を覚えておく。
+  const lastTouchYRef = useRef<number | null>(null)
+
+  // 現在表示中のセクション
   const [currentSection, setCurrentSection] = useState<SectionKey>("main")
+  const currentSectionRef = useRef<SectionKey>("main")
   const [sectionProgress, setSectionProgress] = useState(0)
 
-  useMotionValueEvent(scrollYProgress, "change", (v) => {
-    // 進捗 v から現在 section を判定
-    let next: SectionKey = "main"
-    for (const key of SECTION_ORDER) {
-      const [start, end] = SECTION_RANGES[key]
-      if (v >= start && v < end) {
-        next = key
-        break
-      }
-      if (v >= end) next = key
-    }
-    setCurrentSection((prev) => (prev === next ? prev : next))
+  // 遷移ロック: currentSection 変更直後 TRANSITION_LOCK_MS 間は新たな section commit と
+  // wheel/touch を抑制する。これで「0.6s 中に次境界を踏んでチェーン発火」を防ぐ。
+  const isTransitioningRef = useRef(false)
+  const transitionTimeoutRef = useRef<number | null>(null)
 
-    const [start, end] = SECTION_RANGES[next]
+  const commitSection = (target: SectionKey) => {
+    currentSectionRef.current = target
+    setCurrentSection(target)
+    isTransitioningRef.current = true
+    if (transitionTimeoutRef.current !== null) {
+      window.clearTimeout(transitionTimeoutRef.current)
+    }
+    transitionTimeoutRef.current = window.setTimeout(() => {
+      isTransitioningRef.current = false
+      transitionTimeoutRef.current = null
+    }, TRANSITION_LOCK_MS)
+  }
+
+  useMotionValueEvent(scrollYProgress, "change", (v) => {
+    // hysteresis 付き section 検出 (forward/backward 両対応、複数飛びも追従)
+    let target = currentSectionRef.current
+    let targetIdx = SECTION_ORDER.indexOf(target)
+
+    // 進行方向 (forward) に commit できる limit までインデックスを進める
+    while (targetIdx < SECTION_ORDER.length - 1) {
+      const nextKey = SECTION_ORDER[targetIdx + 1]
+      const [nextStart] = SECTION_RANGES[nextKey]
+      if (v >= nextStart + HYSTERESIS) {
+        targetIdx++
+        target = nextKey
+      } else break
+    }
+    // 戻り方向 (backward) に commit できる limit までインデックスを戻す
+    while (targetIdx > 0) {
+      const prevKey = SECTION_ORDER[targetIdx - 1]
+      const [, prevEnd] = SECTION_RANGES[prevKey]
+      if (v <= prevEnd - HYSTERESIS) {
+        targetIdx--
+        target = prevKey
+      } else break
+    }
+
+    if (target !== currentSectionRef.current && !isTransitioningRef.current) {
+      commitSection(target)
+    }
+
+    // インジケーター用ローカル進捗
+    const [start, end] = SECTION_RANGES[currentSectionRef.current]
     const localProgress = end > start ? Math.max(0, Math.min(1, (v - start) / (end - start))) : 0
     setSectionProgress(localProgress)
   })
 
-  // クロスフェード用 opacity (各セクションが自分の範囲で 1、隣接で fade)
-  // fadeIn/fadeOut を片側だけ無効化可能 (main 入口 / contact 出口で使用)。
-  // useTransform は React Hook のため stops 数は常に 4 で固定し、出力値を切り替える。
-  const mkOpacity = (
-    key: SectionKey,
-    opts: { fadeIn?: boolean; fadeOut?: boolean } = {}
-  ) => {
-    const [start, end] = SECTION_RANGES[key]
-    const fadeIn = opts.fadeIn ?? true
-    const fadeOut = opts.fadeOut ?? true
+  // 遷移ロック中は window 全体の wheel/touch を preventDefault して
+  // 連続スクロール容器のネイティブスクロール自体を止める (= 0.6s の「カチッ」感)。
+  useEffect(() => {
+    const blockWheel = (e: WheelEvent) => {
+      if (isTransitioningRef.current) e.preventDefault()
+    }
+    const blockTouch = (e: TouchEvent) => {
+      if (isTransitioningRef.current) e.preventDefault()
+    }
+    window.addEventListener("wheel", blockWheel, { passive: false })
+    window.addEventListener("touchmove", blockTouch, { passive: false })
+    return () => {
+      window.removeEventListener("wheel", blockWheel)
+      window.removeEventListener("touchmove", blockTouch)
+      if (transitionTimeoutRef.current !== null) {
+        window.clearTimeout(transitionTimeoutRef.current)
+        transitionTimeoutRef.current = null
+      }
+    }
+  }, [])
 
-    const inStart = Math.max(0, start - (fadeIn ? FADE : 1e-6))
-    const inEnd = start
-    const outStart = Math.max(inEnd, fadeOut ? end - FADE : end - 2e-6)
-    const outEnd = Math.min(1, end + (fadeOut ? 0 : 1e-6))
+  // contact の inner-bottom 到達後の「empty scroll への chain」を止める。
+  // contact は最後の section で、inner を読み切ったあと outer に流れ込んでも
+  // sticky のため視覚変化が起きず "引っ掛かり" として知覚される。
+  // 下方向 (deltaY > 0) のみ inner-bottom で preventDefault し、上方向は
+  // 前 section に戻るために残す。currentSection === "contact" の間だけ有効。
+  useEffect(() => {
+    if (currentSection !== "contact") {
+      lastTouchYRef.current = null
+      return
+    }
+    const inner = contactInnerRef.current
+    if (!inner) return
 
-    return useTransform(
-      scrollYProgress,
-      [inStart, inEnd, outStart, outEnd],
-      [fadeIn ? 0 : 1, 1, 1, fadeOut ? 0 : 1]
-    )
-  }
+    const isAtBottom = () => {
+      const max = inner.scrollHeight - inner.clientHeight
+      return max <= 0 || inner.scrollTop >= max - 1
+    }
 
-  // 横スライド (元の pageVariants 互換: 次セクションは右から入り、前セクションは左へ抜ける)
-  const SLIDE = 0.02
-  const mkSlideX = (
-    key: SectionKey,
-    opts: { slideIn?: boolean; slideOut?: boolean } = {}
-  ) => {
-    const [start, end] = SECTION_RANGES[key]
-    const slideIn = opts.slideIn ?? true
-    const slideOut = opts.slideOut ?? true
+    const onWheel = (e: WheelEvent) => {
+      if (e.deltaY > 0 && isAtBottom()) {
+        e.preventDefault()
+      }
+    }
+    const onTouchStart = (e: TouchEvent) => {
+      lastTouchYRef.current = e.touches[0]?.clientY ?? null
+    }
+    const onTouchMove = (e: TouchEvent) => {
+      const prev = lastTouchYRef.current
+      const cur = e.touches[0]?.clientY
+      if (prev == null || cur == null) return
+      lastTouchYRef.current = cur
+      // 指を上に動かす = ページを下にスクロール (deltaY > 0 相当)
+      const deltaY = prev - cur
+      if (deltaY > 0 && isAtBottom()) {
+        e.preventDefault()
+      }
+    }
 
-    const inStart = Math.max(0, start - (slideIn ? SLIDE : 1e-6))
-    const inEnd = start
-    const outStart = Math.max(inEnd, slideOut ? end - SLIDE : end - 2e-6)
-    const outEnd = Math.min(1, end + (slideOut ? 0 : 1e-6))
-
-    return useTransform(
-      scrollYProgress,
-      [inStart, inEnd, outStart, outEnd],
-      [slideIn ? "100%" : "0%", "0%", "0%", slideOut ? "-100%" : "0%"]
-    )
-  }
-
-  // 端セクションは反対側 fade/slide を切る (main 開始時に既に表示 / contact 末端まで表示し続ける)
-  const mainOpacity = mkOpacity("main", { fadeIn: false, fadeOut: true })
-  const aboutOpacity = mkOpacity("about")
-  const worksOpacity = mkOpacity("works")
-  const contactOpacity = mkOpacity("contact", { fadeIn: true, fadeOut: false })
-
-  const mainX = mkSlideX("main", { slideIn: false, slideOut: true })
-  const aboutX = mkSlideX("about")
-  const worksX = mkSlideX("works")
-  const contactX = mkSlideX("contact", { slideIn: true, slideOut: false })
+    inner.addEventListener("wheel", onWheel, { passive: false })
+    inner.addEventListener("touchstart", onTouchStart, { passive: true })
+    inner.addEventListener("touchmove", onTouchMove, { passive: false })
+    return () => {
+      inner.removeEventListener("wheel", onWheel)
+      inner.removeEventListener("touchstart", onTouchStart)
+      inner.removeEventListener("touchmove", onTouchMove)
+    }
+  }, [currentSection])
 
   // works カルーセル: works section 内の進捗を 0..projects.length-1 にマップ
   const worksLocalSpan = SECTION_RANGES.works[1] - SECTION_RANGES.works[0]
@@ -238,16 +301,20 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
     return () => unsub()
   }, [worksCarouselPos, worksPosition, worksMinIndex, worksMaxIndex])
 
-  // ヘッダーからの jump
+  // ヘッダーからの jump: instant (behavior:auto) で飛ばし、section を直接 commit する。
+  // hysteresis を踏み越えた位置に scrollTo して useMotionValueEvent 側で再 commit されないようにする。
   const navigateToSection = (sectionId: string) => {
     const container = scrollContainerRef.current
     if (!container) return
     const key = (SECTION_ORDER as readonly string[]).includes(sectionId)
       ? (sectionId as SectionKey)
       : "main"
+    if (key === currentSectionRef.current) return
     const [start] = SECTION_RANGES[key]
     const max = container.scrollHeight - container.clientHeight
-    container.scrollTo({ top: start * max, behavior: "smooth" })
+    const offset = (HYSTERESIS + 0.001) * max
+    container.scrollTo({ top: start * max + offset, behavior: "auto" })
+    commitSection(key)
   }
 
   // works カルーセル内のクリックで index ジャンプ → そのカードの中央に来るよう scroll
@@ -391,6 +458,18 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
     return labels[currentSection]
   }, [currentSection])
 
+  // 各セクションの離散 animate ターゲット (me-vs-cur で x/opacity を決める)
+  // - me === cur:  x="0%", opacity=1   (現在表示中)
+  // - me >  cur:   x="100%", opacity=0 (未来側で右に待機)
+  // - me <  cur:   x="-100%", opacity=0 (過去側で左に退避)
+  // direction を別途持たなくても me-vs-cur 自体が方向情報を含むので変位が自然に決まる。
+  const animateOf = (key: SectionKey): { x: string; opacity: number } => {
+    const cur = SECTION_ORDER.indexOf(currentSection)
+    const me = SECTION_ORDER.indexOf(key)
+    if (me === cur) return { x: "0%", opacity: 1 }
+    return { x: me > cur ? "100%" : "-100%", opacity: 0 }
+  }
+
   return (
     <>
       {/* Discord デコレーション (priority preload) */}
@@ -423,7 +502,10 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
             {/* ===== Main ===== */}
             <motion.div
               className="absolute inset-0"
-              style={{ opacity: mainOpacity, x: mainX, pointerEvents: currentSection === "main" ? "auto" : "none" }}
+              initial={false}
+              animate={animateOf("main")}
+              transition={pageTransition}
+              style={{ pointerEvents: currentSection === "main" ? "auto" : "none" }}
             >
               {/* 背景画像 */}
               <div
@@ -452,7 +534,10 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
             {/* ===== About ===== */}
             <motion.div
               className="absolute inset-0"
-              style={{ opacity: aboutOpacity, x: aboutX, pointerEvents: currentSection === "about" ? "auto" : "none" }}
+              initial={false}
+              animate={animateOf("about")}
+              transition={pageTransition}
+              style={{ pointerEvents: currentSection === "about" ? "auto" : "none" }}
             >
               <BgShader
                 colors={["#f97316", "#fb923c", "#fdba74", "#fda4af", "#fb7185", "#f472b6"]}
@@ -476,7 +561,10 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
             {/* ===== Works ===== */}
             <motion.div
               className="absolute inset-0"
-              style={{ opacity: worksOpacity, x: worksX, pointerEvents: currentSection === "works" ? "auto" : "none" }}
+              initial={false}
+              animate={animateOf("works")}
+              transition={pageTransition}
+              style={{ pointerEvents: currentSection === "works" ? "auto" : "none" }}
             >
               <DottedSurface className="absolute inset-0" speed={0.02}>
                 <div
@@ -509,7 +597,10 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
             {/* ===== Contact ===== */}
             <motion.div
               className="absolute inset-0"
-              style={{ opacity: contactOpacity, x: contactX, pointerEvents: currentSection === "contact" ? "auto" : "none" }}
+              initial={false}
+              animate={animateOf("contact")}
+              transition={pageTransition}
+              style={{ pointerEvents: currentSection === "contact" ? "auto" : "none" }}
             >
               <div className="absolute inset-0 pointer-events-none bg-black" style={{ zIndex: 0 }}>
                 <div className="absolute inset-0">
@@ -544,7 +635,10 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                   maxStars={7}
                 />
               </div>
-              <div className="relative z-10 w-full h-full overflow-y-auto no-scrollbar">
+              <div
+                ref={contactInnerRef}
+                className="relative z-10 w-full h-full overflow-y-auto no-scrollbar"
+              >
                 <div className="min-h-full w-full flex flex-col">
                   <div className="flex-1 flex items-center justify-center px-4 py-16 lg:py-20">
                     {isMobile ? (
