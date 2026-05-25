@@ -122,10 +122,19 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
   // mount 直後に実測して、overflow があれば DWELL_SMALL に切り替える。
   const [aboutVh, setAboutVh] = useState(DWELL_FULL)
 
-  // セクションサイズ (about のみ動的)
+  // セクションサイズ
+  //   about: BirthdayCountdown 等の有無で inner overflow が変わるため mount 後に実測
+  //   works: デスクトップは WorksCarousel が scrollYProgress でカルーセル位置を出すため
+  //          WORKS_VH 必要、モバイルは MobileWorks の inner list だけなので outer は
+  //          境界トリガー用に DWELL_SMALL まで縮める (= 縦リスト読了後の dead-zone を消す)
   const sectionHeights = useMemo(
-    () => ({ main: 180, about: aboutVh, works: WORKS_VH, contact: DWELL_SMALL }),
-    [aboutVh],
+    () => ({
+      main: 180,
+      about: aboutVh,
+      works: isMobile ? DWELL_SMALL : WORKS_VH,
+      contact: DWELL_SMALL,
+    }),
+    [aboutVh, isMobile],
   )
   const TOTAL_VH = useMemo(
     () => sectionHeights.main + sectionHeights.about + sectionHeights.works + sectionHeights.contact,
