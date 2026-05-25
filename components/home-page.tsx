@@ -73,30 +73,8 @@ interface HomePageProps {
   initialDaysUntilBirthday: number
 }
 
-// ---------- 案 A': 単一スクロール容器 + per-section 常時 mount + 離散 animate ----------
-//
-// スクロール容器は scrollContainerRef の overflow-y-auto 1 つだけ (= 連続スクロールの真実値)。
-// セクションは全 mount。x/opacity は scrollYProgress に scrub 連動させず、
-// 「currentSection が誰か」だけを離散判定し、各 motion.div の animate prop に
-// "me vs cur" で決まる x/opacity を渡して 0.6s ease で discrete に動かす。
-//
-// これでマスター t4ko.pet と同じ「スクロールに対してカチッとスナップして
-// 0.6s スライド」の挙動を、連続スクロール構造の上で再現する。
-//
-// 過去版 (97d62bf) は useTransform で 0.02 幅 (~3.6vh) の極小窓に opacity/x を
-// スクラブ連動させていたが、通常速度のスクロールでは一瞬で過ぎてしまい
-// 「アニメーションが消えた」と感じる原因になっていた。
-
 const WORKS_PADDING = 0.4 // works セクションの前後余白 (viewport 単位)
 
-// セクションの outer vh は inner overflow の有無に応じて切り替える:
-//  - inner に実際に overflow がある (= 読む scroll コンテンツがある) → outer は境界トリガー
-//    のためだけの最小値 (DWELL_SMALL) に縮め、inner-bottom 後の "空スクロール" を構造的に潰す。
-//  - inner に overflow がない (= 全部 viewport 内) → outer の dwelling 領域が唯一の
-//    "section に滞在する時間" になるので、master 同様に広めに取る (DWELL_FULL)。
-//
-// about は BirthdayCountdown / Skills など内容が日付で出たり消えたりするので、mount 後に
-// 実測して動的に決める。contact のフォームは常に viewport より大きいので静的に DWELL_SMALL。
 const DWELL_SMALL = 20
 const DWELL_FULL = 180
 const WORKS_VH = (projectDetails.length + 2 * WORKS_PADDING) * 100
