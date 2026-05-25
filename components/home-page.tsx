@@ -163,21 +163,60 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
   })
 
   // クロスフェード用 opacity (各セクションが自分の範囲で 1、隣接で fade)
-  const mkOpacity = (key: SectionKey) => {
+  // fadeIn/fadeOut を片側だけ無効化可能 (main 入口 / contact 出口で使用)。
+  // useTransform は React Hook のため stops 数は常に 4 で固定し、出力値を切り替える。
+  const mkOpacity = (
+    key: SectionKey,
+    opts: { fadeIn?: boolean; fadeOut?: boolean } = {}
+  ) => {
     const [start, end] = SECTION_RANGES[key]
-    const stops = [
-      Math.max(0, start - FADE),
-      start,
-      Math.max(start, end - FADE),
-      end,
-    ]
-    return useTransform(scrollYProgress, stops, [0, 1, 1, 0])
+    const fadeIn = opts.fadeIn ?? true
+    const fadeOut = opts.fadeOut ?? true
+
+    const inStart = Math.max(0, start - (fadeIn ? FADE : 1e-6))
+    const inEnd = start
+    const outStart = Math.max(inEnd, fadeOut ? end - FADE : end - 2e-6)
+    const outEnd = Math.min(1, end + (fadeOut ? 0 : 1e-6))
+
+    return useTransform(
+      scrollYProgress,
+      [inStart, inEnd, outStart, outEnd],
+      [fadeIn ? 0 : 1, 1, 1, fadeOut ? 0 : 1]
+    )
   }
 
-  const mainOpacity = mkOpacity("main")
+  // 横スライド (元の pageVariants 互換: 次セクションは右から入り、前セクションは左へ抜ける)
+  const SLIDE = 0.02
+  const mkSlideX = (
+    key: SectionKey,
+    opts: { slideIn?: boolean; slideOut?: boolean } = {}
+  ) => {
+    const [start, end] = SECTION_RANGES[key]
+    const slideIn = opts.slideIn ?? true
+    const slideOut = opts.slideOut ?? true
+
+    const inStart = Math.max(0, start - (slideIn ? SLIDE : 1e-6))
+    const inEnd = start
+    const outStart = Math.max(inEnd, slideOut ? end - SLIDE : end - 2e-6)
+    const outEnd = Math.min(1, end + (slideOut ? 0 : 1e-6))
+
+    return useTransform(
+      scrollYProgress,
+      [inStart, inEnd, outStart, outEnd],
+      [slideIn ? "100%" : "0%", "0%", "0%", slideOut ? "-100%" : "0%"]
+    )
+  }
+
+  // 端セクションは反対側 fade/slide を切る (main 開始時に既に表示 / contact 末端まで表示し続ける)
+  const mainOpacity = mkOpacity("main", { fadeIn: false, fadeOut: true })
   const aboutOpacity = mkOpacity("about")
   const worksOpacity = mkOpacity("works")
-  const contactOpacity = mkOpacity("contact")
+  const contactOpacity = mkOpacity("contact", { fadeIn: true, fadeOut: false })
+
+  const mainX = mkSlideX("main", { slideIn: false, slideOut: true })
+  const aboutX = mkSlideX("about")
+  const worksX = mkSlideX("works")
+  const contactX = mkSlideX("contact", { slideIn: true, slideOut: false })
 
   // works カルーセル: works section 内の進捗を 0..projects.length-1 にマップ
   const worksLocalSpan = SECTION_RANGES.works[1] - SECTION_RANGES.works[0]
@@ -384,7 +423,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
             {/* ===== Main ===== */}
             <motion.div
               className="absolute inset-0"
-              style={{ opacity: mainOpacity, pointerEvents: currentSection === "main" ? "auto" : "none" }}
+              style={{ opacity: mainOpacity, x: mainX, pointerEvents: currentSection === "main" ? "auto" : "none" }}
             >
               {/* 背景画像 */}
               <div
@@ -413,7 +452,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
             {/* ===== About ===== */}
             <motion.div
               className="absolute inset-0"
-              style={{ opacity: aboutOpacity, pointerEvents: currentSection === "about" ? "auto" : "none" }}
+              style={{ opacity: aboutOpacity, x: aboutX, pointerEvents: currentSection === "about" ? "auto" : "none" }}
             >
               <BgShader
                 colors={["#f97316", "#fb923c", "#fdba74", "#fda4af", "#fb7185", "#f472b6"]}
@@ -437,7 +476,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
             {/* ===== Works ===== */}
             <motion.div
               className="absolute inset-0"
-              style={{ opacity: worksOpacity, pointerEvents: currentSection === "works" ? "auto" : "none" }}
+              style={{ opacity: worksOpacity, x: worksX, pointerEvents: currentSection === "works" ? "auto" : "none" }}
             >
               <DottedSurface className="absolute inset-0" speed={0.02}>
                 <div
@@ -470,7 +509,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
             {/* ===== Contact ===== */}
             <motion.div
               className="absolute inset-0"
-              style={{ opacity: contactOpacity, pointerEvents: currentSection === "contact" ? "auto" : "none" }}
+              style={{ opacity: contactOpacity, x: contactX, pointerEvents: currentSection === "contact" ? "auto" : "none" }}
             >
               <div className="absolute inset-0 pointer-events-none bg-black" style={{ zIndex: 0 }}>
                 <div className="absolute inset-0">
