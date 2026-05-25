@@ -88,12 +88,17 @@ interface HomePageProps {
 // 「アニメーションが消えた」と感じる原因になっていた。
 
 const WORKS_PADDING = 0.4 // works セクションの前後余白 (viewport 単位)
+// inner overflow-y-auto を持つ about / contact は outer 側の section vh を境界判定に
+// 必要な最小値 (2 * HYSTERESIS = 1% より十分大きい程度) まで切り詰め、inner-bottom 到達後の
+// "outer の空スクロール" を構造的にほぼゼロにする。実際のコンテンツ読みは inner に集約し、
+// outer はトリガーのためだけに存在する。
+// main は inner なしの dwelling section なので 180vh のまま (タイトル静止表示の余裕)。
 const SECTION_HEIGHTS_VH = {
   main: 180,
-  about: 180,
+  about: 20,
   // works: 1 カードあたり 100vh + 前後余白
   works: (projectDetails.length + 2 * WORKS_PADDING) * 100,
-  contact: 180,
+  contact: 20,
 } as const
 
 const TOTAL_VH = Object.values(SECTION_HEIGHTS_VH).reduce((a, b) => a + b, 0)
@@ -149,10 +154,6 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
   // mounted ガードで初回 render では null を返すため、layoutEffect 段階だと container ref が未設定で警告が出る。
   // layoutEffect: false で useEffect 段階に遅らせる。
   const { scrollYProgress } = useScroll({ container: scrollContainerRef, layoutEffect: false })
-
-  // 各セクションの inner overflow-y-auto (本体スクロール領域)
-  const aboutInnerRef = useRef<HTMLDivElement | null>(null)
-  const contactInnerRef = useRef<HTMLDivElement | null>(null)
 
   // 現在表示中のセクション
   const [currentSection, setCurrentSection] = useState<SectionKey>("main")
@@ -211,80 +212,23 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
     setSectionProgress(localProgress)
   })
 
-  // 仮想スクロール (master `getCombinedScrollState` + `nextVirtual` 配分の移植)。
-  //
-  // wheel を常時 preventDefault してネイティブスクロールを完全に止め、delta を
-  // 「現在 section の inner → 共通 outer」の順に手動配分する。これでブラウザの
-  // overscroll chain が境目で 1 フレーム delta を捨てる「引っ掛かり」が消える。
-  // master と同じく、上方向は outer → inner の順 (inner は最大まで満たした状態を維持)。
-  //
-  // touch は input 等の native タッチ操作 (フォーカス・キャレット移動) と競合するため
-  // window レベルでは虚スクロールに置き換えず、遷移ロック中の preventDefault のみ残す。
-  // (タッチでは native scroll の方が UX が自然なので handover は overscroll-behavior に任せる)
+  // wheel/touch は完全 native に委ねる。空スクロールは
+  // about/contact の outer section vh を viewport ぴったり (110vh) に縮める構造変更で
+  // 「inner-bottom 後 → 数 px で次セクション境界 → 即 commit」となり潰れている。
+  // よって wheel 仮想化は不要。遷移ロック中の preventDefault だけ残して
+  // 0.6s スナップアニメ中のスクロール伝播を止める。
   useEffect(() => {
-    const outer = scrollContainerRef.current
-    if (!outer) return
-
-    const getInner = (key: SectionKey): HTMLDivElement | null => {
-      if (key === "about") return aboutInnerRef.current
-      if (key === "contact") return contactInnerRef.current
-      return null
-    }
-
-    const distributeDelta = (rawDelta: number) => {
-      if (rawDelta === 0) return
-      const cur = currentSectionRef.current
-      const inner = getInner(cur)
-      const innerMax = inner ? Math.max(0, inner.scrollHeight - inner.clientHeight) : 0
-      const innerTop = inner ? inner.scrollTop : 0
-      const outerMax = Math.max(0, outer.scrollHeight - outer.clientHeight)
-      const outerTop = outer.scrollTop
-
-      let delta = rawDelta
-      if (delta > 0) {
-        // 下方向: inner を先に満たす
-        if (inner && innerTop < innerMax) {
-          const take = Math.min(delta, innerMax - innerTop)
-          inner.scrollTop = innerTop + take
-          delta -= take
-        }
-        // 残りを outer に流す
-        if (delta > 0 && outerTop < outerMax) {
-          outer.scrollTop = Math.min(outerMax, outerTop + delta)
-        }
-      } else {
-        // 上方向: outer を先に減らす (master と同じ — inner は満たしたままで離脱しやすい)
-        if (outerTop > 0) {
-          const take = Math.min(-delta, outerTop)
-          outer.scrollTop = outerTop - take
-          delta += take
-        }
-        // 残りを inner から減らす
-        if (delta < 0 && inner && innerTop > 0) {
-          const take = Math.min(-delta, innerTop)
-          inner.scrollTop = innerTop - take
-        }
-      }
-    }
-
-    const onWheel = (e: WheelEvent) => {
-      if (isTransitioningRef.current) {
-        e.preventDefault()
-        return
-      }
-      e.preventDefault()
-      distributeDelta(e.deltaY)
-    }
-
-    const onTouchMoveDuringLock = (e: TouchEvent) => {
+    const blockWheel = (e: WheelEvent) => {
       if (isTransitioningRef.current) e.preventDefault()
     }
-
-    window.addEventListener("wheel", onWheel, { passive: false })
-    window.addEventListener("touchmove", onTouchMoveDuringLock, { passive: false })
+    const blockTouch = (e: TouchEvent) => {
+      if (isTransitioningRef.current) e.preventDefault()
+    }
+    window.addEventListener("wheel", blockWheel, { passive: false })
+    window.addEventListener("touchmove", blockTouch, { passive: false })
     return () => {
-      window.removeEventListener("wheel", onWheel)
-      window.removeEventListener("touchmove", onTouchMoveDuringLock)
+      window.removeEventListener("wheel", blockWheel)
+      window.removeEventListener("touchmove", blockTouch)
       if (transitionTimeoutRef.current !== null) {
         window.clearTimeout(transitionTimeoutRef.current)
         transitionTimeoutRef.current = null
@@ -558,10 +502,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                 offsetX={0.08}
                 veilOpacity="bg-black/20"
               />
-              <div
-                ref={aboutInnerRef}
-                className="relative z-10 w-full h-full overflow-y-auto no-scrollbar"
-              >
+              <div className="relative z-10 w-full h-full overflow-y-auto no-scrollbar">
                 <AboutSection
                   isMobile={isMobile}
                   daysUntilBirthday={daysUntilBirthday}
@@ -649,10 +590,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                   maxStars={7}
                 />
               </div>
-              <div
-                ref={contactInnerRef}
-                className="relative z-10 w-full h-full overflow-y-auto no-scrollbar"
-              >
+              <div className="relative z-10 w-full h-full overflow-y-auto no-scrollbar">
                 <div className="min-h-full w-full flex flex-col">
                   <div className="flex-1 flex items-center justify-center px-4 py-16 lg:py-20">
                     {isMobile ? (
