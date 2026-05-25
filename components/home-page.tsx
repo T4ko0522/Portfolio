@@ -88,38 +88,18 @@ interface HomePageProps {
 // 「アニメーションが消えた」と感じる原因になっていた。
 
 const WORKS_PADDING = 0.4 // works セクションの前後余白 (viewport 単位)
-// inner overflow-y-auto を持つ about / contact は outer 側の section vh を境界判定に
-// 必要な最小値 (2 * HYSTERESIS = 1% より十分大きい程度) まで切り詰め、inner-bottom 到達後の
-// "outer の空スクロール" を構造的にほぼゼロにする。実際のコンテンツ読みは inner に集約し、
-// outer はトリガーのためだけに存在する。
-// main は inner なしの dwelling section なので 180vh のまま (タイトル静止表示の余裕)。
-const SECTION_HEIGHTS_VH = {
-  main: 180,
-  about: 20,
-  // works: 1 カードあたり 100vh + 前後余白
-  works: (projectDetails.length + 2 * WORKS_PADDING) * 100,
-  contact: 20,
-} as const
 
-const TOTAL_VH = Object.values(SECTION_HEIGHTS_VH).reduce((a, b) => a + b, 0)
-
-// セクションの累積範囲 (進捗 0-1)
-const SECTION_RANGES = (() => {
-  let acc = 0
-  const map: Record<"main" | "about" | "works" | "contact", [number, number]> = {
-    main: [0, 0],
-    about: [0, 0],
-    works: [0, 0],
-    contact: [0, 0],
-  }
-  for (const key of ["main", "about", "works", "contact"] as const) {
-    const start = acc / TOTAL_VH
-    acc += SECTION_HEIGHTS_VH[key]
-    const end = acc / TOTAL_VH
-    map[key] = [start, end]
-  }
-  return map
-})()
+// セクションの outer vh は inner overflow の有無に応じて切り替える:
+//  - inner に実際に overflow がある (= 読む scroll コンテンツがある) → outer は境界トリガー
+//    のためだけの最小値 (DWELL_SMALL) に縮め、inner-bottom 後の "空スクロール" を構造的に潰す。
+//  - inner に overflow がない (= 全部 viewport 内) → outer の dwelling 領域が唯一の
+//    "section に滞在する時間" になるので、master 同様に広めに取る (DWELL_FULL)。
+//
+// about は BirthdayCountdown / Skills など内容が日付で出たり消えたりするので、mount 後に
+// 実測して動的に決める。contact のフォームは常に viewport より大きいので静的に DWELL_SMALL。
+const DWELL_SMALL = 20
+const DWELL_FULL = 180
+const WORKS_VH = (projectDetails.length + 2 * WORKS_PADDING) * 100
 
 // 境界 hysteresis: 進捗 0.005 (~3.6vh) のデッドバンドを設けて、
 // wheel 微振動で currentSection が flip しないようにする。
@@ -155,6 +135,45 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
   // layoutEffect: false で useEffect 段階に遅らせる。
   const { scrollYProgress } = useScroll({ container: scrollContainerRef, layoutEffect: false })
 
+  // 各 section の inner overflow-y-auto への ref。
+  //   - aboutInnerRef:   mount 後に scrollHeight を測って outer vh を動的決定する
+  //   - contactInnerRef: form の inner スクロールを indicator 進捗に合算する
+  const aboutInnerRef = useRef<HTMLDivElement | null>(null)
+  const contactInnerRef = useRef<HTMLDivElement | null>(null)
+  // about の outer vh: 初期は DWELL_FULL (= inner overflow なし前提)。
+  // mount 直後に実測して、overflow があれば DWELL_SMALL に切り替える。
+  const [aboutVh, setAboutVh] = useState(DWELL_FULL)
+
+  // セクションサイズ (about のみ動的)
+  const sectionHeights = useMemo(
+    () => ({ main: 180, about: aboutVh, works: WORKS_VH, contact: DWELL_SMALL }),
+    [aboutVh],
+  )
+  const TOTAL_VH = useMemo(
+    () => sectionHeights.main + sectionHeights.about + sectionHeights.works + sectionHeights.contact,
+    [sectionHeights],
+  )
+  // 進捗 0-1 のセクション境界 (sectionHeights から派生)
+  const sectionRanges = useMemo(() => {
+    let acc = 0
+    const map: Record<SectionKey, [number, number]> = {
+      main: [0, 0],
+      about: [0, 0],
+      works: [0, 0],
+      contact: [0, 0],
+    }
+    for (const key of SECTION_ORDER) {
+      const start = acc / TOTAL_VH
+      acc += sectionHeights[key]
+      const end = acc / TOTAL_VH
+      map[key] = [start, end]
+    }
+    return map
+  }, [sectionHeights, TOTAL_VH])
+  // useMotionValueEvent コールバックや navigate から最新値を参照するための ref
+  const sectionRangesRef = useRef(sectionRanges)
+  sectionRangesRef.current = sectionRanges
+
   // 現在表示中のセクション
   const [currentSection, setCurrentSection] = useState<SectionKey>("main")
   const currentSectionRef = useRef<SectionKey>("main")
@@ -178,7 +197,39 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
     }, TRANSITION_LOCK_MS)
   }
 
+  // 現在 section の inner element (overflow-y-auto) を返す
+  const getInnerEl = (key: SectionKey): HTMLDivElement | null => {
+    if (key === "about") return aboutInnerRef.current
+    if (key === "contact") return contactInnerRef.current
+    return null
+  }
+
+  // インジケーター用 sectionProgress: outer (section 内 pixel) + inner.scrollTop を
+  // 仮想 1 本のスクロールとして合算する (master の getCombinedScrollState 思想)。
+  // これで contact のように inner overflow が outer budget より大きい section でも
+  // inner スクロールが indicator に正しく反映される。
+  const recomputeSectionProgress = (vOverride?: number) => {
+    const ranges = sectionRangesRef.current
+    const cur = currentSectionRef.current
+    const [start, end] = ranges[cur]
+    const v = vOverride ?? scrollYProgress.get()
+    const container = scrollContainerRef.current
+    const outerMaxPx = container ? container.scrollHeight - container.clientHeight : 0
+    const outerSectionPx = Math.max(0, (end - start) * outerMaxPx)
+    const outerInSectionPx = Math.max(0, Math.min(outerSectionPx, (v - start) * outerMaxPx))
+
+    const inner = getInnerEl(cur)
+    const innerMaxPx = inner ? Math.max(0, inner.scrollHeight - inner.clientHeight) : 0
+    const innerScrollPx = inner ? inner.scrollTop : 0
+
+    const combined = outerInSectionPx + innerScrollPx
+    const combinedMax = outerSectionPx + innerMaxPx
+    const progress = combinedMax > 0 ? Math.max(0, Math.min(1, combined / combinedMax)) : 0
+    setSectionProgress((prev) => (Math.abs(prev - progress) < 1e-4 ? prev : progress))
+  }
+
   useMotionValueEvent(scrollYProgress, "change", (v) => {
+    const ranges = sectionRangesRef.current
     // hysteresis 付き section 検出 (forward/backward 両対応、複数飛びも追従)
     let target = currentSectionRef.current
     let targetIdx = SECTION_ORDER.indexOf(target)
@@ -186,7 +237,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
     // 進行方向 (forward) に commit できる limit までインデックスを進める
     while (targetIdx < SECTION_ORDER.length - 1) {
       const nextKey = SECTION_ORDER[targetIdx + 1]
-      const [nextStart] = SECTION_RANGES[nextKey]
+      const [nextStart] = ranges[nextKey]
       if (v >= nextStart + HYSTERESIS) {
         targetIdx++
         target = nextKey
@@ -195,7 +246,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
     // 戻り方向 (backward) に commit できる limit までインデックスを戻す
     while (targetIdx > 0) {
       const prevKey = SECTION_ORDER[targetIdx - 1]
-      const [, prevEnd] = SECTION_RANGES[prevKey]
+      const [, prevEnd] = ranges[prevKey]
       if (v <= prevEnd - HYSTERESIS) {
         targetIdx--
         target = prevKey
@@ -206,17 +257,60 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
       commitSection(target)
     }
 
-    // インジケーター用ローカル進捗
-    const [start, end] = SECTION_RANGES[currentSectionRef.current]
-    const localProgress = end > start ? Math.max(0, Math.min(1, (v - start) / (end - start))) : 0
-    setSectionProgress(localProgress)
+    recomputeSectionProgress(v)
   })
 
-  // wheel/touch は完全 native に委ねる。空スクロールは
-  // about/contact の outer section vh を viewport ぴったり (110vh) に縮める構造変更で
-  // 「inner-bottom 後 → 数 px で次セクション境界 → 即 commit」となり潰れている。
-  // よって wheel 仮想化は不要。遷移ロック中の preventDefault だけ残して
-  // 0.6s スナップアニメ中のスクロール伝播を止める。
+  // inner overflow-y-auto の scroll で recomputeSectionProgress を呼ぶ。
+  // (outer の scrollYProgress は inner-only scroll では動かないため、別経路で fire)
+  useEffect(() => {
+    const targets = [aboutInnerRef.current, contactInnerRef.current].filter(
+      (el): el is HTMLDivElement => el != null,
+    )
+    if (targets.length === 0) return
+    const onInnerScroll = () => recomputeSectionProgress()
+    for (const el of targets) {
+      el.addEventListener("scroll", onInnerScroll, { passive: true })
+    }
+    return () => {
+      for (const el of targets) {
+        el.removeEventListener("scroll", onInnerScroll)
+      }
+    }
+    // currentSection 変化で再評価対象が変わる + mounted で ref がセットされる
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentSection, mounted])
+
+  // about の inner overflow を実測して outer vh を切り替える。
+  //   overflow あり (=BirthdayCountdown 等で content が viewport を超える) → DWELL_SMALL
+  //   overflow なし (=普段)                                                → DWELL_FULL
+  // mount 直後と daysUntilBirthday 変化時に再評価する。
+  // 注: 切替により TOTAL_VH も変わり container の高さが変わるが、初回 mount 後すぐの
+  // 切替なので user は scrollTop=0 (main) におり影響を受けない。
+  useEffect(() => {
+    if (!mounted) return
+    let raf1 = 0
+    let raf2 = 0
+    // content layout 完了を 2 frame 待つ
+    raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => {
+        const el = aboutInnerRef.current
+        if (!el) return
+        const overflow = el.scrollHeight - el.clientHeight > 1
+        const next = overflow ? DWELL_SMALL : DWELL_FULL
+        setAboutVh((prev) => (prev === next ? prev : next))
+      })
+    })
+    return () => {
+      cancelAnimationFrame(raf1)
+      cancelAnimationFrame(raf2)
+    }
+  }, [mounted, daysUntilBirthday, isMobile])
+
+  // wheel/touch は完全 native に委ねる (smooth scroll / 慣性スクロール維持)。
+  // 引っ掛かりの原因 = section 内 outer 空スクロール の長さは、inner overflow を持つ section
+  // (= contact、および birthday active 時の about) を DWELL_SMALL = 20vh に縮めることで
+  // 構造的にゼロ近くまで圧縮している。
+  // 残るのは transition lock 中の preventDefault のみ (0.6s スナップアニメの止め用)。
   useEffect(() => {
     const blockWheel = (e: WheelEvent) => {
       if (isTransitioningRef.current) e.preventDefault()
@@ -237,9 +331,9 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
   }, [])
 
   // works カルーセル: works section 内の進捗を 0..projects.length-1 にマップ
-  const worksLocalSpan = SECTION_RANGES.works[1] - SECTION_RANGES.works[0]
-  const worksInnerStart = SECTION_RANGES.works[0] + (WORKS_PADDING * 100 / SECTION_HEIGHTS_VH.works) * worksLocalSpan
-  const worksInnerEnd = SECTION_RANGES.works[1] - (WORKS_PADDING * 100 / SECTION_HEIGHTS_VH.works) * worksLocalSpan
+  const worksLocalSpan = sectionRanges.works[1] - sectionRanges.works[0]
+  const worksInnerStart = sectionRanges.works[0] + (WORKS_PADDING * 100 / sectionHeights.works) * worksLocalSpan
+  const worksInnerEnd = sectionRanges.works[1] - (WORKS_PADDING * 100 / sectionHeights.works) * worksLocalSpan
   const worksCarouselPos = useTransform(
     scrollYProgress,
     [worksInnerStart, worksInnerEnd],
@@ -265,7 +359,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
       ? (sectionId as SectionKey)
       : "main"
     if (key === currentSectionRef.current) return
-    const [start] = SECTION_RANGES[key]
+    const [start] = sectionRangesRef.current[key]
     const max = container.scrollHeight - container.clientHeight
     const offset = (HYSTERESIS + 0.001) * max
     container.scrollTo({ top: start * max + offset, behavior: "auto" })
@@ -502,7 +596,10 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                 offsetX={0.08}
                 veilOpacity="bg-black/20"
               />
-              <div className="relative z-10 w-full h-full overflow-y-auto no-scrollbar">
+              <div
+                ref={aboutInnerRef}
+                className="relative z-10 w-full h-full overflow-y-auto no-scrollbar"
+              >
                 <AboutSection
                   isMobile={isMobile}
                   daysUntilBirthday={daysUntilBirthday}
@@ -590,7 +687,10 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                   maxStars={7}
                 />
               </div>
-              <div className="relative z-10 w-full h-full overflow-y-auto no-scrollbar">
+              <div
+                ref={contactInnerRef}
+                className="relative z-10 w-full h-full overflow-y-auto no-scrollbar"
+              >
                 <div className="min-h-full w-full flex flex-col">
                   <div className="flex-1 flex items-center justify-center px-4 py-16 lg:py-20">
                     {isMobile ? (
@@ -603,7 +703,7 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 0.3 }}
-                    className="py-6 text-center"
+                    className="pt-6 pb-20 text-center"
                   >
                     <p className="text-gray-400 text-sm">
                       © {new Date().getFullYear()} T4ko0522. All rights reserved.
