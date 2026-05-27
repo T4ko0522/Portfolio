@@ -292,10 +292,15 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
     }
   }, [])
 
-  // Spotifyデータを取得（Cloudflare Workers 互換の polling）
+  // Spotify ステータス: Durable Object + WebSocket を主とし、失敗時は短い polling にフォールバック
   useEffect(() => {
     let cancelled = false
-    let abortController: AbortController | null = null
+    let socket: WebSocket | null = null
+    let pollAbortController: AbortController | null = null
+    let pollIntervalId: ReturnType<typeof setInterval> | null = null
+    let reconnectTimer: ReturnType<typeof setTimeout> | null = null
+    let wsAttempt = 0
+    let openedOnce = false
 
     const applyData = (data: SpotifyApiResponse) => {
       const spotifyActivity = data.discord?.activities?.find(
@@ -337,20 +342,26 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
       }
     }
 
-    const fetchStatus = async () => {
-      abortController?.abort()
-      abortController = new AbortController()
+    const stopPolling = () => {
+      pollAbortController?.abort()
+      pollAbortController = null
+      if (pollIntervalId !== null) {
+        clearInterval(pollIntervalId)
+        pollIntervalId = null
+      }
+    }
 
+    const fetchOnce = async () => {
+      pollAbortController?.abort()
+      pollAbortController = new AbortController()
       try {
         const res = await fetch('/api/v1/spotify-status', {
-          signal: abortController.signal,
+          signal: pollAbortController.signal,
           cache: 'no-store',
         })
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
-
         const data: SpotifyApiResponse = await res.json()
         if (cancelled) return
-
         if (data.error) {
           console.error('Spotify status error:', data.error)
         } else {
@@ -365,14 +376,109 @@ export default function HomePage({ pacificoClassName, initialDaysUntilBirthday }
       }
     }
 
+    const startPolling = () => {
+      if (pollIntervalId !== null) return
+      fetchOnce()
+      pollIntervalId = setInterval(fetchOnce, 5000)
+    }
+
+    const connectWebSocket = () => {
+      if (cancelled) return
+      if (typeof window === 'undefined' || typeof WebSocket === 'undefined') {
+        startPolling()
+        return
+      }
+
+      // 初回接続前に最新の state を 1 度取得しておく (WS 接続成功までの空白を避ける)
+      if (!openedOnce) fetchOnce()
+
+      const scheme = window.location.protocol === 'https:' ? 'wss' : 'ws'
+      const wsUrl = `${scheme}://${window.location.host}/api/v1/spotify-status/ws`
+      let didOpen = false
+
+      try {
+        socket = new WebSocket(wsUrl)
+      } catch (error) {
+        console.warn('WebSocket constructor failed, falling back to polling:', error)
+        startPolling()
+        return
+      }
+
+      socket.onopen = () => {
+        didOpen = true
+        openedOnce = true
+        wsAttempt = 0
+        stopPolling()
+      }
+
+      socket.onmessage = (event) => {
+        try {
+          const data: SpotifyApiResponse = JSON.parse(event.data)
+          if (cancelled) return
+          if (data.error) {
+            console.error('Spotify status error:', data.error)
+          } else {
+            applyData(data)
+          }
+        } catch (error) {
+          console.error('Failed to parse WS payload:', error)
+        } finally {
+          if (!cancelled) setIsSpotifyLoading(false)
+        }
+      }
+
+      const handleDisconnect = () => {
+        socket = null
+        if (cancelled) return
+
+        if (!didOpen && !openedOnce) {
+          // 一度も開けなかった = WS 非対応環境 (`pnpm dev` など) と判断して polling に切替え
+          wsAttempt++
+          if (wsAttempt >= 2) {
+            startPolling()
+            return
+          }
+        }
+
+        // 接続中の途切れは指数バックオフで再接続を試みる (最大 30s)
+        const delay = Math.min(30_000, 1_000 * 2 ** Math.min(wsAttempt, 5))
+        wsAttempt++
+        startPolling() // 切断中の空白を埋めるため一時的に polling を回す
+        reconnectTimer = setTimeout(() => {
+          reconnectTimer = null
+          stopPolling()
+          connectWebSocket()
+        }, delay)
+      }
+
+      socket.onerror = () => {
+        // close が続けて発火するため、ここでは何もしない
+      }
+      socket.onclose = handleDisconnect
+    }
+
     setIsSpotifyLoading(true)
-    fetchStatus()
-    const intervalId = setInterval(fetchStatus, 5000)
+    connectWebSocket()
 
     return () => {
       cancelled = true
-      abortController?.abort()
-      clearInterval(intervalId)
+      if (reconnectTimer !== null) {
+        clearTimeout(reconnectTimer)
+        reconnectTimer = null
+      }
+      stopPolling()
+      if (socket) {
+        try {
+          socket.onopen = null
+          socket.onmessage = null
+          socket.onerror = null
+          socket.onclose = null
+          socket.close()
+        } catch {
+          // already closed
+        }
+        socket = null
+      }
     }
   }, [])
 
