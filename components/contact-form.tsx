@@ -44,7 +44,10 @@ export default function ContactForm({ variant = "desktop" }: ContactFormProps) {
         body: JSON.stringify({ name, email, subject, message, website, turnstileToken }),
       })
 
-      const data = await res.json().catch(() => ({}))
+      const data = (await res.json().catch(() => ({}))) as {
+        error?: unknown
+        issues?: unknown
+      }
 
       if (!res.ok) {
         setStatus("error")
