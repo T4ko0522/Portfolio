@@ -3,17 +3,6 @@
 [サイトはこちらから](https://t4ko.pet)  
 個人開発のポートフォリオです。  
 
-## 🛠 技術スタック
-
-| 分類              | 使用技術                              |
-| ----------------- | ------------------------------------- |
-| フレームワーク    | Next.js 15 (React 18)                 |
-| 言語              | TypeScript                            |
-| UI／スタイリング  | Tailwind CSS, shadcn/ui, Radix UI     |
-| Lint／Format      | ESLint, Prettier                      |
-| ホスティング      | Cloudflare Workers (OpenNext)         |
-| パッケージ管理    | pnpm                                  |
-
 ## 📄 LICENSE
 Apache License 2.0  
 詳細は[LICENSE](https://github.com/T4ko0522/Portfolio/blob/master/LICENSE)を参照してください。 
