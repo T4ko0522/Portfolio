@@ -106,7 +106,7 @@ export default function MainSection({ pacificoClassName, isMobile }: MainSection
         </motion.a>
 
         <motion.a
-          href="https://x.com/_A1m3r"
+          href="https://x.com/T4ko0522"
           target="_blank"
           rel="noopener noreferrer"
           className="relative p-4 rounded-full bg-transparent"
