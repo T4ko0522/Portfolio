@@ -6,6 +6,7 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev",
+    "dev:cloudflare": "OPENNEXT_CLOUDFLARE_DEV=1 next dev",
     "start": "next start",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "lint": "vp lint",
