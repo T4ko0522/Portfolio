@@ -1,25 +1,25 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import Image from "next/image"
-import dynamic from "next/dynamic"
-import { Card, CardContent } from "@/card"
-import { Gift, Code } from "lucide-react"
-import SpotifyNowPlaying from "./spotify-now-playing"
-import { BirthdayCountdown, BirthdayCelebration } from "./birthday-countdown"
-import type { SpotifyTrack } from "../types/spotify"
+import { motion } from "framer-motion";
+import Image from "next/image";
+import dynamic from "next/dynamic";
+import { Card, CardContent } from "@/card";
+import { Gift, Code } from "lucide-react";
+import SpotifyNowPlaying from "./spotify-now-playing";
+import { BirthdayCountdown, BirthdayCelebration } from "./birthday-countdown";
+import type { SpotifyTrack } from "../types/spotify";
 
 const MobileAbout = dynamic<{
-  daysUntilBirthday: number
-  discordStatus?: string | null
-}>(() => import("./mobile/about"), { ssr: false })
+  daysUntilBirthday: number;
+  discordStatus?: string | null;
+}>(() => import("./mobile/about"), { ssr: false });
 
 interface AboutSectionProps {
-  isMobile: boolean
-  daysUntilBirthday: number
-  discordStatus: "online" | "idle" | "dnd" | "offline" | null
-  spotifyTrack: SpotifyTrack | null
-  isSpotifyLoading: boolean
+  isMobile: boolean;
+  daysUntilBirthday: number;
+  discordStatus: "online" | "idle" | "dnd" | "offline" | null;
+  spotifyTrack: SpotifyTrack | null;
+  isSpotifyLoading: boolean;
 }
 
 export default function AboutSection({
@@ -32,9 +32,12 @@ export default function AboutSection({
   if (isMobile) {
     return (
       <div className="min-h-screen container mx-auto px-4 max-w-6xl flex items-start justify-center pt-20 pb-28">
-        <MobileAbout daysUntilBirthday={daysUntilBirthday} discordStatus={discordStatus} />
+        <MobileAbout
+          daysUntilBirthday={daysUntilBirthday}
+          discordStatus={discordStatus}
+        />
       </div>
-    )
+    );
   }
 
   return (
@@ -44,7 +47,12 @@ export default function AboutSection({
         <motion.div
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8, type: "spring", bounce: 0.4, delay: 0.1 }}
+          transition={{
+            duration: 0.8,
+            type: "spring",
+            bounce: 0.4,
+            delay: 0.1,
+          }}
           className="flex-shrink-0 flex flex-col items-center"
         >
           <div className="relative w-[300px] h-[240px] lg:w-[400px] lg:h-[320px] flex items-center justify-center">
@@ -65,10 +73,19 @@ export default function AboutSection({
               >
                 <div
                   className="absolute bottom-3 right-7"
-                  style={{ width: "28px", height: "28px", filter: "drop-shadow(0 0 0 3px #1a1a1a)" }}
+                  style={{
+                    width: "28px",
+                    height: "28px",
+                    filter: "drop-shadow(0 0 0 3px #1a1a1a)",
+                  }}
                 >
                   {discordStatus === "online" ? (
-                    <svg width="28" height="28" viewBox="0 0 12 12" className="w-full h-full">
+                    <svg
+                      width="28"
+                      height="28"
+                      viewBox="0 0 12 12"
+                      className="w-full h-full"
+                    >
                       <circle cx="6" cy="6" r="6" fill="rgb(69, 163, 102)" />
                     </svg>
                   ) : discordStatus === "idle" ? (
@@ -89,12 +106,29 @@ export default function AboutSection({
                       />
                     </svg>
                   ) : discordStatus === "dnd" ? (
-                    <svg width="28" height="28" viewBox="0 0 12 12" className="w-full h-full">
+                    <svg
+                      width="28"
+                      height="28"
+                      viewBox="0 0 12 12"
+                      className="w-full h-full"
+                    >
                       <circle cx="6" cy="6" r="6" fill="rgb(237, 66, 69)" />
-                      <rect x="2" y="5" width="8" height="2" fill="black" rx="1" />
+                      <rect
+                        x="2"
+                        y="5"
+                        width="8"
+                        height="2"
+                        fill="black"
+                        rx="1"
+                      />
                     </svg>
                   ) : (
-                    <svg width="28" height="28" viewBox="0 0 12 12" className="w-full h-full">
+                    <svg
+                      width="28"
+                      height="28"
+                      viewBox="0 0 12 12"
+                      className="w-full h-full"
+                    >
                       <circle cx="6" cy="6" r="6" fill="rgb(116, 127, 141)" />
                       <circle cx="6" cy="6" r="4" fill="rgb(79, 84, 92)" />
                     </svg>
@@ -140,34 +174,53 @@ export default function AboutSection({
                   height={16}
                   className="w-4 h-4"
                 />
-                <span className="text-xs lg:text-sm font-bold text-white">CF</span>
+                <span className="text-xs lg:text-sm font-bold text-white">
+                  CF
+                </span>
               </div>
             </a>
             <p className="text-base lg:text-lg text-gray-300 mb-1">
               tako._.v<span className="font-bold">・</span>18yo He/Him
             </p>
           </motion.div>
-          <SpotifyNowPlaying track={spotifyTrack || undefined} isLoading={isSpotifyLoading} />
+          <SpotifyNowPlaying
+            track={spotifyTrack || undefined}
+            isLoading={isSpotifyLoading}
+          />
         </motion.div>
 
         {/* 右側: About Me */}
         <motion.div
           initial={{ opacity: 0, x: 50 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8, type: "spring", bounce: 0.4, delay: 0.2 }}
+          transition={{
+            duration: 0.8,
+            type: "spring",
+            bounce: 0.4,
+            delay: 0.2,
+          }}
           className="flex-1"
         >
           <Card className="bg-transparent border-transparent">
             <CardContent className="p-6">
-              <h3 className="text-2xl lg:text-3xl font-bold mb-6 text-cyan-300">💻 About Me</h3>
+              <h3 className="text-2xl lg:text-3xl font-bold mb-6 text-cyan-300">
+                💻 About Me
+              </h3>
               <p className="mb-4 text-white text-lg">
-                <span className="font-bold">Full-Stack Engineer | Software Developer</span>
+                <span className="font-bold">
+                  Full-Stack Engineer | Software Developer
+                </span>
               </p>
               <p className="mb-6 text-white">
-                2008年大阪生まれ。現在はWeb開発を中心に学習しており、バックエンドとフロントエンドの両方を扱えるフルスタックエンジニアです！
+                2008年5月22日 大阪府生誕！
                 <br />
+                現在はWeb開発を中心に学習しており、バックエンドとフロントエンドの両方を扱えるフルスタックエンジニアです！
                 <span className="block text-sm italic text-gray-200 mt-2">
-                  Born in Osaka in 2008. Currently studying web development and is a full-stack engineer capable of both back-end and front-end development.                </span>
+                  Born on May 22 2008, in Osaka Prefecture.
+                  <br />
+                  Currently studying web development and is a full-stack
+                  engineer capable of both back-end and front-end development.
+                </span>
               </p>
               <div className="grid grid-cols-1 gap-4">
                 {/* 誕生日 */}
@@ -180,12 +233,18 @@ export default function AboutSection({
                     <h4 className="text-lg font-medium text-white">Birthday</h4>
                   </div>
                   <div className="flex items-baseline">
-                    <span className="text-xl font-bold text-gray-200">May 22nd</span>
+                    <span className="text-xl font-bold text-gray-200">
+                      May 22nd
+                    </span>
                     {daysUntilBirthday > 0 && (
-                      <span className="ml-2 text-sm text-gray-200">({daysUntilBirthday} days left)</span>
+                      <span className="ml-2 text-sm text-gray-200">
+                        ({daysUntilBirthday} days left)
+                      </span>
                     )}
                     {daysUntilBirthday === 0 && (
-                      <span className="ml-2 text-sm text-green-400 font-bold animate-pulse">Today! 🎉</span>
+                      <span className="ml-2 text-sm text-green-400 font-bold animate-pulse">
+                        Today! 🎉
+                      </span>
                     )}
                   </div>
                 </motion.div>
@@ -230,5 +289,5 @@ export default function AboutSection({
         </motion.div>
       </div>
     </div>
-  )
+  );
 }
