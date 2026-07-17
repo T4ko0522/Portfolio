@@ -20,6 +20,7 @@ yarn-error.log*
 
 # env files
 .env*
+!.envrc
 !.env.example
 
 # vercel
@@ -45,3 +46,8 @@ next-env.d.ts
 .wrangler
 .dev.vars*
 !.dev.vars.example
+
+# Nix
+.direnv/
+/result
+/result-*
