@@ -92,16 +92,16 @@ export default function About({ daysUntilBirthday, discordStatus }: AboutProps) 
             <h2 className="text-2xl sm:text-3xl font-bold text-white" style={{ fontFamily: 'Discord, sans-serif' }}>T4ko</h2>
             <div className="flex items-center gap-1.5 border border-white/30 rounded px-2 py-0.5">
               <Image
-                src="https://cdn.discordapp.com/clan-badges/911128328000405504/84412606536488d76915487613779361.png"
+                src="https://cdn.discordapp.com/clan-badges/595317990191398933/5607047f21b7e25a26c195cc49871278.png"
                 alt="Clan Badge"
                 width={16}
                 height={16}
                 className="w-4 h-4"
               />
-              <span className="text-xs sm:text-sm font-bold text-white">F1</span>
+              <span className="text-xs sm:text-sm font-bold text-white">CF</span>
             </div>
           </a>
-          <p className="text-sm sm:text-base text-gray-300 mb-4">tako._.v<span className="font-bold">・</span>17yo He/Him</p>
+          <p className="text-sm sm:text-base text-gray-300 mb-4">tako._.v<span className="font-bold">・</span>18yo He/Him</p>
         </motion.div>
       </motion.div>
 
@@ -119,10 +119,10 @@ export default function About({ daysUntilBirthday, discordStatus }: AboutProps) 
             <span className="font-bold">Full-Stack Engineer | Software Developer</span>
           </p>
           <p className="mb-4 sm:mb-6 text-white text-sm sm:text-base">
-            2008年大阪生まれ。現在はWeb開発を中心に学習しており、バックエンドとフロントエンドの両方を扱えるフルスタックエンジニアです！2025年10月からmuclaseという会社でエンジニアとしてインターンで働いております！
+            2008年大阪生まれ。現在はWeb開発を中心に学習しており、バックエンドとフロントエンドの両方を扱えるフルスタックエンジニアです！
             <br />
             <span className="block text-xs sm:text-sm italic text-gray-200 mt-2">
-              Born in Osaka in 2008. Currently studying web development and is a full-stack engineer capable of both back-end and front-end development. Starting in October 2025, I have been working as an intern at a company called muclase!
+              Born in Osaka in 2008. Currently studying web development and is a full-stack engineer capable of both back-end and front-end development.
             </span>
           </p>
           <div className="grid grid-cols-1 gap-4">
@@ -161,7 +161,7 @@ export default function About({ daysUntilBirthday, discordStatus }: AboutProps) 
                   className="h-auto"
                 />
                 <img
-                  src="https://skillicons.dev/icons?i=react,vue,astro,next,nuxt,remix,tailwind,materialui,express,nest,vite,vitest,nodejs,deno,electron"
+                  src="https://skillicons.dev/icons?i=react,vue,astro,next,nuxt,remix,tailwind,materialui,express,nest,vite,vitest,nodejs,deno"
                   alt="Frameworks"
                   className="h-auto"
                 />
