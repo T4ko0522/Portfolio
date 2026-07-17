@@ -21,8 +21,8 @@ interface WorksCarouselProps {
   maxIndex: number
 }
 
-const SLOTS = 4
-const CENTER_SLOT = 1.5
+const DESKTOP_SLOTS = 3.5
+const TABLET_SLOTS = 2.5
 const VELOCITY_THRESHOLD = 400
 const SNAP_RATIO = 0.2
 
@@ -38,7 +38,9 @@ export default function WorksCarousel({
   const [containerWidth, setContainerWidth] = useState(0)
   const x = useMotionValue(0)
 
-  const cardWidth = containerWidth / SLOTS
+  const slotCount = containerWidth > 0 && containerWidth < 1024 ? TABLET_SLOTS : DESKTOP_SLOTS
+  const centerSlot = slotCount / 2 - 0.5
+  const cardWidth = containerWidth / slotCount
 
   useEffect(() => {
     const update = () => {
@@ -55,17 +57,17 @@ export default function WorksCarousel({
   useEffect(() => {
     if (cardWidth === 0) return
     const apply = (p: number) => {
-      x.set((CENTER_SLOT - (minIndex + p)) * cardWidth)
+      x.set((centerSlot - (minIndex + p)) * cardWidth)
     }
     apply(position.get())
     const unsub = position.on("change", apply)
     return unsub
-  }, [position, cardWidth, minIndex, x])
+  }, [position, cardWidth, centerSlot, minIndex, x])
 
   const handleDragEnd = (_: unknown, info: PanInfo) => {
     if (cardWidth === 0) return
     const currentX = x.get()
-    const baseIndex = CENTER_SLOT - currentX / cardWidth
+    const baseIndex = centerSlot - currentX / cardWidth
 
     let target = Math.round(baseIndex)
     if (info.velocity.x < -VELOCITY_THRESHOLD) target = Math.ceil(baseIndex + SNAP_RATIO)
@@ -89,8 +91,8 @@ export default function WorksCarousel({
           style={{ x }}
           drag={cardWidth > 0 ? "x" : false}
           dragConstraints={{
-            left: (CENTER_SLOT - maxIndex) * cardWidth,
-            right: (CENTER_SLOT - minIndex) * cardWidth,
+            left: (centerSlot - maxIndex) * cardWidth,
+            right: (centerSlot - minIndex) * cardWidth,
           }}
           dragElastic={0.12}
           dragMomentum={false}
@@ -104,6 +106,7 @@ export default function WorksCarousel({
               activeIndex={activeIndex}
               x={x}
               cardWidth={cardWidth}
+              centerSlot={centerSlot}
             />
           ))}
         </motion.div>
@@ -118,12 +121,13 @@ interface ProjectCardProps {
   activeIndex: number
   x: MotionValue<number>
   cardWidth: number
+  centerSlot: number
 }
 
-function ProjectCard({ project, index, activeIndex, x, cardWidth }: ProjectCardProps) {
+function ProjectCard({ project, index, activeIndex, x, cardWidth, centerSlot }: ProjectCardProps) {
   const opacity = useTransform(x, (xVal) => {
     if (cardWidth === 0) return 1
-    const distance = Math.abs(index - CENTER_SLOT + xVal / cardWidth)
+    const distance = Math.abs(index - centerSlot + xVal / cardWidth)
     if (distance <= 1) return 1 - 0.1 * distance
     if (distance <= 2) return 0.9 - 0.5 * (distance - 1)
     if (distance <= 3) return 0.4 - 0.4 * (distance - 2)
@@ -132,7 +136,7 @@ function ProjectCard({ project, index, activeIndex, x, cardWidth }: ProjectCardP
 
   const scale = useTransform(x, (xVal) => {
     if (cardWidth === 0) return 1
-    const distance = Math.abs(index - CENTER_SLOT + xVal / cardWidth)
+    const distance = Math.abs(index - centerSlot + xVal / cardWidth)
     if (distance <= 1) return 1.15 - 0.2 * distance
     if (distance <= 2) return 0.95 - 0.2 * (distance - 1)
     if (distance <= 3) return 0.75 - 0.2 * (distance - 2)
@@ -145,7 +149,7 @@ function ProjectCard({ project, index, activeIndex, x, cardWidth }: ProjectCardP
     <motion.div
       className="px-3"
       style={{
-        width: cardWidth || `${100 / SLOTS}%`,
+        width: cardWidth || `${100 / DESKTOP_SLOTS}%`,
         flexShrink: 0,
         opacity,
         scale,
