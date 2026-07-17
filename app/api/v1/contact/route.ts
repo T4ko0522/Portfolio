@@ -1,144 +1,144 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { z } from 'zod'
+import { NextResponse } from 'next/server'
+import { contactSchema, type ContactInput } from '../../../../lib/contact-schema'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-const ContactSchema = z.object({
-  name: z.string().trim().min(1, '名前を入力してください').max(50, '名前は50文字以内で入力してください'),
-  email: z
-    .string()
-    .trim()
-    .min(1, 'メールアドレスを入力してください')
-    .max(254, 'メールアドレスが長すぎます')
-    .email('有効なメールアドレスを入力してください'),
-  subject: z.string().trim().min(1, '件名を入力してください').max(100, '件名は100文字以内で入力してください'),
-  message: z
-    .string()
-    .trim()
-    .min(10, '本文は10文字以上で入力してください')
-    .max(2000, '本文は2000文字以内で入力してください'),
-  website: z.string().optional(),
-  turnstileToken: z.string().optional(),
-})
-
+const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify'
+const REQUEST_TIMEOUT_MS = 10_000
 const RATE_LIMIT_WINDOW_MS = 60_000
-const RATE_LIMIT_MAX_ENTRIES = 1000
-const rateLimitStore = new Map<string, number>()
-
+const RATE_LIMIT_MAX_REQUESTS = 5
+const RATE_LIMIT_MAX_ENTRIES = 1_000
 const DISCORD_EMBED_COLOR = 0x5865f2
+const DISCORD_TITLE_MAX_LENGTH = 256
+const DISCORD_FIELD_MAX_LENGTH = 1_024
 
-function getClientIp(req: NextRequest): string {
-  const forwarded = req.headers.get('x-forwarded-for')
-  if (forwarded) return forwarded.split(',')[0].trim()
-  const real = req.headers.get('x-real-ip')
-  if (real) return real
-  return 'unknown'
+type ContactMessage = Pick<ContactInput, 'name' | 'email' | 'subject' | 'message'> & {
+  ip: string
+}
+
+const rateLimitStore = new Map<string, number[]>()
+
+function getClientIp(request: Request): string {
+  const cloudflareIp = request.headers.get('cf-connecting-ip')?.trim()
+  const forwardedIp = request.headers.get('x-forwarded-for')?.split(',')[0].trim()
+  const realIp = request.headers.get('x-real-ip')?.trim()
+
+  return cloudflareIp || forwardedIp || realIp || 'unknown'
 }
 
 function isRateLimited(ip: string): boolean {
   const now = Date.now()
 
-  if (rateLimitStore.size > RATE_LIMIT_MAX_ENTRIES) {
-    for (const [key, ts] of rateLimitStore) {
-      if (now - ts > RATE_LIMIT_WINDOW_MS) rateLimitStore.delete(key)
+  for (const [key, timestamps] of rateLimitStore) {
+    const recentTimestamps = timestamps.filter((timestamp) => now - timestamp < RATE_LIMIT_WINDOW_MS)
+    if (recentTimestamps.length === 0) {
+      rateLimitStore.delete(key)
+    } else {
+      rateLimitStore.set(key, recentTimestamps)
     }
   }
 
-  const last = rateLimitStore.get(ip)
-  if (last !== undefined && now - last < RATE_LIMIT_WINDOW_MS) return true
-  rateLimitStore.set(ip, now)
+  const recentRequests = rateLimitStore.get(ip) ?? []
+  if (recentRequests.length >= RATE_LIMIT_MAX_REQUESTS) return true
+
+  rateLimitStore.set(ip, [...recentRequests, now])
+
+  if (rateLimitStore.size > RATE_LIMIT_MAX_ENTRIES) {
+    const oldestIp = rateLimitStore.keys().next().value
+    if (oldestIp) rateLimitStore.delete(oldestIp)
+  }
+
   return false
 }
 
-async function verifyTurnstile(token: string, ip: string): Promise<boolean> {
-  const secret = process.env.TURNSTILE_SECRET_KEY
-  if (!secret) return process.env.NODE_ENV !== 'production'
-
-  const params = new URLSearchParams({ secret, response: token, remoteip: ip })
-
+async function verifyTurnstile(token: string, ip: string, secret: string): Promise<boolean> {
   try {
-    const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+    const response = await fetch(TURNSTILE_VERIFY_URL, {
       method: 'POST',
-      body: params,
+      body: new URLSearchParams({ secret, response: token, remoteip: ip }),
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     })
-    if (!res.ok) return false
-    const data = (await res.json()) as { success?: boolean }
+
+    if (!response.ok) return false
+
+    const data = (await response.json()) as { success?: boolean }
     return data.success === true
   } catch {
     return false
   }
 }
 
-interface ContactPayload {
-  name: string
-  email: string
-  subject: string
-  message: string
-  ip: string
-}
-
-function buildDiscordPayload({ name, email, subject, message, ip }: ContactPayload) {
+function buildDiscordPayload({ name, email, subject, message, ip }: ContactMessage) {
   return {
     username: 'Portfolio Contact',
     embeds: [
       {
-        title: `[Portfolio] ${subject}`.slice(0, 256),
+        title: `[Portfolio] ${subject}`.slice(0, DISCORD_TITLE_MAX_LENGTH),
         color: DISCORD_EMBED_COLOR,
         timestamp: new Date().toISOString(),
         fields: [
-          { name: 'Name', value: name.slice(0, 1024), inline: true },
-          { name: 'Email', value: email.slice(0, 1024), inline: true },
-          { name: 'IP', value: ip.slice(0, 1024), inline: true },
-          { name: 'Message', value: message.slice(0, 1024) },
+          { name: 'Name', value: name.slice(0, DISCORD_FIELD_MAX_LENGTH), inline: true },
+          { name: 'Email', value: email.slice(0, DISCORD_FIELD_MAX_LENGTH), inline: true },
+          { name: 'IP', value: ip.slice(0, DISCORD_FIELD_MAX_LENGTH), inline: true },
+          { name: 'Message', value: message.slice(0, DISCORD_FIELD_MAX_LENGTH) },
         ],
       },
     ],
   }
 }
 
-export async function POST(req: NextRequest) {
-  const ip = getClientIp(req)
+async function sendToDiscord(webhookUrl: string, payload: ReturnType<typeof buildDiscordPayload>) {
+  const response = await fetch(webhookUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+  })
 
-  if (isRateLimited(ip)) {
-    return NextResponse.json(
-      { error: '送信間隔が短すぎます。1分ほど時間をおいてから再度お試しください。' },
-      { status: 429 },
-    )
-  }
+  if (response.ok) return
+
+  const detail = await response.text().catch(() => '')
+  throw new Error(`Discord webhook responded with ${response.status}: ${detail}`)
+}
+
+export async function POST(request: Request) {
+  const ip = getClientIp(request)
 
   let body: unknown
   try {
-    body = await req.json()
+    body = await request.json()
   } catch {
     return NextResponse.json({ error: 'リクエストの形式が正しくありません。' }, { status: 400 })
   }
 
-  const parsed = ContactSchema.safeParse(body)
-  if (!parsed.success) {
+  const result = contactSchema.safeParse(body)
+  if (!result.success) {
     return NextResponse.json(
       {
         error: '入力内容に誤りがあります。',
-        issues: parsed.error.flatten().fieldErrors,
+        issues: result.error.flatten().fieldErrors,
       },
       { status: 400 },
     )
   }
 
-  const { name, email, subject, message, website, turnstileToken } = parsed.data
+  const { website, turnstileToken, ...contact } = result.data
 
-  if (website && website.trim() !== '') {
-    return NextResponse.json({ ok: true })
-  }
+  if (website?.trim()) return NextResponse.json({ ok: true })
 
-  const turnstileEnabled = Boolean(process.env.TURNSTILE_SECRET_KEY)
-  if (turnstileEnabled) {
+  const turnstileSecret = process.env.TURNSTILE_SECRET_KEY
+  if (turnstileSecret) {
     if (!turnstileToken) {
       return NextResponse.json({ error: 'スパム認証が完了していません。' }, { status: 400 })
     }
-    const valid = await verifyTurnstile(turnstileToken, ip)
-    if (!valid) {
-      return NextResponse.json({ error: 'スパム認証に失敗しました。再度お試しください。' }, { status: 400 })
+
+    const verified = await verifyTurnstile(turnstileToken, ip, turnstileSecret)
+    if (!verified) {
+      return NextResponse.json(
+        { error: 'スパム認証に失敗しました。再度お試しください。' },
+        { status: 400 },
+      )
     }
   }
 
@@ -151,28 +151,21 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  try {
-    const res = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(buildDiscordPayload({ name, email, subject, message, ip })),
-    })
+  if (isRateLimited(ip)) {
+    return NextResponse.json(
+      { error: '1分以内の送信回数が上限に達しました。時間をおいてから再度お試しください。' },
+      { status: 429 },
+    )
+  }
 
-    if (!res.ok) {
-      const detail = await res.text().catch(() => '')
-      console.error('Discord webhook error:', res.status, detail)
-      return NextResponse.json(
-        { error: '送信に失敗しました。時間をおいて再度お試しください。' },
-        { status: 502 },
-      )
-    }
-  } catch (err) {
-    console.error('Discord webhook request failed:', err)
+  try {
+    await sendToDiscord(webhookUrl, buildDiscordPayload({ ...contact, ip }))
+    return NextResponse.json({ ok: true })
+  } catch (error) {
+    console.error('Discord webhook request failed:', error)
     return NextResponse.json(
       { error: '送信に失敗しました。時間をおいて再度お試しください。' },
       { status: 502 },
     )
   }
-
-  return NextResponse.json({ ok: true })
 }

@@ -3,6 +3,7 @@
 import { Turnstile } from "@marsidev/react-turnstile"
 import { motion } from "framer-motion"
 import { useState, type FormEvent } from "react"
+import { contactSchema } from "../lib/contact-schema"
 
 type Status = "idle" | "submitting" | "success" | "error"
 
@@ -33,15 +34,30 @@ export default function ContactForm({ variant = "desktop" }: ContactFormProps) {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setStatus("submitting")
     setErrorMessage("")
     setFieldErrors({})
+
+    const result = contactSchema.safeParse({ name, email, subject, message, website, turnstileToken })
+    if (!result.success) {
+      const errors = result.error.flatten().fieldErrors
+      setStatus("error")
+      setErrorMessage("入力内容をご確認ください。")
+      setFieldErrors({
+        name: errors.name,
+        email: errors.email,
+        subject: errors.subject,
+        message: errors.message,
+      })
+      return
+    }
+
+    setStatus("submitting")
 
     try {
       const res = await fetch("/api/v1/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, subject, message, website, turnstileToken }),
+        body: JSON.stringify(result.data),
       })
 
       const data = (await res.json().catch(() => ({}))) as {
