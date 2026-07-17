@@ -56,7 +56,7 @@ export default function ContactSection({ onCopyDiscord, discordCopied }: Contact
             </h2>
 
             <p className="mt-8 text-white/60 text-sm leading-relaxed font-light max-w-sm">
-              ご依頼・ご相談・雑談、なんでもお気軽にどうぞ。
+              ご依頼・ご相談なんでもお気軽にどうぞ。
               <br />
               通常 1〜2 日以内に返信します。
             </p>

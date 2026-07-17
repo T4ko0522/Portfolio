@@ -52,7 +52,7 @@ export default function Contact({ onCopyDiscord, discordCopied }: ContactProps) 
           together.
         </h2>
         <p className="mt-4 text-white/60 text-xs leading-relaxed font-light">
-          ご依頼・ご相談・雑談、なんでもお気軽にどうぞ。通常 1〜2 日以内に返信します。
+          ご依頼・ご相談なんでもお気軽にどうぞ。通常 1〜2 日以内に返信します。
         </p>
       </motion.div>
 
