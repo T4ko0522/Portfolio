@@ -1,7 +1,7 @@
 export interface ProjectDetail {
   title: string
   description: string
-  longDescription: string
+  longDescription?: string
   imageUrl: string
   imageAlt: string
   url?: string
