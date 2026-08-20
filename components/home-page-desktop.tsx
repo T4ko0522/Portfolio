@@ -172,9 +172,23 @@ export default function HomePageDesktop({
   const isTransitioningRef = useRef(false)
   const transitionTimeoutRef = useRef<number | null>(null)
 
-  const commitSection = (target: SectionKey) => {
+  const commitSection = (target: SectionKey, anchor: "entry" | "start" = "entry") => {
+    const previousIndex = SECTION_ORDER.indexOf(currentSectionRef.current)
+    const targetIndex = SECTION_ORDER.indexOf(target)
     currentSectionRef.current = target
     setCurrentSection(target)
+
+    const container = scrollContainerRef.current
+    if (container && previousIndex !== targetIndex) {
+      const [start, end] = sectionRangesRef.current[target]
+      const max = container.scrollHeight - container.clientHeight
+      const offset = (HYSTERESIS + 0.001) * max
+      const top = anchor === "start" || targetIndex > previousIndex
+        ? start * max + offset
+        : end * max - offset
+      container.scrollTo({ top, behavior: "auto" })
+    }
+
     isTransitioningRef.current = true
     if (transitionTimeoutRef.current !== null) {
       window.clearTimeout(transitionTimeoutRef.current)
@@ -299,11 +313,7 @@ export default function HomePageDesktop({
       ? (sectionId as SectionKey)
       : "main"
     if (key === currentSectionRef.current) return
-    const [start] = sectionRangesRef.current[key]
-    const max = container.scrollHeight - container.clientHeight
-    const offset = (HYSTERESIS + 0.001) * max
-    container.scrollTo({ top: start * max + offset, behavior: "auto" })
-    commitSection(key)
+    commitSection(key, "start")
   }
 
   const handleWorksActiveIndexChange = (idx: number) => {
