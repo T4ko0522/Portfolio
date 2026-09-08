@@ -3,6 +3,23 @@
 [サイトはこちらから](https://t4ko.pet)  
 個人開発のポートフォリオです。  
 
+## 開発環境
+
+Nix の開発シェルに Node.js 22 と pnpm 10 を定義しています。
+
+```sh
+nix develop
+pnpm install
+pnpm dev
+```
+
+静的チェックと本番ビルドは次のコマンドで実行できます。
+
+```sh
+pnpm check
+pnpm build
+```
+
 ## 📄 LICENSE
 Apache License 2.0  
 詳細は[LICENSE](https://github.com/T4ko0522/Portfolio/blob/master/LICENSE)を参照してください。 
