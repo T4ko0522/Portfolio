@@ -1,51 +1,23 @@
 {
-	"$schema": "node_modules/wrangler/config-schema.json",
-	"main": "worker/index.ts",
-	"name": "portfolio",
-	"compatibility_date": "2026-05-22",
-	"compatibility_flags": [
-		"nodejs_compat",
-		"global_fetch_strictly_public"
-	],
-	"routes": [
-		{
-			"pattern": "t4ko.pet",
-			"custom_domain": true
-		},
-		{
-			"pattern": "www.t4ko.pet",
-			"custom_domain": true
-		}
-	],
-	"assets": {
-		"directory": ".open-next/assets",
-		"binding": "ASSETS"
-	},
-	"services": [
-		{
-			// Self-reference service binding, the service name must match the worker name
-			// see https://opennext.js.org/cloudflare/caching
-			"binding": "WORKER_SELF_REFERENCE",
-			"service": "portfolio"
-		}
-	],
-	"images": {
-		// Enable image optimization
-		// see https://opennext.js.org/cloudflare/howtos/image
-		"binding": "IMAGES"
-	},
-	"durable_objects": {
-		"bindings": [
-			{
-				"name": "SPOTIFY_STATUS_DO",
-				"class_name": "SpotifyStatusDO"
-			}
-		]
-	},
-	"migrations": [
-		{
-			"tag": "v1",
-			"new_sqlite_classes": ["SpotifyStatusDO"]
-		}
-	]
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "portfolio",
+  "compatibility_date": "2026-09-10",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "src/server.ts",
+  "routes": [
+    {
+      "pattern": "t4ko.pet",
+      "custom_domain": true,
+    },
+    {
+      "pattern": "www.t4ko.pet",
+      "custom_domain": true,
+    },
+  ],
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["SpotifyStatusDO"],
+    },
+  ],
 }

@@ -1,7 +1,7 @@
 # Portfolio
 
 [サイトはこちらから](https://t4ko.pet)  
-個人開発のポートフォリオです。  
+個人開発のポートフォリオです。
 
 ## 開発環境
 
@@ -21,8 +21,10 @@ pnpm build
 ```
 
 ## 📄 LICENSE
+
 Apache License 2.0  
-詳細は[LICENSE](https://github.com/T4ko0522/Portfolio/blob/master/LICENSE)を参照してください。 
+詳細は[LICENSE](https://github.com/T4ko0522/Portfolio/blob/master/LICENSE)を参照してください。
+
 ```
 Copyright 2026 T4ko0522
 
