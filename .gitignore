@@ -1,5 +1,6 @@
 # Local environment
 .vscode/
+assets/
 .env*
 !.envrc
 !.env.example
