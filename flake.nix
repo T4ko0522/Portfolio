@@ -13,21 +13,21 @@
       workerdLauncher = pkgs.writeShellScriptBin "workerd-nix" ''
         set -eu
 
-        for workerd in "$PWD"/node_modules/.pnpm/@cloudflare+workerd-linux-64@*/node_modules/@cloudflare/workerd-linux-64/bin/workerd; do
+        for workerd in "$PWD"/node_modules/@cloudflare/workerd-linux-64/bin/workerd; do
           if [ -x "$workerd" ]; then
             exec ${pkgs.nix-ld}/bin/nix-ld "$workerd" "$@"
           fi
         done
 
-        printf '%s\n' "workerd binary not found. Run pnpm install in the project root." >&2
+        printf '%s\n' "workerd binary not found. Run bun install in the project root." >&2
         exit 1
       '';
     in
     {
       devShells.${system}.default = pkgs.mkShell {
         packages = [
-          pkgs.nodejs_22
-          pkgs.pnpm_10
+          pkgs.bun
+          pkgs.nodejs_24
           pkgs.glibc
           pkgs.nix-ld
           workerdLauncher

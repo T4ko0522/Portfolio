@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [master]
+    branches: [master, v2]
   pull_request:
-    branches: [master]
+    branches: [master, v2]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -23,35 +23,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup mise (node / pnpm / just / vite-plus)
-        uses: jdx/mise-action@v2
-        with:
-          experimental: true
-          cache: true
-
-      - name: Resolve pnpm store path
-        id: pnpm-store
-        shell: bash
-        run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
-
-      - name: Restore pnpm store cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.pnpm-store.outputs.path }}
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-
+      - name: Install Nix
+        uses: nixbuild/nix-quick-install-action@v35
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: nix develop --command bun install --frozen-lockfile
 
-      - name: Lint (vp lint / oxlint)
-        run: just lint
+      - name: Check formatting, lint, and types
+        run: nix develop --command bun run check
 
-      - name: Typecheck (tsc --noEmit)
-        run: just typecheck
+      - name: Test
+        run: nix develop --command bun run test
 
-      - name: Build (next build)
-        run: just build
-        env:
-          NEXT_TELEMETRY_DISABLED: "1"
+      - name: Build
+        run: nix develop --command bun run build
