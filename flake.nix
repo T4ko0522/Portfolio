@@ -36,6 +36,9 @@
         # Miniflare reads this variable when it starts its workerd process.
         MINIFLARE_WORKERD_PATH = "${workerdLauncher}/bin/workerd-nix";
 
+        # Trust the Nix CA bundle for local workerd HTTPS requests.
+        NODE_EXTRA_CA_CERTS = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+
         # Make the permitted loader explicit and available only in this shell.
         NIX_LD = "${pkgs.glibc}/lib/ld-linux-x86-64.so.2";
         NIX_LD_LIBRARY_PATH = "${pkgs.glibc}/lib";

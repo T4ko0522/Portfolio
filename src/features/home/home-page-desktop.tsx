@@ -5,7 +5,7 @@ import { motion, useMotionValue, useTransform } from "framer-motion"
 import { cn } from "@/components/ui/utils"
 import { mainBackground, pageTransition } from "./content"
 import { projectDetails } from "@/features/works/projects"
-import type { DiscordStatus, SpotifyTrack } from "@/features/presence/types"
+import type { DiscordStatus, SpotifyTrack, PresenceState } from "@/features/presence/types"
 import Image from "@/components/ui/image"
 import Header from "./header"
 import ContactSection from "@/features/contact/contact-section"
@@ -38,6 +38,7 @@ interface HomePageDesktopProps {
   daysUntilBirthday: number | null
   spotifyTrack: SpotifyTrack | null
   isSpotifyLoading: boolean
+  presenceConnection: PresenceState["presenceConnection"]
   discordStatus: DiscordStatus | null
   discordCopied: boolean
   onCopyDiscord: () => void
@@ -49,6 +50,7 @@ export default function HomePageDesktop({
   daysUntilBirthday,
   spotifyTrack,
   isSpotifyLoading,
+  presenceConnection,
   discordStatus,
   discordCopied,
   onCopyDiscord,
@@ -170,6 +172,7 @@ export default function HomePageDesktop({
                   discordStatus={discordStatus}
                   spotifyTrack={spotifyTrack}
                   isSpotifyLoading={isSpotifyLoading}
+                  presenceConnection={presenceConnection}
                 />
               </div>
             </motion.div>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test"
-import { contactSchema } from "./contact-schema"
+import { contactSchema } from "../../../shared/contact"
 
 const message = {
   name: "Tako",

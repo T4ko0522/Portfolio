@@ -6,7 +6,7 @@ import { lazy, Suspense, useEffect, useState, type ReactNode } from "react"
 import { cn } from "@/components/ui/utils"
 import { mainBackground } from "../content"
 import { projectDetails } from "@/features/works/projects"
-import type { DiscordStatus, SpotifyTrack } from "@/features/presence/types"
+import type { DiscordStatus, SpotifyTrack, PresenceState } from "@/features/presence/types"
 import MobileHeader from "./mobile-header"
 import MainSection from "../main-section"
 import AboutSection from "@/features/profile/about-section"
@@ -36,6 +36,7 @@ interface HomePageMobileProps {
   daysUntilBirthday: number | null
   spotifyTrack: SpotifyTrack | null
   isSpotifyLoading: boolean
+  presenceConnection: PresenceState["presenceConnection"]
   discordStatus: DiscordStatus | null
   discordCopied: boolean
   onCopyDiscord: () => void
@@ -65,6 +66,7 @@ export default function HomePageMobile({
   daysUntilBirthday,
   spotifyTrack,
   isSpotifyLoading,
+  presenceConnection,
   discordStatus,
   discordCopied,
   onCopyDiscord,
@@ -224,6 +226,7 @@ export default function HomePageMobile({
               discordStatus={discordStatus}
               spotifyTrack={spotifyTrack}
               isSpotifyLoading={isSpotifyLoading}
+              presenceConnection={presenceConnection}
             />
           </motion.div>
         </section>

@@ -22,8 +22,8 @@ export const contactSchema = z.object({
     .trim()
     .min(10, "本文は10文字以上で入力してください")
     .max(2_000, "本文は2000文字以内で入力してください"),
-  website: z.string().optional(),
-  turnstileToken: z.string().optional(),
+  website: z.string().max(200).optional(),
+  turnstileToken: z.string().max(2048).optional(),
 })
 
 export type ContactInput = z.infer<typeof contactSchema>

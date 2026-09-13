@@ -25,14 +25,16 @@ bun run preview    # ビルド結果のローカル確認
 - `src/features`：home・profile・works・presence・contact の画面、データ、ロジック
 - `src/components`：共通 UI と背景演出
 - `src/styles`：共通 CSS・フォント
+- `backend`：お問い合わせ送信と `status.json` の取得を担当する独立した Hono Worker
+- `shared`：フロントとバックエンド共通の入力・応答スキーマ
 
 紹介・作品の本文は静的生成し、画面幅に依存する制御・演出・誕生日の残日数はクライアントで更新します。PC とモバイルのナビゲーションは別々に管理します。
 
-## 接続待ち
+## バックエンド
 
-Discord・Spotify は未接続です。外部 API／WebSocket 接続は後続対応で、このプロジェクトには取得 API を実装しません。既存 Durable Object は保存データを削除しないためのクラス定義だけを残し、フロントからは接続しません。
+本番フロントは `https://api.t4ko.pet` の Hono API に接続します。`bun run dev` では Web と Hono Worker を一緒に起動し、ローカルの `/api/*` を Service Binding 経由でバックエンドへ転送します。
 
-お問い合わせフォームは入力検証まで対応しています。送信 API は後続対応で、送信操作時にはメールでの連絡を案内します。任意の公開 Turnstile キーは `env.example` を参照してください。
+お問い合わせは Turnstile 検証後に Discord Webhook へ送信します。Discord・Spotify の表示は、Hono 経由で既存の `status.json` から取得します。[設定と API](backend/README.md)を参照してください。
 
 ## License
 

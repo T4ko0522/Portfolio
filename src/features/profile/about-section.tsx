@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Gift, Code } from "lucide-react"
 import SpotifyNowPlaying from "@/features/presence/spotify-now-playing"
 import { BirthdayCountdown, BirthdayCelebration } from "./birthday-countdown"
-import type { DiscordStatus, SpotifyTrack } from "@/features/presence/types"
+import type { DiscordStatus, SpotifyTrack, PresenceState } from "@/features/presence/types"
 import MobileAbout from "./mobile-about"
 
 interface AboutSectionProps {
@@ -15,6 +15,7 @@ interface AboutSectionProps {
   discordStatus: DiscordStatus | null
   spotifyTrack: SpotifyTrack | null
   isSpotifyLoading: boolean
+  presenceConnection: PresenceState["presenceConnection"]
 }
 
 export default function AboutSection({
@@ -23,11 +24,21 @@ export default function AboutSection({
   discordStatus,
   spotifyTrack,
   isSpotifyLoading,
+  presenceConnection,
 }: AboutSectionProps) {
   if (isMobile) {
     return (
       <div className="min-h-screen container mx-auto px-4 max-w-6xl flex items-start justify-center pt-20 pb-28">
-        <MobileAbout daysUntilBirthday={daysUntilBirthday} discordStatus={discordStatus} />
+        <div className="w-full">
+          <MobileAbout daysUntilBirthday={daysUntilBirthday} discordStatus={discordStatus} />
+          <div className="flex justify-center">
+            <SpotifyNowPlaying
+              track={spotifyTrack ?? undefined}
+              isLoading={isSpotifyLoading}
+              connection={presenceConnection}
+            />
+          </div>
+        </div>
       </div>
     )
   }
@@ -150,7 +161,11 @@ export default function AboutSection({
               tako._.v<span className="font-bold">・</span>18yo He/Him
             </p>
           </motion.div>
-          <SpotifyNowPlaying track={spotifyTrack || undefined} isLoading={isSpotifyLoading} />
+          <SpotifyNowPlaying
+            track={spotifyTrack || undefined}
+            isLoading={isSpotifyLoading}
+            connection={presenceConnection}
+          />
         </motion.div>
 
         {/* 右側: About Me */}

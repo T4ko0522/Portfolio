@@ -1,4 +1,4 @@
-import { DurableObject } from "cloudflare:workers"
+import { DurableObject, env } from "cloudflare:workers"
 import handler, { createServerEntry } from "@tanstack/react-start/server-entry"
 
 /**
@@ -11,6 +11,10 @@ export class SpotifyStatusDO extends DurableObject<CloudflareEnv> {
 
 export default createServerEntry({
   fetch(request) {
+    const pathname = new URL(request.url).pathname
+    if (pathname === "/api" || pathname.startsWith("/api/")) {
+      return env.BACKEND.fetch(request)
+    }
     return handler.fetch(request)
   },
 })

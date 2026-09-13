@@ -4,6 +4,7 @@
   "compatibility_date": "2026-09-10",
   "compatibility_flags": ["nodejs_compat"],
   "main": "src/server.ts",
+  "services": [{ "binding": "BACKEND", "service": "portfolio-backend" }],
   "routes": [
     {
       "pattern": "t4ko.pet",

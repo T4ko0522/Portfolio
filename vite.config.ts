@@ -9,7 +9,10 @@ export default defineConfig(({ mode }) => ({
     mode === "test"
       ? [react()]
       : [
-          ...cloudflare({ viteEnvironment: { name: "ssr" } }),
+          ...cloudflare({
+            viteEnvironment: { name: "ssr" },
+            auxiliaryWorkers: [{ configPath: "backend/wrangler.jsonc" }],
+          }),
           ...tanstackStart({
             prerender: {
               enabled: true,
