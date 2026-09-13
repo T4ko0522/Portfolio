@@ -28,6 +28,7 @@ export default function ContactForm({ variant = "desktop" }: ContactFormProps) {
     website,
     setWebsite,
     setTurnstileToken,
+    turnstileRef,
     status,
     errorMessage,
     fieldErrors,
@@ -79,7 +80,7 @@ export default function ContactForm({ variant = "desktop" }: ContactFormProps) {
   ]
 
   return (
-    <form onSubmit={handleSubmit} className="w-full" noValidate>
+    <form onSubmit={handleSubmit} className="w-full" noValidate aria-busy={status === "submitting"}>
       {/* Honeypot field */}
       <div
         aria-hidden="true"
@@ -90,6 +91,7 @@ export default function ContactForm({ variant = "desktop" }: ContactFormProps) {
           Website (do not fill)
           <input
             type="text"
+            disabled={status === "submitting"}
             tabIndex={-1}
             autoComplete="off"
             value={website}
@@ -110,6 +112,7 @@ export default function ContactForm({ variant = "desktop" }: ContactFormProps) {
             <input
               id={`${formId}-${f.key}`}
               type={f.type}
+              disabled={status === "submitting"}
               value={f.value}
               onChange={(e) => f.set(e.target.value)}
               className={inputClass}
@@ -129,6 +132,7 @@ export default function ContactForm({ variant = "desktop" }: ContactFormProps) {
           </div>
           <textarea
             id={`${formId}-message`}
+            disabled={status === "submitting"}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             className={`${inputClass} resize-none ${isCompact ? "min-h-[100px]" : "min-h-[120px]"}`}
@@ -141,6 +145,7 @@ export default function ContactForm({ variant = "desktop" }: ContactFormProps) {
         {siteKey ? (
           <motion.div variants={itemVariants} className="pt-2">
             <Turnstile
+              ref={turnstileRef}
               siteKey={siteKey}
               onSuccess={(token) => setTurnstileToken(token)}
               onError={() => setTurnstileToken("")}
@@ -154,18 +159,26 @@ export default function ContactForm({ variant = "desktop" }: ContactFormProps) {
           variants={itemVariants}
           className={`pt-2 flex ${isCompact ? "flex-col gap-3" : "items-center justify-between gap-6"}`}
         >
-          <div className={`text-[11px] tracking-wide font-light ${isCompact ? "order-2" : ""}`}>
+          <div
+            aria-live="polite"
+            className={`text-[11px] tracking-wide font-light ${isCompact ? "order-2" : ""}`}
+          >
             {status === "error" && errorMessage && (
               <span className="text-red-300/70">— {errorMessage}</span>
             )}
             {status === "idle" && <span className="text-white/30">All replies are personal.</span>}
+            {status === "submitting" && <span className="text-white/60">送信しています…</span>}
+            {status === "success" && (
+              <span className="text-green-300/80">送信しました。ありがとうございます。</span>
+            )}
           </div>
 
           <button
             type="submit"
+            disabled={status === "submitting"}
             className={`group relative inline-flex items-center justify-center gap-3 border border-white/30 hover:border-white text-white px-8 py-3 text-[11px] tracking-[0.3em] uppercase font-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${isCompact ? "w-full order-1" : ""}`}
           >
-            <span>Send Message</span>
+            <span>{status === "submitting" ? "Sending…" : "Send Message"}</span>
             <svg
               className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1"
               fill="none"
