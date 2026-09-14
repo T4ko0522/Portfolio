@@ -19,6 +19,7 @@ const config = {
     },
     extend: {
       fontFamily: {
+        sans: ["LINE Seed JP", "sans-serif"],
         inter: ["Inter Variable", "sans-serif"],
         pacifico: ["Pacifico", "cursive"],
         "rock-salt": ["Rock Salt", "cursive"],
