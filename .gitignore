@@ -16,9 +16,12 @@ assets/
 
 # Build and generated caches
 /dist/
+/.next/
+/.open-next/
 .tanstack/
 .vite/
 .vite-plus/
 .wrangler/
 .oxlintcache
 *.tsbuildinfo
+/next-env.d.ts
