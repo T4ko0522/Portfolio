@@ -13,6 +13,19 @@ const discord = (status = "online") => ({
   timestamp: fixedNow.getTime(),
 })
 
+const spotifyActivity = ({
+  start = fixedNow.getTime() - 75_000,
+  end = fixedNow.getTime() + 105_000,
+  largeImage = "https://i.scdn.co/image/abcdef",
+} = {}) => ({
+  name: "Spotify",
+  type: 2,
+  details: "Song",
+  state: "Artist",
+  timestamps: { start, end },
+  assets: { largeImage, largeText: "Album" },
+})
+
 const bindings = {
   CONTACT_RATE_LIMITER: { limit: async () => ({ success: true }) },
 }
@@ -35,17 +48,9 @@ describe("GET /api/presence", () => {
       http.get(statusUrl, ({ request }) => {
         requested = request.url === statusUrl
         return HttpResponse.json({
-          discord: discord(),
-          spotify: {
-            trackId: "track-id",
-            trackName: "Song",
-            artistName: "Artist",
-            albumName: "Album",
-            albumArt: "spotify:abcdef",
-            duration: 180_000,
-            position: 70_000,
-            isPlaying: true,
-            timestamp: fixedNow.getTime() - 5_000,
+          discord: {
+            ...discord(),
+            activities: [{ name: "Custom Status", type: 4 }, spotifyActivity()],
           },
         })
       }),
@@ -77,16 +82,15 @@ describe("GET /api/presence", () => {
     server.use(
       http.get(statusUrl, () =>
         HttpResponse.json({
-          discord: discord(),
-          spotify: {
-            trackName: "Song",
-            artistName: "Artist",
-            albumName: "Album",
-            albumArt: "https://cdn.example/album.png",
-            duration: 0,
-            position: 10_000,
-            isPlaying: true,
-            timestamp: fixedNow.getTime() - 5_000,
+          discord: {
+            ...discord(),
+            activities: [
+              spotifyActivity({
+                start: fixedNow.getTime() - 5_000,
+                end: fixedNow.getTime() - 5_000,
+                largeImage: "https://cdn.example/album.png",
+              }),
+            ],
           },
         }),
       ),
@@ -109,53 +113,93 @@ describe("GET /api/presence", () => {
   })
 
   it.each([
-    ["no Spotify payload", discord(), undefined],
+    ["before playback starts", fixedNow.getTime() + 5_000, fixedNow.getTime() + 185_000, 0],
+    ["after playback ends", fixedNow.getTime() - 185_000, fixedNow.getTime() - 5_000, 180],
+  ])("clamps the current playback time %s", async (_case, start, end, expectedCurrentTime) => {
+    vi.useFakeTimers()
+    vi.setSystemTime(fixedNow)
+    server.use(
+      http.get(statusUrl, () =>
+        HttpResponse.json({
+          discord: {
+            ...discord(),
+            activities: [spotifyActivity({ start, end })],
+          },
+        }),
+      ),
+    )
+
+    const response = await app.request("/api/presence", {}, bindings)
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toMatchObject({
+      spotifyTrack: {
+        currentTime: expectedCurrentTime,
+        duration: 180,
+      },
+    })
+  })
+
+  it.each([
+    ["no Spotify activity", discord()],
     [
-      "a stopped track",
-      discord(),
+      "an activity with a non-Spotify type",
       {
-        trackName: "Song",
-        artistName: "Artist",
-        albumName: "Album",
-        albumArt: "spotify:abcdef",
-        duration: 180_000,
-        position: 10_000,
-        isPlaying: false,
-        timestamp: fixedNow.getTime(),
+        ...discord(),
+        activities: [{ name: "Spotify", type: 0 }],
       },
     ],
     [
-      "an incomplete track",
-      discord(),
+      "an incomplete Spotify activity",
       {
-        trackName: "Song",
-        artistName: "Artist",
-        albumName: "Album",
-        isPlaying: true,
+        ...discord(),
+        activities: [{ name: "Spotify", type: 2, details: "Song", state: "Artist" }],
       },
     ],
     [
       "an offline Discord presence",
-      discord("offline"),
       {
-        trackName: "Song",
-        artistName: "Artist",
-        albumName: "Album",
-        albumArt: "spotify:abcdef",
-        duration: 180_000,
-        position: 10_000,
-        isPlaying: true,
-        timestamp: fixedNow.getTime(),
+        ...discord("offline"),
+        activities: [
+          spotifyActivity({
+            start: fixedNow.getTime() - 10_000,
+            end: fixedNow.getTime() + 170_000,
+          }),
+        ],
       },
     ],
-  ])("returns no Spotify track for %s", async (_case, discordPresence, spotify) => {
+    [
+      "an insecure album image URL",
+      {
+        ...discord(),
+        activities: [
+          spotifyActivity({
+            start: fixedNow.getTime() - 10_000,
+            end: fixedNow.getTime() + 170_000,
+            largeImage: "http://cdn.example/album.png",
+          }),
+        ],
+      },
+    ],
+    [
+      "reversed Spotify timestamps",
+      {
+        ...discord(),
+        activities: [
+          spotifyActivity({
+            start: fixedNow.getTime() + 1_000,
+            end: fixedNow.getTime(),
+          }),
+        ],
+      },
+    ],
+  ])("returns no Spotify track for %s", async (_case, discordPresence) => {
     vi.useFakeTimers()
     vi.setSystemTime(fixedNow)
     server.use(
       http.get(statusUrl, () =>
         HttpResponse.json({
           discord: discordPresence,
-          ...(spotify ? { spotify } : {}),
         }),
       ),
     )

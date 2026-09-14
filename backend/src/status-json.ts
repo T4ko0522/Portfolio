@@ -16,20 +16,23 @@ const discordPresenceSchema = z.object({
   timestamp: dateTimestampSchema,
 })
 
-const spotifyPresenceSchema = z.object({
-  trackName: z.string().optional(),
-  artistName: z.string().optional(),
-  albumName: z.string().optional(),
-  albumArt: z.string().optional(),
-  duration: z.number().finite().nonnegative().optional(),
-  position: z.number().finite().nonnegative().optional(),
-  isPlaying: z.boolean().optional(),
-  timestamp: dateTimestampSchema,
+const spotifyActivitySchema = z.object({
+  name: z.literal("Spotify"),
+  type: z.literal(2),
+  details: z.string(),
+  state: z.string(),
+  timestamps: z.object({
+    start: dateTimestampSchema,
+    end: dateTimestampSchema,
+  }),
+  assets: z.object({
+    largeImage: z.string(),
+    largeText: z.string(),
+  }),
 })
 
 const statusJsonSchema = z.object({
   discord: discordPresenceSchema,
-  spotify: z.unknown().optional(),
 })
 
 function nonEmpty(value: string | undefined) {
@@ -37,10 +40,7 @@ function nonEmpty(value: string | undefined) {
   return normalized ? normalized : null
 }
 
-function albumArtUrl(value: string) {
-  const spotifyImage = /^spotify:([a-zA-Z0-9]+)$/.exec(value)
-  if (spotifyImage) return `https://i.scdn.co/image/${spotifyImage[1]}`
-
+function httpsUrl(value: string) {
   try {
     const url = new URL(value)
     return url.protocol === "https:" ? url.toString() : null
@@ -49,33 +49,36 @@ function albumArtUrl(value: string) {
   }
 }
 
-function normalizeSpotify(value: unknown, now: Date): SpotifyTrack | null {
-  const parsed = spotifyPresenceSchema.safeParse(value)
-  if (!parsed.success || parsed.data.isPlaying !== true) return null
+function normalizeSpotify(activities: unknown[], now: Date): SpotifyTrack | null {
+  for (const activity of activities) {
+    const parsed = spotifyActivitySchema.safeParse(activity)
+    if (!parsed.success) continue
 
-  const name = nonEmpty(parsed.data.trackName)
-  const artist = nonEmpty(parsed.data.artistName)
-  const image = nonEmpty(parsed.data.albumArt)
-  const imageUrl = image ? albumArtUrl(image) : null
-  if (!name || !artist || !imageUrl) return null
+    const name = nonEmpty(parsed.data.details)
+    const artist = nonEmpty(parsed.data.state)
+    const album = nonEmpty(parsed.data.assets.largeText)
+    const image = nonEmpty(parsed.data.assets.largeImage)
+    const imageUrl = image ? httpsUrl(image) : null
+    const durationMs = parsed.data.timestamps.end - parsed.data.timestamps.start
+    if (!name || !artist || !album || !imageUrl || durationMs < 0) return null
 
-  const elapsed = Math.max(0, now.getTime() - parsed.data.timestamp)
-  const durationMs = parsed.data.duration
-  const positionMs = parsed.data.position
-  const currentTimeMs =
-    positionMs === undefined
-      ? undefined
-      : Math.min(durationMs ?? Number.POSITIVE_INFINITY, positionMs + elapsed)
+    const currentTimeMs = Math.min(
+      durationMs,
+      Math.max(0, now.getTime() - parsed.data.timestamps.start),
+    )
 
-  return {
-    name,
-    artist,
-    album: parsed.data.albumName?.trim() ?? "",
-    albumArtUrl: imageUrl,
-    isPlaying: true,
-    currentTime: currentTimeMs === undefined ? undefined : currentTimeMs / 1_000,
-    duration: durationMs === undefined ? undefined : durationMs / 1_000,
+    return {
+      name,
+      artist,
+      album,
+      albumArtUrl: imageUrl,
+      isPlaying: true,
+      currentTime: currentTimeMs / 1_000,
+      duration: durationMs / 1_000,
+    }
   }
+
+  return null
 }
 
 export function normalizeStatusJson(value: unknown, now: Date): PresenceSnapshot {
@@ -85,7 +88,7 @@ export function normalizeStatusJson(value: unknown, now: Date): PresenceSnapshot
     connection: "connected",
     discordStatus: parsed.discord.status,
     spotifyTrack:
-      parsed.discord.status === "offline" ? null : normalizeSpotify(parsed.spotify, now),
+      parsed.discord.status === "offline" ? null : normalizeSpotify(parsed.discord.activities, now),
     updatedAt: now.toISOString(),
   }
 }
