@@ -7,6 +7,16 @@
   "workers_dev": false,
   "preview_urls": false,
   "routes": [{ "pattern": "api.t4ko.pet", "custom_domain": true }],
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["SpotifyStatusDO"],
+    },
+    {
+      "tag": "v2",
+      "deleted_classes": ["SpotifyStatusDO"],
+    },
+  ],
   "ratelimits": [
     {
       "name": "CONTACT_RATE_LIMITER",
@@ -18,7 +28,7 @@
     "logs": {
       "enabled": true,
       "invocation_logs": true,
-      "persist": true
-    }
-  }
+      "persist": true,
+    },
+  },
 }
