@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "vp build",
+    "build:backend": "wrangler deploy --config backend/wrangler.jsonc --dry-run",
     "dev": "vp dev",
     "preview": "vp preview",
     "lint": "vp lint",
