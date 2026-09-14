@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Image from "@/components/ui/image"
 import { useClipboardFeedback } from "@/features/contact/use-clipboard-feedback"
 import { useBirthdayCountdown } from "@/features/profile/use-birthday-countdown"
@@ -6,7 +6,6 @@ import { usePresence } from "@/features/presence/use-presence"
 import HomePageDesktop from "./home-page-desktop"
 import HomePageMobile from "./mobile/home-page-mobile"
 import LoadingScreen from "./loading-screen"
-import StaggeredCurtainReveal from "./staggered-curtain-reveal"
 import { useDesktopViewport } from "./hooks/use-desktop-viewport"
 
 const BIRTH_MONTH = 5
@@ -20,6 +19,16 @@ export default function HomePage() {
   const isDesktop = useDesktopViewport()
   const pageProps = { daysUntilBirthday, ...presence, ...clipboard }
 
+  useEffect(() => {
+    if (!isLoading) return
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [isLoading])
+
   return (
     <>
       <div className="hidden" aria-hidden="true">
@@ -32,20 +41,20 @@ export default function HomePage() {
         />
       </div>
 
-      {isDesktop !== false && (
-        <div className="hidden desktop:block">
-          <HomePageDesktop {...pageProps} />
-        </div>
-      )}
-      {isDesktop !== true && (
-        <div className="block desktop:hidden">
-          <HomePageMobile {...pageProps} />
-        </div>
-      )}
+      <div {...(isLoading ? { inert: "" } : {})} aria-hidden={isLoading || undefined}>
+        {isDesktop !== false && (
+          <div className="hidden desktop:block">
+            <HomePageDesktop {...pageProps} />
+          </div>
+        )}
+        {isDesktop !== true && (
+          <div className="block desktop:hidden">
+            <HomePageMobile {...pageProps} />
+          </div>
+        )}
+      </div>
 
-      <StaggeredCurtainReveal isVisible={isLoading}>
-        <LoadingScreen key="loading" onLoadingComplete={() => setIsLoading(false)} />
-      </StaggeredCurtainReveal>
+      {isLoading && <LoadingScreen onLoadingComplete={() => setIsLoading(false)} />}
     </>
   )
 }
