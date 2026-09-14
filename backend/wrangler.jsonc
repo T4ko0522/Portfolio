@@ -14,4 +14,11 @@
       "simple": { "limit": 5, "period": 60 },
     },
   ],
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true,
+      "persist": true
+    }
+  }
 }
