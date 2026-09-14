@@ -12,7 +12,7 @@
     "typecheck": "vp check --no-fmt --no-lint",
     "test": "vp test run",
     "check": "vp check",
-    "deploy": "bun run build && bun run deploy:backend && wrangler deploy --config dist/server/wrangler.json",
+    "deploy": "bun run build && wrangler deploy --config dist/server/wrangler.json",
     "deploy:backend": "wrangler deploy --config backend/wrangler.jsonc",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
