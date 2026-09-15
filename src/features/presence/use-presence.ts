@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { apiClient } from "@/lib/api-client"
 import { emptyPresence, presenceSnapshotSchema } from "../../../shared/presence"
+import { getPresencePollDelay } from "./poll-delay"
 import type { PresenceState } from "./types"
 
 export function usePresence(): PresenceState {
@@ -15,6 +16,7 @@ export function usePresence(): PresenceState {
     const poll = async () => {
       if (disposed || polling || document.hidden) return
       polling = true
+      let nextPollDelay = 30_000
       clearTimeout(retryTimer)
       try {
         const response = await apiClient.api.presence.$get(
@@ -26,13 +28,17 @@ export function usePresence(): PresenceState {
         if (!response.ok) throw new Error("Presence unavailable")
         const next = presenceSnapshotSchema.parse(await response.json())
         if (disposed) return
+        const receivedAt = Date.now()
         setSnapshot(next)
-        setNow(Date.now())
+        setNow(receivedAt)
+        nextPollDelay = getPresencePollDelay(next, receivedAt)
       } catch {
         if (!disposed) setSnapshot(emptyPresence("disconnected"))
       } finally {
         polling = false
-        if (!disposed && !document.hidden) retryTimer = setTimeout(() => void poll(), 30_000)
+        if (!disposed && !document.hidden) {
+          retryTimer = setTimeout(() => void poll(), nextPollDelay)
+        }
       }
     }
     const onVisibilityChange = () => {
